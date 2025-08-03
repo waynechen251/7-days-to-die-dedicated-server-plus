@@ -1,5 +1,6 @@
 {
-  "name": "web",
+  "name": "7-days-to-die-dedicated-server-plus",
+  "type": "module",
   "version": "1.0.0",
   "description": "",
   "main": "server.js",
@@ -9,5 +10,9 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0",
+    "telnet-client": "^2.2.6"
+  }
 }

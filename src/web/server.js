@@ -1,71 +1,76 @@
 import express from "express";
-import { exec } from "child_process";
+import { exec, execFile } from "child_process";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-import { createRequire } from "module";
+import { Telnet } from "telnet-client";
+import { promisify } from "util";
 
-const require = createRequire(import.meta.url);
-const Telnet = require("telnet-client").Telnet;
-
-const fsPath = fs.existsSync("server.json") ? "server.json" : "server.sample.json";
-const CONFIG = require(fsPath);
+const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const app = express();
+// 載入設定檔（server.json 或預設）
+const configPath = fs.existsSync("server.json")
+  ? "server.json"
+  : "server.sample.json";
+const CONFIG = JSON.parse(fs.readFileSync(configPath, "utf-8"));
 
+const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 app.post("/api/view-saves", (_, res) => {
   fs.readdir(CONFIG.web.saves, (err, files) => {
-    if (err) {
-      console.error("讀取存檔目錄失敗:", err);
-      return res.status(500).send(`❌ 讀取存檔失敗:\n${err}`);
-    }
+    if (err) return res.status(500).send(`❌ 讀取存檔失敗:\n${err}`);
     const saves = files.filter((file) => file.endsWith(".zip"));
     res.send(saves.join("\n"));
   });
 });
 
-app.post("/api/backup", (_, res) => {
-  const now = new Date();
-  const timestamp = now
-    .toLocaleString("sv-SE", { timeZone: "Asia/Taipei" })
-    .replace(/[-: ]/g, "")
-    .slice(0, 14); // YYYYMMDDhhmmss
-  const zipName = `Saves-${timestamp}.zip`;
+app.post("/api/backup", async (_, res) => {
+  try {
+    const now = new Date();
+    const timestamp = now
+      .toLocaleString("sv-SE", {
+        timeZone: CONFIG.web.timeZone || "Asia/Taipei",
+      })
+      .replace(/[-: ]/g, "")
+      .slice(0, 14);
+    const zipName = `Saves-${timestamp}.zip`;
+    const outputPath = path.join(CONFIG.web.saves, zipName);
 
-  const outputPath = path.join(CONFIG.web.saves, zipName);
-  const outputDir = path.dirname(outputPath);
-  if (!fs.existsSync(outputDir)) {
-    fs.mkdirSync(outputDir, { recursive: true });
+    if (!fs.existsSync(CONFIG.web.saves)) {
+      fs.mkdirSync(CONFIG.web.saves, { recursive: true });
+    }
+
+    const zipCmd = `"${CONFIG.web.zipTool}" a "${outputPath}" "${CONFIG.game_server.saves}"`;
+    const { stdout } = await execAsync(zipCmd);
+    res.send(`✅ 備份完成: ${zipName}\n${stdout}`);
+  } catch (err) {
+    res.status(500).send(`❌ 備份失敗:\n${err}`);
   }
-
-  const zipCmd = `"${CONFIG.web.zipTool}" a "${outputPath}" ${CONFIG.game_server.saves}`;
-
-  exec(zipCmd, (err, _, stderr) => {
-    if (err) return res.status(500).send(`❌ 備份失敗:\n${stderr}`);
-    res.send(`✅ 備份完成: ${zipName}`);
-  });
 });
 
-app.post("/api/start", (_, res) => {
-  const startCmd = `cmd /c start "" "${CONFIG.game_server.startBat}"`;
-
-  exec(startCmd, (err, stdout, stderr) => {
-    if (err) return res.status(500).send(`❌ 啟動失敗:\n${stderr}`);
+app.post("/api/start", async (_, res) => {
+  try {
+    const cmd = `cmd /c start "" "${CONFIG.game_server.startBat}"`;
+    await execAsync(cmd);
     res.send(`✅ 啟動已觸發，請稍候伺服器啟動...`);
-  });
+  } catch (err) {
+    res.status(500).send(`❌ 啟動失敗:\n${err}`);
+  }
 });
 
-app.post("/api/stop", (_, res) => {
-  const result = sendTelnetCommand("shutdown");
-  result
-    .then((output) => res.send(`✅ 關閉指令已發送:\n${output}`))
-    .catch((err) => res.status(500).send("❌ 關閉失敗:\n" + err.message));
+app.post("/api/stop", async (_, res) => {
+  try {
+    const result = await sendTelnetCommand("shutdown");
+    res.send(`✅ 關閉指令已發送:\n${result}`);
+  } catch (err) {
+    res.status(500).send(`❌ 關閉失敗:\n${err.message}`);
+  }
 });
 
 app.post("/api/telnet", async (req, res) => {
@@ -80,8 +85,33 @@ app.post("/api/telnet", async (req, res) => {
   }
 });
 
+app.post("/api/install", async (req, res) => {
+  const version = req.body.version || "";
+  const batPath = path.join(__dirname, "scripts", "update-server.bat");
+
+  try {
+    const { stdout } = await execFileAsync(batPath, [
+      CONFIG.web.steamcmd,
+      CONFIG.game_server.path,
+      version,
+    ]);
+    res.send(stdout || "✅ 安裝/更新完成");
+  } catch (err) {
+    res.status(500).send(`❌ 安裝/更新失敗:\n${err.message}`);
+  }
+});
+
+app.post("/api/view-admin-settings", (_, res) => {
+  try {
+    const json = fs.readFileSync(path.join(CONFIG.web.path, "server.json"), "utf8");
+    const parsedJson = JSON.parse(json);
+    res.json(parsedJson);
+  } catch (err) {
+    res.status(500).send(`❌ 讀取管理後台設定失敗:\n${err.message}`);
+  }
+});
+
 async function sendTelnetCommand(command) {
-  const Telnet = require("telnet-client").Telnet;
   const connection = new Telnet();
 
   const params = {
