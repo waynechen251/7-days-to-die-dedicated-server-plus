@@ -4,6 +4,8 @@
 
 一套簡易的 7 Days to Die 專用伺服器管理面板與 API，支援啟動、關閉、備份存檔、Telnet 操作，以及遊戲資訊查詢。
 
+![DEMO](demo.png)
+
 ## 功能特色
 
 - ✅ Web 操作伺服器：啟動 / 關閉伺服器
@@ -87,6 +89,3 @@ http://localhost:26903/
 ## 授權 License
 
 本專案使用 **GPLv3** 授權。你可以自由修改與再發佈，但需保留開源並沿用 GPL 條款。
-
-
-![DEMO](demo.png)

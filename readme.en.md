@@ -4,6 +4,8 @@
 
 A lightweight management panel and API for **7 Days to Die** dedicated servers. Supports server start/stop, save backups, Telnet operations, and game information queries.
 
+![DEMO](demo.png)
+
 ## Features
 
 - ✅ Web control panel to start/stop the server
@@ -88,5 +90,3 @@ http://localhost:26903/
 ## License
 
 This project is licensed under **GPLv3**. You may freely modify and redistribute it as long as the project remains open source and complies with GPL terms.
-
-![DEMO](demo.png)
