@@ -44,7 +44,7 @@ app.post("/api/backup", (_, res) => {
     fs.mkdirSync(outputDir, { recursive: true });
   }
 
-  const zipCmd = `"${CONFIG.zipTool}" a "${outputPath}" ${CONFIG.game_server.saves}`;
+  const zipCmd = `"${CONFIG.web.zipTool}" a "${outputPath}" ${CONFIG.game_server.saves}`;
 
   exec(zipCmd, (err, _, stderr) => {
     if (err) return res.status(500).send(`❌ 備份失敗:\n${stderr}`);
@@ -85,7 +85,7 @@ async function sendTelnetCommand(command) {
   const connection = new Telnet();
 
   const params = {
-    host: CONFIG.game_server.telnetHost,
+    host: CONFIG.game_server.ip,
     port: CONFIG.game_server.telnetPort,
     shellPrompt: ">",
     timeout: 2000,
