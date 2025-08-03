@@ -3,7 +3,8 @@
     "port": 26903,
     "path": "C:\\7-days-to-die-dedicated-server-plus",
     "saves": "C:\\7-days-to-die-dedicated-server-plus\\public\\saves",
-    "zipTool": "C:\\Program Files\\7-Zip\\7z.exe",
+    "zipTool": "C:\\7-days-to-die-dedicated-server-plus\\tools\\7-Zip\\7z.exe",
+    "steamcmd": "C:\\7-days-to-die-dedicated-server-plus\\tools\\steamcmd\\steamcmd.exe",
     "timeZone": "Asia/Taipei"
   },
   "game_server": {
