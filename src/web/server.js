@@ -53,7 +53,7 @@ app.post("/api/backup", (_, res) => {
 });
 
 app.post("/api/start", (_, res) => {
-  const startCmd = `cmd /c start "" "${CONFIG.web.startBat}" cli`;
+  const startCmd = `cmd /c start "" "${CONFIG.game_server.startBat}"`;
 
   exec(startCmd, (err, stdout, stderr) => {
     if (err) return res.status(500).send(`❌ 啟動失敗:\n${stderr}`);

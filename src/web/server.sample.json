@@ -3,7 +3,6 @@
     "port": 26903,
     "path": "C:\\7-days-to-die-dedicated-server-plus",
     "saves": "C:\\7-days-to-die-dedicated-server-plus\\public\\saves",
-    "startBat": "C:\\7-days-to-die-dedicated-server-plus\\7-days-to-die-dedicated-server-plus.bat",
     "zipTool": "C:\\Program Files\\7-Zip\\7z.exe",
     "timeZone": "Asia/Taipei"
   },
@@ -12,6 +11,7 @@
     "port": 26900,
     "path": "C:\\7 Days to Die Dedicated Server",
     "saves": "C:\\Users\\<username>\\AppData\\Roaming\\7DaysToDie\\Saves",
+    "startBat": "C:\\7 Days to Die Dedicated Server\\startdedicated.bat",
     "telnetPort": 26901,
     "telnetPassword": "serverpassword"
   }
