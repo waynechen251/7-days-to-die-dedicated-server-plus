@@ -21,6 +21,7 @@
 ├─ src/
 │  ├─ server.js          # 主要 API 程式碼
 │  └─ server.sample.json # 設定檔範本
+├─ Amazon Root CA 1.crt # 如果出現 EOS 連線失敗，請將此憑證放入信任的根憑證
 ├─ LICENSE
 └─ README.md
 ```

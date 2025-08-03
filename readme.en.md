@@ -21,6 +21,7 @@ A lightweight management panel and API for **7 Days to Die** dedicated servers. 
 ├─ src/
 │ ├─ server.js # Main backend API
 │ └─ server.sample.json # Config template
+├─ Amazon Root CA 1.crt # If EOS connection fails, please add this certificate to the trusted root certificates
 ├─ LICENSE
 └─ README.md
 ```
