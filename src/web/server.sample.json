@@ -13,6 +13,7 @@
     "path": "C:\\7 Days to Die Dedicated Server",
     "saves": "C:\\Users\\<username>\\AppData\\Roaming\\7DaysToDie\\Saves",
     "startBat": "C:\\7 Days to Die Dedicated Server\\startdedicated.bat",
+    "serverConfig": "C:\\7 Days to Die Dedicated Server\\serverconfig.xml",
     "telnetPort": 26901,
     "telnetPassword": "serverpassword"
   }
