@@ -1,112 +1,123 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
-<head>
-  <meta charset="UTF-8">
-  <title>7 Days To Die Dedicated Server Plus 控制台</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      padding: 1rem;
-      background-color: #f8f8f8;
-    }
-
-    h2 {
-      margin-top: 2rem;
-      color: #333;
-    }
-
-    button {
-      margin: 0.5rem 0.25rem;
-      padding: 0.5rem 1rem;
-    }
-
-    textarea {
-      width: 100%;
-      height: 250px;
-      margin-top: 1rem;
-      font-family: monospace;
-      white-space: pre-wrap;
-    }
-  </style>
-</head>
-<body>
-  <h1>7 Days To Die Dedicated Server Plus 控制面板</h1>
-
-  <h2>🗂️ 存檔與伺服器控制</h2>
-  <div>
-    <button id="viewSavesBtn">📂 查看存檔清單</button>
-    <button id="backupBtn">💾 備份伺服器存檔</button>
-    <button id="startServerBtn">▶️ 啟動伺服器</button>
-    <button id="stopServerBtn">⏹️ 關閉伺服器</button>
-  </div>
-
-  <h2>📡 伺服器資訊</h2>
-  <div>
-    <button onclick="sendTelnet('version')">🔍 查看版本</button>
-    <button onclick="sendTelnet('listplayers')">🧑‍🤝‍🧑 玩家清單</button>
-    <button onclick="sendTelnet('getgamepref')">⚙️ 查看設定</button>
-  </div>
-
-  <textarea id="output" readonly placeholder="執行結果會顯示在這裡..."></textarea>
-
-  <script>
-    async function fetchApi(url, options = {}) {
-      const res = await fetch(url, options);
-      const text = await res.text();
-      document.getElementById("output").value = text;
-    }
-
-    function viewSaves() {
-      fetchApi("/api/view-saves", { method: "POST" });
-    }
-
-    const backupBtn = document.getElementById('backupBtn');
-
-    async function onBackupClick() {
-      backupBtn.disabled = true;
-      backupBtn.textContent = '備份中…';
-
-      const timeoutMs = 30_000;
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-      try {
-        const res = await fetch('/api/backup', {
-          method: 'POST',
-          signal: controller.signal
-        });
-        const text = await res.text();
-        alert(text);
-      } catch (err) {
-        if (err.name === 'AbortError') {
-          alert('❌ 已超時，請稍後再試');
-        } else {
-          alert('❌ 發生錯誤：' + err.message);
-        }
-      } finally {
-        clearTimeout(timer);
-        backupBtn.disabled = false;
-        backupBtn.textContent = '備份';
+  <head>
+    <meta charset="UTF-8" />
+    <title>7 Days To Die Dedicated Server Plus 控制台</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        padding: 1rem;
+        background-color: #f8f8f8;
       }
-    }
 
-    backupBtn.addEventListener('click', onBackupClick);
+      h2 {
+        margin-top: 2rem;
+        color: #333;
+      }
 
-    function startServer() {
-      fetchApi("/api/start", { method: "POST" });
-    }
+      button {
+        margin: 0.5rem 0.25rem;
+        padding: 0.5rem 1rem;
+      }
 
-    function stopServer() {
-      fetchApi("/api/stop", { method: "POST" });
-    }
+      textarea {
+        width: 100%;
+        height: 250px;
+        margin-top: 1rem;
+        font-family: monospace;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>7 Days To Die Dedicated Server Plus 控制面板</h1>
 
-    function sendTelnet(cmd) {
-      fetchApi("/api/telnet", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ command: cmd })
-      });
-    }
-  </script>
-</body>
+    <h2>🗂️ 存檔與伺服器控制</h2>
+    <div>
+      <button id="viewSavesBtn">📂 查看存檔清單</button>
+      <button id="backupBtn">💾 備份伺服器存檔</button>
+      <button id="startServerBtn">▶️ 啟動伺服器</button>
+      <button id="stopServerBtn">⏹️ 關閉伺服器</button>
+    </div>
+
+    <h2>📡 伺服器資訊</h2>
+    <div>
+      <button onclick="sendTelnet('version')">🔍 查看版本</button>
+      <button onclick="sendTelnet('listplayers')">🧑‍🤝‍🧑 玩家清單</button>
+      <button onclick="sendTelnet('getgamepref')">⚙️ 查看設定</button>
+    </div>
+
+    <textarea
+      id="output"
+      readonly
+      placeholder="執行結果會顯示在這裡..."
+    ></textarea>
+
+    <script>
+      async function fetchApi(url, options = {}) {
+        const res = await fetch(url, options);
+        const text = await res.text();
+        document.getElementById("output").value = text;
+      }
+
+      function viewSaves() {
+        fetchApi("/api/view-saves", { method: "POST" });
+      }
+
+      const backupBtn = document.getElementById("backupBtn");
+      const viewSavesBtn = document.getElementById("viewSavesBtn");
+      const startServerBtn = document.getElementById("startServerBtn");
+      const stopServerBtn = document.getElementById("stopServerBtn");
+
+      async function onBackupClick() {
+        backupBtn.disabled = true;
+        backupBtn.textContent = "備份中…";
+
+        const timeoutMs = 30_000;
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+        try {
+          const res = await fetch("/api/backup", {
+            method: "POST",
+            signal: controller.signal,
+          });
+          const text = await res.text();
+          alert(text);
+        } catch (err) {
+          if (err.name === "AbortError") {
+            alert("❌ 已超時，請稍後再試");
+          } else {
+            alert("❌ 發生錯誤：" + err.message);
+          }
+        } finally {
+          clearTimeout(timer);
+          backupBtn.disabled = false;
+          backupBtn.textContent = "備份";
+        }
+      }
+
+      function startServer() {
+        fetchApi("/api/start", { method: "POST" });
+      }
+
+      function stopServer() {
+        fetchApi("/api/stop", { method: "POST" });
+      }
+
+      function sendTelnet(cmd) {
+        fetchApi("/api/telnet", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ command: cmd }),
+        });
+      }
+
+      // 綁定按鈕事件
+      backupBtn.addEventListener("click", onBackupClick);
+      viewSavesBtn.addEventListener("click", viewSaves);
+      startServerBtn.addEventListener("click", startServer);
+      stopServerBtn.addEventListener("click", stopServer);
+    </script>
+  </body>
 </html>
