@@ -32,21 +32,33 @@ Name: "english"; MessagesFile: "Languages\English.isl"
 Name: "chinesesimplified"; MessagesFile: "Languages\ChineseSimplified.isl"
 Name: "chinesetraditional"; MessagesFile: "Languages\ChineseTraditional.isl"
 
+[Dirs]
+Name: "{app}\7-Zip"
+Name: "{app}\nodejs"
+Name: "{app}\nssm"
+Name: "{app}\scripts"
+Name: "{app}\steamcmd"
+Name: "{app}\dependency"
+Name: "{app}\node_modules"
+Name: "{app}\public"
+
 [Icons]
 Name: "{group}\{cm:ProgramOnTheWeb,{#AppName}}"; Filename: "{#AppURL}"
 Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
 
 [Files]
-Source: "{#DEPENDENCY}\7-Zip\*"; DestDir: "{app}\7-Zip"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#DEPENDENCY}\nginx-1.29.0\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#DEPENDENCY}\nodejs-22.18.0\node.exe"; DestDir: "{app}\nodejs\node.exe"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#DEPENDENCY}\nssm-2.24\*"; DestDir: "{app}\nssm-2.24"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#DEPENDENCY}\scripts\*"; DestDir: "{app}\scripts"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#DEPENDENCY}\steamcmd\steamcmd.exe"; DestDir: "{app}\steamcmd.exe"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#DEPENDENCY}\Amazon Root CA 1.crt"; DestDir: "{app}\dependency\Amazon Root CA 1.crt"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#DEPENDENCY}\VC_redist.x64.exe"; DestDir: "{app}\dependency\VC_redist.x64.exe"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "LICENSE.txt"; DestDir: "{app}\LICENSE"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#WEBSRC}\node_modules"; DestDir: "{app}\nodejs\node_modules"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#WEBSRC}\index.html"; DestDir: "{app}\html\index.html"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#WEBSRC}\server.js"; DestDir: "{app}\nodejs\server.js"; Flags: ignoreversion recursesubdirs createallsubdirs
-Source: "{#WEBSRC}\server.sample.js"; DestDir: "{app}\nodejs\server.js"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "{#DEPENDENCY}\7-Zip\*"; DestDir: "{app}\7-Zip"; Flags: ignoreversion recursesubdirs
+; Source: "{#DEPENDENCY}\nginx-1.29.0\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
+Source: "{#DEPENDENCY}\nodejs-22.18.0\node.exe"; DestDir: "{app}\nodejs"; Flags: ignoreversion
+Source: "{#DEPENDENCY}\nssm-2.24\win64\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#DEPENDENCY}\scripts\*"; DestDir: "{app}\scripts"; Flags: ignoreversion recursesubdirs
+Source: "{#DEPENDENCY}\steamcmd\steamcmd.exe"; DestDir: "{app}\steamcmd"; Flags: ignoreversion
+Source: "{#DEPENDENCY}\Amazon Root CA 1.crt"; DestDir: "{app}\dependency"; Flags: ignoreversion
+Source: "{#DEPENDENCY}\VC_redist.x64.exe"; DestDir: "{app}\dependency"; Flags: ignoreversion
+Source: "LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#WEBSRC}\node_modules\*"; DestDir: "{app}\node_modules"; Flags: ignoreversion recursesubdirs
+Source: "{#WEBSRC}\index.html"; DestDir: "{app}\public"; Flags: ignoreversion
+Source: "{#WEBSRC}\server.js"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#WEBSRC}\server.sample.json"; DestDir: "{app}"; DestName: "server.json"; Flags: ignoreversion
+
+[Run]

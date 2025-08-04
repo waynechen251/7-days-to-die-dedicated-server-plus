@@ -1,6 +1,6 @@
 {
   "web": {
-    "port": 26903,
+    "port": 26902,
     "path": "C:\\Program Files (x86)\\7DTD-DS-P",
     "saves": "C:\\Program Files (x86)\\7DTD-DS-P\\html\\saves",
     "zipTool": "C:\\Program Files (x86)\\7-Zip\\7z.exe",
@@ -11,10 +11,10 @@
   "game_server": {
     "ip": "127.0.0.1",
     "port": 26900,
+    "telnetPort": 26901,
+    "telnetPassword": "serverpassword",
     "path": "C:\\7 Days to Die Dedicated Server",
     "saves": "C:\\Users\\<username>\\AppData\\Roaming\\7DaysToDie\\Saves",
-    "serverConfig": "C:\\7 Days to Die Dedicated Server\\serverconfig.xml",
-    "telnetPort": 26901,
-    "telnetPassword": "serverpassword"
+    "serverConfig": "C:\\7 Days to Die Dedicated Server\\serverconfig.xml"
   }
 }
