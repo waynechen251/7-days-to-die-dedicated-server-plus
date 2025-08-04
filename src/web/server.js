@@ -54,9 +54,23 @@ app.post("/api/backup", async (_, res) => {
   }
 });
 
-app.post("/api/start", async (_, res) => {
+app.post("/api/install", async (req, res) => {
+  const version = req.body.version || "";
+
   try {
-    const cmd = `cmd /c start "" "${CONFIG.game_server.startBat}"`;
+    const cmd = `cmd /c start "" "${CONFIG.web.updateServerBat}" ${version}`;
+    await execAsync(cmd);
+    res.send(`✅ 安裝 / 更新已觸發，請稍候伺服器更新...`);
+  } catch (err) {
+    res.status(500).send(`❌ 安裝 / 更新失敗:\n${err}`);
+  }
+});
+
+app.post("/api/start", async (req, res) => {
+  const { nographics } = req.body;
+  try {
+    const noguiFlag = nographics ? "-nographics" : "";
+    const cmd = `cmd /c start "" "${CONFIG.web.startServerBat}" ${noguiFlag}`;
     await execAsync(cmd);
     res.send(`✅ 啟動已觸發，請稍候伺服器啟動...`);
   } catch (err) {
@@ -85,25 +99,12 @@ app.post("/api/telnet", async (req, res) => {
   }
 });
 
-app.post("/api/install", async (req, res) => {
-  const version = req.body.version || "";
-  const batPath = path.join(__dirname, "scripts", "update-server.bat");
-
-  try {
-    const { stdout } = await execFileAsync(batPath, [
-      CONFIG.web.steamcmd,
-      CONFIG.game_server.path,
-      version,
-    ]);
-    res.send(stdout || "✅ 安裝/更新完成");
-  } catch (err) {
-    res.status(500).send(`❌ 安裝/更新失敗:\n${err.message}`);
-  }
-});
-
 app.post("/api/view-admin-settings", (_, res) => {
   try {
-    const json = fs.readFileSync(path.join(CONFIG.web.path, "server.json"), "utf8");
+    const json = fs.readFileSync(
+      path.join(CONFIG.web.path, "server.json"),
+      "utf8"
+    );
     const parsedJson = JSON.parse(json);
     res.json(parsedJson);
   } catch (err) {
@@ -144,5 +145,7 @@ async function sendTelnetCommand(command) {
 }
 
 app.listen(CONFIG.web.port, () => {
-  console.log(`✅ 7 Days To Die Dedicated Server Plus 控制 API 與介面已啟動於 http://localhost:${CONFIG.web.port}`);
+  console.log(
+    `✅ 7 Days To Die Dedicated Server Plus 控制 API 與介面已啟動於 http://localhost:${CONFIG.web.port}`
+  );
 });

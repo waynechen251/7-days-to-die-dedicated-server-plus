@@ -1,2 +1,7 @@
 node_modules
 temp
+output
+
+*.log
+*.tmp
+7DTD-DS-P*.exe

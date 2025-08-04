@@ -1,10 +1,11 @@
 {
   "web": {
     "port": 26903,
-    "path": "C:\\7-days-to-die-dedicated-server-plus",
-    "saves": "C:\\7-days-to-die-dedicated-server-plus\\public\\saves",
-    "zipTool": "C:\\7-days-to-die-dedicated-server-plus\\tools\\7-Zip\\7z.exe",
-    "steamcmd": "C:\\7-days-to-die-dedicated-server-plus\\tools\\steamcmd\\steamcmd.exe",
+    "path": "C:\\Program Files (x86)\\7DTD-DS-P",
+    "saves": "C:\\Program Files (x86)\\7DTD-DS-P\\html\\saves",
+    "zipTool": "C:\\Program Files (x86)\\7-Zip\\7z.exe",
+    "startServerBat": "C:\\Program Files (x86)\\7DTD-DS-P\\scripts\\start-server.bat",
+    "updateServerBat": "C:\\Program Files (x86)\\7DTD-DS-P\\scripts\\update-server.bat",
     "timeZone": "Asia/Taipei"
   },
   "game_server": {
@@ -12,7 +13,6 @@
     "port": 26900,
     "path": "C:\\7 Days to Die Dedicated Server",
     "saves": "C:\\Users\\<username>\\AppData\\Roaming\\7DaysToDie\\Saves",
-    "startBat": "C:\\7 Days to Die Dedicated Server\\startdedicated.bat",
     "serverConfig": "C:\\7 Days to Die Dedicated Server\\serverconfig.xml",
     "telnetPort": 26901,
     "telnetPassword": "serverpassword"
