@@ -11,6 +11,7 @@ Ideal as an "all-in-one server starter pack" or for local/LAN server management 
 ---
 
 ## Features
+
 - ✅ **Operate the server via Web**: Start/Stop the Dedicated Server (supports GUI / No GUI modes)
 - 📥 **One-click Install/Update**: Integrated `steamcmd` for automatic installation/updates of the game server
 - 💾 **Game save file management**
@@ -20,6 +21,7 @@ Ideal as an "all-in-one server starter pack" or for local/LAN server management 
 ---
 
 ## Project Structure
+
 7-days-to-die-dedicated-server-plus/
 ├─ public/ # Frontend Web interface
 │ ├─ saves/ # Save file backup directory
@@ -38,21 +40,27 @@ Ideal as an "all-in-one server starter pack" or for local/LAN server management 
 ---
 
 ## Installation & Usage
+
 ### 🖥️ For End Users
 
 #### 1. Download and run the installer
+
 The installer will:
+
 - Install required tools (7-Zip / steamcmd / nssm)
 - Automatically create `server.json` (including the save path for your user account)
 - Register and install as a Windows service (Name: `7DTD-DS-P`)
 
 #### 2. Open the Web Control Panel
+
 After installation, your browser will automatically open:
+
 ```
 http://localhost:26902/
 ```
 
 #### 3. Web Interface Features
+
 - Install/Update Dedicated Server (selectable version branches)
 - View admin settings (reads `server.json`)
 - View server save file list
@@ -63,34 +71,41 @@ http://localhost:26902/
 ---
 
 ### 🛠️ For Developers
+
 #### 1. Install Node.js (recommended v22+)
 
-[https://nodejs.org/](https://nodejs.org/)
+- [https://nodejs.org/](https://nodejs.org/)
 
 #### 2. Install dependencies
+
 ```bat
 cd src\web
 npm install
 ```
 
 #### 3. Create the config file
+
 ```bat
 cd src\web
 copy server.sample.json server.json
 ```
+
 Edit the file according to your environment paths and ports.
 
 #### 4. Start the service
+
 ```bat
 npm start
 ```
 
 5. Access the admin panel
+
 ```bat
 http://localhost:26903/
 ```
 
 ## Common API Endpoints
+
 | Path               | Method | Description                                         |
 | ------------------ | ------ | --------------------------------------------------- |
 | `/api/install`     | POST   | Install/Update Dedicated Server                     |
@@ -104,6 +119,7 @@ http://localhost:26903/
 ---
 
 ## Config File Reference (server.json)
+
 | Field                        | Description                     |
 | ---------------------------- | ------------------------------- |
 | `web.port`                   | Port for the Web API            |
@@ -113,7 +129,7 @@ http://localhost:26903/
 | `game_server.telnetPassword` | Telnet password                 |
 | `game_server.serverConfig`   | Path to `serverconfig.xml`      |
 
-
 # License
+
 This project is licensed under **GPLv3**.  
 You are free to modify and redistribute it, but you must keep it open source and under the same GPL terms.

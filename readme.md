@@ -72,7 +72,7 @@ http://localhost:26902/
 
 #### 1. 安裝 Node.js (建議 v22+)
 
-[https://nodejs.org/](https://nodejs.org/)
+- [https://nodejs.org/](https://nodejs.org/)
 
 #### 2. 安裝依賴
 
@@ -86,6 +86,7 @@ npm install
 ```bat
 copy server.sample.json server.json
 ```
+
 依環境修改設定檔中的路徑與埠號。
 
 #### 4. 啟動服務
@@ -126,5 +127,6 @@ http://localhost:26903/
 | `game_server.serverConfig`   | `serverconfig.xml` 的路徑      |
 
 # 授權 License
+
 本專案使用 **GPLv3** 授權。  
 你可以自由修改與再發佈，但需保留開源並沿用 GPL 條款。
