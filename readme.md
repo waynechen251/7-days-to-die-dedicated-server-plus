@@ -68,14 +68,14 @@ http://localhost:26902/
 - 啟動 / 關閉伺服器
 - Telnet 即時指令 (版本、玩家清單、設定查詢)
 
-### 🛠️ 開發者
+### 🛠️ Windows 開發者
 
 #### 1. 安裝 Node.js (建議 v22+)
 
 以下擇一安裝：
 
-- [Node.js](https://nodejs.org/)
 - (推薦) [nvm-windows](https://github.com/coreybutler/nvm-windows.git)
+- [Node.js](https://nodejs.org/)
 
 #### 2. 安裝依賴
 
