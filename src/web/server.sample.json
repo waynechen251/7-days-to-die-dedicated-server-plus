@@ -7,7 +7,6 @@
     "port": 26900,
     "telnetPort": 26901,
     "telnetPassword": "serverpassword",
-    "path": "C:\\Program Files (x86)\\7DTD-DS-P\\steamcmd\\7DaysToDie",
     "serverConfig": "C:\\Program Files (x86)\\7DTD-DS-P\\serverconfig.xml"
   }
 }
