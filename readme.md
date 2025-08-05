@@ -72,7 +72,10 @@ http://localhost:26902/
 
 #### 1. 安裝 Node.js (建議 v22+)
 
-- [https://nodejs.org/](https://nodejs.org/)
+以下擇一安裝：
+
+- [Node.js](https://nodejs.org/)
+- (推薦) [nvm-windows](https://github.com/coreybutler/nvm-windows.git)
 
 #### 2. 安裝依賴
 

@@ -74,7 +74,10 @@ http://localhost:26902/
 
 #### 1. Install Node.js (recommended v22+)
 
-- [https://nodejs.org/](https://nodejs.org/)
+Choose one of the following:
+
+- [Node.js](https://nodejs.org/)
+- (Recommend) [nvm-windows](https://github.com/coreybutler/nvm-windows.git)
 
 #### 2. Install dependencies
 
