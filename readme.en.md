@@ -6,8 +6,6 @@ An integrated **Web Control Panel** + **API** management tool for the 7 Days to 
 Supports installing/updating the Dedicated Server, starting, stopping, backing up save files, Telnet operations, and retrieving server information.  
 Ideal as an "all-in-one server starter pack" or for local/LAN server management solutions.
 
-![DEMO](demo.png)
-
 ---
 
 ## Features
@@ -60,6 +58,8 @@ After installation, your browser will automatically open:
 ```
 http://localhost:26902/
 ```
+
+![DEMO](demo.png)
 
 #### 3. Web Interface Features
 
