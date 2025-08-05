@@ -1,12 +1,6 @@
 {
   "web": {
-    "port": 26902,
-    "path": "C:\\Program Files (x86)\\7DTD-DS-P",
-    "saves": "C:\\Program Files (x86)\\7DTD-DS-P\\html\\saves",
-    "zipTool": "C:\\Program Files (x86)\\7-Zip\\7z.exe",
-    "startServerBat": "C:\\Program Files (x86)\\7DTD-DS-P\\scripts\\start-server.bat",
-    "updateServerBat": "C:\\Program Files (x86)\\7DTD-DS-P\\scripts\\update-server.bat",
-    "timeZone": "Asia/Taipei"
+    "port": 26902
   },
   "game_server": {
     "ip": "127.0.0.1",
@@ -14,7 +8,6 @@
     "telnetPort": 26901,
     "telnetPassword": "serverpassword",
     "path": "C:\\Program Files (x86)\\7DTD-DS-P\\steamcmd\\7DaysToDie",
-    "saves": "C:\\Users\\<username>\\AppData\\Roaming\\7DaysToDie\\Saves",
     "serverConfig": "C:\\Program Files (x86)\\7DTD-DS-P\\serverconfig.xml"
   }
 }

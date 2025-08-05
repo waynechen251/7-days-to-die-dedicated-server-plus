@@ -1,6 +1,12 @@
-#define public DEPENDENCY "..\..\dependency"
-#define public WEBSRC "..\web"
+#include "utils.iss"
+#include "config.iss"
 
+#define public DEPENDENCY "..\..\dependency"
+#define public INNOSRC "."
+#define public WEBSRC "..\web"
+#define public SCRIPTSSRC "..\scripts"
+
+#define AppServiceName "7 Days To Die Dedicated Server Plus"
 #define AppName "7DTD-DS-P"
 #define AppType "Setup"
 #define AppVersion "1.0.0"
@@ -34,12 +40,9 @@ Name: "chinesetraditional"; MessagesFile: "Languages\ChineseTraditional.isl"
 
 [Dirs]
 Name: "{app}\7-Zip"
-Name: "{app}\nodejs"
 Name: "{app}\nssm"
 Name: "{app}\scripts"
-Name: "{app}\steamcmd"
 Name: "{app}\dependency"
-Name: "{app}\node_modules"
 Name: "{app}\public"
 Name: "{app}\logs"
 
@@ -49,31 +52,199 @@ Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
 
 [Files]
 Source: "{#DEPENDENCY}\7-Zip\*"; DestDir: "{app}\7-Zip"; Flags: ignoreversion recursesubdirs
-; Source: "{#DEPENDENCY}\nginx-1.29.0\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs
-Source: "{#DEPENDENCY}\nodejs-22.18.0\node.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#DEPENDENCY}\nssm-2.24\win64\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#DEPENDENCY}\scripts\*"; DestDir: "{app}\scripts"; Flags: ignoreversion recursesubdirs
-Source: "{#DEPENDENCY}\steamcmd\steamcmd.exe"; DestDir: "{app}\steamcmd"; Flags: ignoreversion
+Source: "{#DEPENDENCY}\steamcmd\steamcmd.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#DEPENDENCY}\Amazon Root CA 1.crt"; DestDir: "{app}\dependency"; Flags: ignoreversion
 Source: "{#DEPENDENCY}\VC_redist.x64.exe"; DestDir: "{app}\dependency"; Flags: ignoreversion
-Source: "LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#WEBSRC}\node_modules\*"; DestDir: "{app}\node_modules"; Flags: ignoreversion recursesubdirs
-Source: "{#WEBSRC}\index.html"; DestDir: "{app}\public"; Flags: ignoreversion
-Source: "{#WEBSRC}\server.js"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#WEBSRC}\server.sample.json"; DestDir: "{app}"; DestName: "server.json"; Flags: ignoreversion
+Source: "{#SCRIPTSSRC}\*"; DestDir: "{app}\scripts"; Flags: ignoreversion recursesubdirs
+Source: "{#WEBSRC}\public\index.html"; DestDir: "{app}\public"; Flags: ignoreversion
+Source: "{#WEBSRC}\server.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#INNOSRC}\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 
-[Run]
-Filename: "{app}\dependency\VC_redist.x64.exe"; Parameters: "/passive /norestart"; Flags: waituntilterminated
-Filename: "{cmd}"; Parameters: "/C certutil -addstore -f Root ""{app}\dependency\Amazon Root CA 1.crt"""; Flags: waituntilterminated
-Filename: "{app}\nssm.exe"; Parameters: "install 7DTD-DS-P """"{app}\node.exe"""" """"{app}\server.js"""""; Flags: waituntilterminated
-Filename: "{app}\nssm.exe"; Parameters: "set 7DTD-DS-P AppDirectory """"{app}"""""; Flags: waituntilterminated
-Filename: "{app}\nssm.exe"; Parameters: "set 7DTD-DS-P AppStdout """"{app}\logs\stdout.log"""""; Flags: waituntilterminated
-Filename: "{app}\nssm.exe"; Parameters: "set 7DTD-DS-P AppStderr """"{app}\logs\stderr.log"""""; Flags: waituntilterminated
-Filename: "{app}\nssm.exe"; Parameters: "set 7DTD-DS-P AppRotateFiles 1"; Flags: waituntilterminated
-Filename: "{app}\nssm.exe"; Parameters: "start 7DTD-DS-P"; Flags: waituntilterminated
-Filename: "{cmd}"; Parameters: "/C start http://localhost:26902"; Flags: waituntilterminated
+[Code]
+procedure CurPageChanged(CurPageID: Integer);
+begin
 
+  if CurPageID = wpPreparing then
+    begin
 
-[UninstallRun]
-Filename: "{app}\nssm.exe"; Parameters: "stop 7DTD-DS-P"; Flags: waituntilterminated
-Filename: "{app}\nssm.exe"; Parameters: "remove 7DTD-DS-P confirm"; Flags: waituntilterminated
+      Log('CurPageChanged: wpPreparing');
+
+    end;
+
+  if CurPageID = wpInstalling then
+    begin
+
+      Log('CurPageChanged: wpInstalling');
+
+    end;
+
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  ResultCode: Integer;
+
+begin
+
+  Log('CurStepChanged: CurStep=' + IntToStr(Ord(CurStep)));
+
+  // 執行文件安裝的主要步驟
+  if CurStep = ssinstall then
+    begin
+
+      Exec('cmd.exe', '/C net stop {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      Exec('cmd.exe', '/C sc delete {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+      Exec('{app}\dependency\VC_redist.x64.exe', '/passive /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
+      Exec('cmd.exe', '/C certutil -addstore -f Root "{app}\dependency\Amazon Root CA 1.crt"', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
+
+    end;
+
+  // 文件安裝結束後的步驟
+  if CurStep = ssPostInstall then
+    begin
+
+      Log('CurStepChanged: ssPostInstall');
+
+      Log('CurStepChanged: ssDone');
+
+      // 安裝服務（注意：路徑與參數分開）
+      Exec(ExpandConstant('{app}\nssm.exe'),
+        'install {#AppName} ' + '"' + ExpandConstant('{app}\server.exe') + '"',
+        '', SW_HIDE, ewWaitUntilTerminated, ResultCode
+      );
+
+      // 設定顯示名稱
+      Exec(ExpandConstant('{app}\nssm.exe'),
+        'set {#AppName} DisplayName "' + ExpandConstant('{#AppServiceName}') + '"',
+        '', SW_HIDE, ewWaitUntilTerminated, ResultCode
+      );
+
+      // 設定工作目錄
+      Exec(ExpandConstant('{app}\nssm.exe'),
+        'set {#AppName} AppDirectory "' + ExpandConstant('{app}') + '"',
+        '', SW_HIDE, ewWaitUntilTerminated, ResultCode
+      );
+
+      // 設定輸入 / 輸出 / 錯誤日誌
+      Exec(ExpandConstant('{app}\nssm.exe'),
+        'set {#AppName} AppStdout "' + ExpandConstant('{app}\logs\stdout.log') + '"',
+        '', SW_HIDE, ewWaitUntilTerminated, ResultCode
+      );
+      Exec(ExpandConstant('{app}\nssm.exe'),
+        'set {#AppName} AppStderr "' + ExpandConstant('{app}\logs\stderr.log') + '"',
+        '', SW_HIDE, ewWaitUntilTerminated, ResultCode
+      );
+
+      // 開啟日誌輪替
+      Exec(ExpandConstant('{app}\nssm.exe'),
+        'set {#AppName} AppRotateFiles 1',
+        '', SW_HIDE, ewWaitUntilTerminated, ResultCode
+      );
+
+      // 設定啟動模式為手動
+      Exec('sc.exe',
+        'config {#AppName} start= demand',
+        '', SW_HIDE, ewWaitUntilTerminated, ResultCode
+      );
+
+      // 註冊防火牆
+      AddPortsInFirewall('{#AppServiceName}', WebPortInput.Text);
+
+      // 寫入 server.json 配置 json-helper.ps1
+      // powershell.exe -ExecutionPolicy Bypass -File ".\json-helper.ps1" -jsonPath "json.json" -webPort "1" -game_serverIp "2" -game_serverPort "3" -game_serverTelnetPort "4" -game_serverTelnetPassword "5"
+      Exec('powershell.exe',
+        '-ExecutionPolicy Bypass -File "' + ExpandConstant('{app}\scripts\json-helper.ps1') + '" ' +
+        '-jsonPath "' + ExpandConstant('{app}\server.json') + '" ' +
+        '-webPort "' + WebPortInput.Text + '" ' +
+        '-game_serverIp "' + GameServerPortInput.Text + '" ' +
+        '-game_serverPort "' + GameServerTelnetPortInput.Text + '" ' +
+        '-game_serverTelnetPort "' + GameServerTelnetPortInput.Text + '" ' +
+        '-game_serverTelnetPassword "' + GameServerTelnetPasswordInput.Text + '"',
+        '', SW_HIDE, ewWaitUntilTerminated, ResultCode
+      );
+
+    end;
+
+  // 最後的安裝完成步驟
+  if CurStep = ssDone then
+    begin
+
+      // 啟動服務（如果需要安裝完成後直接啟動）
+      Exec('cmd.exe', '/C net start {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+      // 開啟瀏覽器
+      Exec('cmd.exe', '/C start http://localhost:26902', '', SW_HIDE, ewNoWait, ResultCode);
+
+    end;
+
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  ResultCode: Integer;
+
+begin
+
+  // 解除安裝前
+  if CurUninstallStep = usUninstall then
+  begin
+
+    Log('CurUninstallStepChanged: 停止並刪除服務 {#AppName}');
+    Exec('cmd.exe', '/C net stop {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    Exec('cmd.exe', '/C sc delete {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    Exec(ExpandConstant('{sys}\netsh.exe'), 'advfirewall firewall delete rule name="' + ExpandConstant('{#AppServiceName}') + '"', ExpandConstant('{sys}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  end;
+
+end;
+
+// 初始化安裝向导
+procedure InitializeWizard();
+begin
+
+  Log('InitializeWizard');
+
+  // 配置页面
+  CreateConfigPage();
+
+end;
+
+// 下一步按鈕點擊事件
+function NextButtonClick(CurPageID: Integer): Boolean;
+var CanPass: Boolean;
+
+begin
+
+  Log('NextButtonClick: CurPageID=' + IntToStr(CurPageID));
+
+  CanPass := True;
+
+  if Assigned(ConfigPage) and (CurPageID = ConfigPageID) then
+  begin
+
+    if ConfigCheck() = False then
+    begin
+
+      CanPass := False;
+      Exit;
+
+    end;
+
+  end;
+
+  if CanPass then
+  begin
+
+    Result := True;
+
+  end
+  else
+  begin
+
+    Result := False;
+
+  end;
+    
+end;

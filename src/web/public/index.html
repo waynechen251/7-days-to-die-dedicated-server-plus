@@ -44,7 +44,7 @@
 
     <h2>🗂️ 管理後台</h2>
     <div>
-      <button id="viewAdminSettingsBtn">⚙️ 查看管理後台設定</button>
+      <button id="viewConfigBtn">⚙️ 查看管理後台設定</button>
       <button id="viewSavesBtn">📂 查看伺服器存檔清單</button>
       <button id="backupBtn">💾 備份伺服器存檔</button>
       <button id="startServerGUIBtn">▶️ 啟動伺服器(GUI)</button>
@@ -62,7 +62,6 @@
     <textarea
       id="output"
       readonly
-      placeholder="執行結果會顯示在這裡..."
     ></textarea>
 
     <script>
@@ -76,9 +75,14 @@
         fetchApi("/api/view-saves", { method: "POST" });
       }
 
-      function viewAdminSettings() {
-        fetch("/api/view-admin-settings", { method: "POST" })
-          .then((res) => res.json())
+      function viewConfig() {
+        fetch("/api/view-config", { method: "POST" })
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+          })
           .then((data) => {
             document.getElementById("output").value = JSON.stringify(
               data,
@@ -94,9 +98,7 @@
 
       const installServerBtn = document.getElementById("installServerBtn");
       const backupBtn = document.getElementById("backupBtn");
-      const viewAdminSettingsBtn = document.getElementById(
-        "viewAdminSettingsBtn"
-      );
+      const viewConfigBtn = document.getElementById("viewConfigBtn");
       const viewSavesBtn = document.getElementById("viewSavesBtn");
       const startServerGUIBtn = document.getElementById("startServerGUIBtn");
       const startServerNOGUIBtn = document.getElementById(
@@ -120,18 +122,20 @@
         const controller = new AbortController();
         const timer = setTimeout(() => controller.abort(), timeoutMs);
 
+        const output = document.getElementById("output");
+
         try {
           const res = await fetch("/api/backup", {
             method: "POST",
             signal: controller.signal,
           });
           const text = await res.text();
-          alert(text);
+          output.value = text; // 將結果顯示在 console 區塊
         } catch (err) {
           if (err.name === "AbortError") {
-            alert("❌ 已超時，請稍後再試");
+            output.value = "❌ 已超時，請稍後再試";
           } else {
-            alert("❌ 發生錯誤：" + err.message);
+            output.value = "❌ 發生錯誤：" + err.message;
           }
         } finally {
           clearTimeout(timer);
@@ -169,9 +173,10 @@
       // 綁定按鈕事件
       backupBtn.addEventListener("click", onBackupClick);
       viewSavesBtn.addEventListener("click", viewSaves);
-      startServerBtn.addEventListener("click", startServer);
+      startServerGUIBtn.addEventListener("click", startServerGUI);
+      startServerNOGUIBtn.addEventListener("click", startServerNOGUI);
       stopServerBtn.addEventListener("click", stopServer);
-      viewAdminSettingsBtn.addEventListener("click", viewAdminSettings);
+      viewConfigBtn.addEventListener("click", viewConfig);
     </script>
   </body>
 </html>
