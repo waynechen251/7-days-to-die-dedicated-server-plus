@@ -45,6 +45,8 @@ Ideal as an "all-in-one server starter pack" or for local/LAN server management 
 
 #### 1. Download and run the installer
 
+![Setup](demo-setup-en.png)
+
 The installer will:
 
 - Install required tools (7-Zip / steamcmd / nssm)

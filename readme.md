@@ -45,6 +45,8 @@
 
 #### 1. 下載安裝包並執行
 
+![Setup](demo-setup-cht.png)
+
 安裝程式會：
 
 - 安裝依賴工具 (7-Zip / steamcmd / nssm)
