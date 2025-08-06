@@ -104,7 +104,7 @@ npm start
 結束安裝後，瀏覽器將自動開啟：
 
 ```
-http://localhost:26903/
+http://localhost:26902/
 ```
 
 ![DEMO](demo.png)

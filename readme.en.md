@@ -107,7 +107,7 @@ npm start
 5. Access the admin panel
 
 ```bat
-http://localhost:26903/
+http://localhost:26902/
 ```
 
 ## Common API Endpoints

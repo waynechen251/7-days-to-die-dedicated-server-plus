@@ -3,7 +3,6 @@
     "port": 26902
   },
   "game_server": {
-    "ip": "127.0.0.1",
     "port": 26900,
     "telnetPort": 26901,
     "telnetPassword": "serverpassword",
