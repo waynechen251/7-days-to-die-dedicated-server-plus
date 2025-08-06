@@ -86,6 +86,7 @@ Choose one of the following:
 ```bat
 cd src\web
 npm install
+npm install pkg -g
 ```
 
 #### 3. Create the config file

@@ -82,6 +82,7 @@ http://localhost:26902/
 ```bat
 cd src\web
 npm install
+npm install pkg -g
 ```
 
 #### 3. 建立設定檔
