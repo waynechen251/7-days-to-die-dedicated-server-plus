@@ -36,7 +36,9 @@ app.use(express.static(path.join(baseDir, "public")));
 
 function loadConfig() {
   try {
-    const rawData = fs.readFileSync(serverJsonPath, "utf-8").replace(/^\uFEFF/, "");
+    const rawData = fs
+      .readFileSync(serverJsonPath, "utf-8")
+      .replace(/^\uFEFF/, "");
     const config = JSON.parse(rawData);
     console.log("✅ 成功讀取設定檔:", serverJsonPath);
     console.log("管理後台設定:", config);
@@ -58,9 +60,12 @@ app.post("/api/view-saves", (_, res) => {
   }
 
   fs.readdir(backupSavesPath, (err, files) => {
-    if (err) return res.status(500).send(`❌ 讀取存檔失敗:\n${err}`);
+    if (err) return sendError(res, `❌ 讀取存檔失敗:\n${err}`);
     const saves = files.filter((file) => file.endsWith(".zip"));
-    res.send(saves.join("\n"));
+    if (saves.length === 0) {
+      return sendResponse(res, "❌ 沒有找到任何存檔");
+    }
+    sendResponse(res, `✅ 找到以下存檔:\n${saves.join("\n")}`);
   });
 });
 
@@ -81,34 +86,34 @@ app.post("/api/backup", async (_, res) => {
       "*"
     )}"`;
     const { stdout } = await execAsync(zipCmd);
-    res.send(`✅ 備份完成: ${zipName}\n${stdout}`);
+    sendResponse(res, `✅ 備份完成: ${zipName}\n${stdout}`);
   } catch (err) {
-    res.status(500).send(`❌ 備份失敗:\n${err}`);
+    sendError(res, `❌ 備份失敗:\n${err}`);
   }
 });
 
 // 安裝 / 更新伺服器
 app.post("/api/install", async (req, res) => {
-  const version = req.body.version || "";
+  const version = req.body?.version ?? "";
   try {
     const cmd = `cmd /c start "" "${updateServerBatPath}" ${version}`;
     await execAsync(cmd);
-    res.send(`✅ 安裝 / 更新已觸發，請稍候伺服器更新...`);
+    sendResponse(res, `✅ 安裝 / 更新已觸發，請稍候伺服器更新...`);
   } catch (err) {
-    res.status(500).send(`❌ 安裝 / 更新失敗:\n${err}`);
+    sendError(res, `❌ 安裝 / 更新失敗:\n${err}`);
   }
 });
 
 // 啟動伺服器
 app.post("/api/start", async (req, res) => {
-  const { nographics } = req.body;
+  const nographics = req.body?.nographics ?? false;
   try {
     const noguiFlag = nographics ? "-nographics" : "";
     const cmd = `cmd /c start "" "${startServerBatPath}" ${noguiFlag}`;
     await execAsync(cmd);
-    res.send(`✅ 啟動已觸發，請稍候伺服器啟動...`);
+    sendResponse(res, `✅ 啟動伺服器已觸發，請稍候伺服器啟動...`);
   } catch (err) {
-    res.status(500).send(`❌ 啟動失敗:\n${err}`);
+    sendError(res, `❌ 啟動伺服器失敗:\n${err}`);
   }
 });
 
@@ -116,22 +121,22 @@ app.post("/api/start", async (req, res) => {
 app.post("/api/stop", async (_, res) => {
   try {
     const result = await sendTelnetCommand("shutdown");
-    res.send(`✅ 關閉指令已發送:\n${result}`);
+    sendResponse(res, `✅ 關閉伺服器指令已發送:\n${result}`);
   } catch (err) {
-    res.status(500).send(`❌ 關閉失敗:\n${err.message}`);
+    sendError(res, `❌ 關閉伺服器失敗:\n${err.message}`);
   }
 });
 
 // 發送 Telnet 指令
 app.post("/api/telnet", async (req, res) => {
-  const { command } = req.body;
+  const command = req.body?.command ?? "";
   if (!command) return res.status(400).send("❌ 請提供 Telnet 指令");
 
   try {
     const result = await sendTelnetCommand(command);
-    res.send(`✅ 結果:\n${result}`);
+    sendResponse(res, `✅ 結果:\n${result}`);
   } catch (err) {
-    res.status(500).send("❌ Telnet 連線失敗:\n" + err.message);
+    sendError(res, `❌ Telnet 連線失敗:\n${err.message}`);
   }
 });
 
@@ -140,10 +145,13 @@ app.post("/api/view-config", (_, res) => {
   try {
     const config = getConfig();
     console.log("✅ 讀取管理後台設定:", config);
-    res.json(config);
+    sendResponse(
+      res,
+      `✅ 讀取管理後台設定成功:\n${JSON.stringify(config, null, 2)}`
+    );
   } catch (err) {
     console.error(`❌ 讀取管理後台設定失敗:\n${err.message}`);
-    res.status(500).send(`❌ 讀取管理後台設定失敗:\n${err.message}`);
+    sendError(res, `❌ 讀取管理後台設定失敗:\n${err.message}`);
   }
 });
 
@@ -171,6 +179,17 @@ async function sendTelnetCommand(command) {
       `連線或指令執行失敗: ${err.message}\n執行的命令: ${command}`
     );
   }
+}
+
+function sendResponse(res, message, status = 200) {
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+  res.status(status).send(message);
+}
+
+function sendError(res, message, status = 500) {
+  console.error(message);
+  sendResponse(res, message, status);
+  res.status(status).end();
 }
 
 app.listen(CONFIG.web.port, () => {
