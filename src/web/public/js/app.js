@@ -8,20 +8,10 @@ const startServerNOGUIBtn = document.getElementById("startServerNOGUIBtn");
 const stopServerBtn = document.getElementById("stopServerBtn");
 const versionSelect = document.getElementById("versionSelect");
 const abortInstallBtn = document.getElementById("abortInstallBtn");
-
-function updateOutput(message, append = true) {
-  const output = document.getElementById("output");
-  if (append) {
-    output.value += message;
-    output.scrollTop = output.scrollHeight;
-  } else {
-    output.value = message;
-  }
-}
+const serverStatusElement = document.getElementById("serverStatus");
 
 async function onBackupClick() {
   backupBtn.disabled = true;
-  backupBtn.textContent = "備份中…";
 
   const timeoutMs = 30000;
   const controller = new AbortController();
@@ -43,7 +33,43 @@ async function onBackupClick() {
   } finally {
     clearTimeout(timer);
     backupBtn.disabled = false;
-    backupBtn.textContent = "💾 備份伺服器存檔";
+  }
+}
+
+function updateServerStatus() {
+  fetch("/api/server-status", { method: "POST" })
+    .then((res) => {
+      if (!res.ok) throw new Error("server-api-fail");
+      return res.json();
+    })
+    .then((data) => {
+      switch (data.status) {
+        case "online":
+          serverStatusElement.textContent = "✅ 遊戲伺服器運行中";
+          break;
+        case "telnet-fail":
+          serverStatusElement.textContent = "❌ 無法連接到遊戲伺服器";
+          break;
+        default:
+          serverStatusElement.textContent = "❓ 未知狀態";
+      }
+    })
+    .catch((err) => {
+      serverStatusElement.textContent = `❌ 無法獲取管理後台狀態: ${err.message}`;
+    })
+    .finally(() => {
+      setTimeout(updateServerStatus, 5000);
+    });
+}
+updateServerStatus();
+
+function updateOutput(message, append = true) {
+  const output = document.getElementById("output");
+  if (append) {
+    output.value += message;
+    output.scrollTop = output.scrollHeight;
+  } else {
+    output.value = message;
   }
 }
 

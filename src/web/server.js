@@ -230,6 +230,16 @@ app.post("/api/view-config", (_, res) => {
   }
 });
 
+// 輪詢遊戲伺服器
+app.post("/api/server-status", async (_, res) => {
+  try {
+    await sendTelnetCommand("version");
+    res.json({ status: "online" });
+  } catch (err) {
+    res.json({ status: "telnet-fail" });
+  }
+});
+
 // Telnet 指令發送
 async function sendTelnetCommand(command) {
   const connection = new TelnetClient();

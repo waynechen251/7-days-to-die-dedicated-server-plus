@@ -33,14 +33,19 @@
     <h2>🗂️ 管理後台</h2>
     <div>
       <button id="viewConfigBtn">⚙️ 查看管理後台設定</button>
-      <button id="viewSavesBtn">📂 查看伺服器存檔清單</button>
+      <button id="viewSavesBtn">📂 查看伺服器備份存檔清單</button>
       <button id="backupBtn">💾 備份伺服器存檔</button>
+    </div>
+
+    <h2>📡 伺服器管理</h2>
+    <div>
       <button id="startServerGUIBtn">▶️ 啟動伺服器(GUI)</button>
       <button id="startServerNOGUIBtn">▶️ 啟動伺服器(NO GUI)</button>
       <button id="stopServerBtn">⏹️ 關閉伺服器</button>
     </div>
 
     <h2>📡 伺服器資訊</h2>
+    <div id="serverStatus"></div>
     <div>
       <button onclick="sendTelnet('version')">🔍 查看版本</button>
       <button onclick="sendTelnet('listplayers')">🧑‍🤝‍🧑 玩家清單</button>
