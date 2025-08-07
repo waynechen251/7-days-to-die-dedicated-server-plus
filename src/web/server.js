@@ -6,6 +6,8 @@ const TelnetClient = require("telnet-client");
 const { promisify } = require("util");
 const { spawn } = require("child_process");
 const dayjs = require("dayjs");
+// Custom utility functions
+const processManager = require("./processManager");
 
 const execAsync = promisify(exec);
 
@@ -31,6 +33,7 @@ const zipExePath = path.join(baseDir, "7-Zip", "7z.exe");
 const backupSavesPath = path.join(baseDir, "public", "saves");
 
 let steamCmdChild = null;
+let sevenDaysToDieServerChild = false;
 
 const app = express();
 app.use(express.json());
@@ -103,69 +106,70 @@ app.post("/api/backup", async (_, res) => {
   }
 });
 
-// 安裝 / 更新伺服器
-app.post("/api/install", (req, res) => {
-  if (steamCmdChild) {
-    sendResponse(res, "❌ 安裝已經在進行中，請先中斷再試。");
-    return;
+// 查詢進程狀態
+app.get("/api/process-status", async (_, res) => {
+  try {
+    await processManager.gameServer.checkTelnet(CONFIG.game_server);
+    const status = {
+      steamCmd: {
+        isRunning: processManager.steamCmd.isRunning,
+      },
+      gameServer: {
+        isRunning: processManager.gameServer.isRunning,
+        isTelnetConnected: processManager.gameServer.isTelnetConnected,
+      },
+    };
+    res.status(200).json(status);
+  } catch (err) {
+    console.error("❌ 無法查詢進程狀態:", err);
+    res.status(500).json({ error: "無法查詢進程狀態" });
   }
+});
 
-  const version = req.body?.version ?? "";
-  const args = [
-    "+login",
-    "anonymous",
-    "+force_install_dir",
-    "..\\7DaysToDieServer",
-    "+app_update",
-    "294420",
-    ...(version ? ["-beta", version] : []),
-    "validate",
-    "+quit",
-  ];
+// 使用進程管理器啟動 steamcmd
+app.post("/api/install", (req, res) => {
+  try {
+    const version = req.body?.version ?? "";
+    const args = [
+      "+login",
+      "anonymous",
+      "+force_install_dir",
+      "..\\7DaysToDieServer",
+      "+app_update",
+      "294420",
+      ...(version ? ["-beta", version] : []),
+      "validate",
+      "+quit",
+    ];
 
-  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    processManager.steamCmd.start(
+      args,
+      (data) => res.write(`[stdout] ${data}`),
+      (err) => res.write(`[stderr] ${err}`),
+      (code) => res.end(`\n✅ 安裝 / 更新結束，Exit Code: ${code}\n`)
+    );
+  } catch (err) {
+    sendError(res, `❌ 無法啟動 steamcmd: ${err.message}`);
+  }
+});
 
-  steamCmdChild = spawn(path.join("steamcmd", "steamcmd.exe"), args, {
-    stdio: ["pipe", "pipe", "pipe"],
-  });
-
-  // 強制關閉 stdin，避免等待輸入
-  steamCmdChild.stdin.end();
-
-  // 安全 timeout（例如 5 分鐘後自動殺掉）
-  // const timeout = setTimeout(() => {
-  //   if (steamCmdChild) {
-  //     console.log("⏱ 自動中止安裝：超過 5 分鐘");
-  //     steamCmdChild.kill("SIGTERM");
-  //     steamCmdChild = null;
-  //   }
-  // }, 5 * 60 * 1000);
-
-  steamCmdChild.stdout.on("data", (data) => {
-    const text = data.toString();
-    res.write(`[stdout] ${text}`);
-    console.log(`[stdout-steamcmd] ${text}`);
-  });
-
-  steamCmdChild.stderr.on("data", (data) => {
-    const text = data.toString();
-    res.write(`[stderr] ${text}`);
-    console.error(`[stderr-steamcmd] ${text}`);
-  });
-
-  steamCmdChild.on("close", (code) => {
-    clearTimeout(timeout);
-    res.write(`\n✅ 安裝 / 更新結束，Exit Code: ${code}\n`);
-    res.end();
-    destroySteamCmdChild();
-  });
-
-  steamCmdChild.on("error", (err) => {
-    clearTimeout(timeout);
-    res.write(`❌ 發生錯誤: ${err.message}\n`);
-    res.end();
-    destroySteamCmdChild();
-  });
+// 使用進程管理器啟動遊戲伺服器
+app.post("/api/start", (req, res) => {
+  try {
+    const args = [
+      "-logfile",
+      path.join(baseDir, "output_log.txt"),
+      "-quit",
+      "-batchmode",
+      "-nographics",
+      "-configfile=serverconfig.xml",
+      "-dedicated",
+    ];
+    processManager.gameServer.start(args, baseDir);
+    sendResponse(res, "✅ 遊戲伺服器已啟動");
+  } catch (err) {
+    sendError(res, `❌ 無法啟動遊戲伺服器: ${err.message}`);
+  }
 });
 
 // 中止安裝 / 更新伺服器
@@ -181,14 +185,52 @@ app.post("/api/install-abort", (_, res) => {
 
 // 啟動伺服器
 app.post("/api/start", async (req, res) => {
-  const nographics = req.body?.nographics ?? false;
+  if (sevenDaysToDieServerChild) {
+    return sendResponse(res, "❌ 伺服器已經在運行中，請先關閉伺服器再試。");
+  }
+
   try {
-    const noguiFlag = nographics ? "-nographics" : "";
-    const cmd = `cmd /c start "" "${startServerBatPath}" ${noguiFlag}`;
-    await execAsync(cmd);
-    sendResponse(res, `✅ 啟動伺服器已觸發，請稍候伺服器啟動...`);
+    const exeName = fs.existsSync(path.join(baseDir, "7DaysToDieServer.exe"))
+      ? "7DaysToDieServer.exe"
+      : "7DaysToDie.exe";
+
+    const logPrefix =
+      exeName === "7DaysToDieServer.exe" ? "output_log_dedi" : "output_log";
+
+    const timestamp = formatDate(new Date(), "YYYY-MM-DD__HH-mm-ss");
+    const logFileName = `${logPrefix}__${timestamp}.txt`;
+    const logFilePath = path.join(baseDir, logFileName);
+
+    console.log(`📝 日誌將寫入: ${logFilePath}`);
+
+    fs.writeFileSync(path.join(baseDir, "steam_appid.txt"), "251570");
+
+    process.env.SteamAppId = "251570";
+    process.env.SteamGameId = "251570";
+
+    const exePath = path.join(baseDir, exeName);
+    const args = [
+      "-logfile",
+      logFilePath,
+      "-quit",
+      "-batchmode",
+      "-nographics",
+      "-configfile=serverconfig.xml",
+      "-dedicated",
+    ];
+
+    sevenDaysToDieServerChild = spawn(exePath, args, {
+      cwd: baseDir,
+      detached: true,
+      stdio: "ignore",
+    });
+
+    sevenDaysToDieServerChild.unref();
+
+    return sendResponse(res, `✅ 伺服器已啟動，日誌: ${logFileName}`);
   } catch (err) {
-    sendError(res, `❌ 啟動伺服器失敗:\n${err}`);
+    console.error("❌ 伺服器啟動失敗:", err);
+    return sendError(res, `❌ 啟動伺服器失敗:\n${err.message}`);
   }
 });
 
@@ -235,8 +277,10 @@ app.post("/api/server-status", async (_, res) => {
   try {
     await sendTelnetCommand("version");
     res.json({ status: "online" });
+    sevenDaysToDieServerChild = true;
   } catch (err) {
     res.json({ status: "telnet-fail" });
+    sevenDaysToDieServerChild = false;
   }
 });
 

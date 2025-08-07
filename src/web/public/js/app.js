@@ -36,30 +36,32 @@ async function onBackupClick() {
   }
 }
 
-function updateServerStatus() {
-  fetch("/api/server-status", { method: "POST" })
-    .then((res) => {
-      if (!res.ok) throw new Error("server-api-fail");
-      return res.json();
-    })
-    .then((data) => {
-      switch (data.status) {
-        case "online":
-          serverStatusElement.textContent = "✅ 遊戲伺服器運行中";
-          break;
-        case "telnet-fail":
-          serverStatusElement.textContent = "❌ 無法連接到遊戲伺服器";
-          break;
-        default:
-          serverStatusElement.textContent = "❓ 未知狀態";
-      }
-    })
-    .catch((err) => {
-      serverStatusElement.textContent = `❌ 無法獲取管理後台狀態: ${err.message}`;
-    })
-    .finally(() => {
-      setTimeout(updateServerStatus, 5000);
-    });
+// 定義伺服器狀態更新函式
+async function updateServerStatus() {
+  try {
+    const res = await fetch("/api/process-status");
+    if (!res.ok) {
+      throw new Error(`HTTP 錯誤: ${res.status} ${res.statusText}`);
+    }
+
+    const status = await res.json();
+    const gameServerStatus = status.gameServer?.isRunning
+      ? `運行中 (Telnet ${
+          status.gameServer.isTelnetConnected ? "正常" : "異常"
+        })`
+      : "未運行";
+
+    const steamCmdStatus = status.steamCmd?.isRunning
+      ? "SteamCMD: 運行中"
+      : "SteamCMD: 未運行";
+
+    serverStatusElement.textContent = `遊戲伺服器狀態：${gameServerStatus} | ${steamCmdStatus}`;
+  } catch (err) {
+    serverStatusElement.textContent = "管理後台狀態: ❌ 無法獲取狀態";
+    console.error("❌ 無法獲取管理後台狀態: ", err);
+  } finally {
+    setTimeout(updateServerStatus, 5000);
+  }
 }
 updateServerStatus();
 
