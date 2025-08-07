@@ -5,6 +5,7 @@ const fs = require("fs");
 const TelnetClient = require("telnet-client");
 const { promisify } = require("util");
 const { spawn } = require("child_process");
+const dayjs = require("dayjs");
 
 const execAsync = promisify(exec);
 
@@ -27,8 +28,6 @@ const serverJsonPath = fs.existsSync(path.join(baseDir, "server.json"))
 const CONFIG = loadConfig();
 
 const zipExePath = path.join(baseDir, "7-Zip", "7z.exe");
-const startServerBatPath = path.join(baseDir, "scripts", "start-server.bat");
-const updateServerBatPath = path.join(baseDir, "scripts", "update-server.bat");
 const backupSavesPath = path.join(baseDir, "public", "saves");
 
 let steamCmdChild = null;
@@ -68,7 +67,16 @@ app.post("/api/view-saves", (_, res) => {
     if (saves.length === 0) {
       return sendResponse(res, "❌ 沒有找到任何存檔");
     }
-    sendResponse(res, `✅ 找到以下存檔:\n${saves.join("\n")}`);
+    // 取得詳細檔案資訊
+    const details = saves.map((file) => {
+      const filePath = path.join(backupSavesPath, file);
+      const stats = fs.statSync(filePath);
+      const size = stats.size;
+      const date = formatDate(stats.mtime);
+      const sizeStr = formatBytes(size);
+      return `${file} (${sizeStr}, ${date})`;
+    });
+    sendResponse(res, `✅ 找到以下存檔:\n${details.join("\n")}`);
   });
 });
 
@@ -76,7 +84,7 @@ app.post("/api/view-saves", (_, res) => {
 app.post("/api/backup", async (_, res) => {
   try {
     const now = new Date();
-    const timestamp = now.toISOString().replace(/[-:T]/g, "").slice(0, 14);
+    const timestamp = formatDate(now, "YYYYMMDDHHmmss");
     const zipName = `Saves-${timestamp}.zip`;
     const outputPath = path.join(backupSavesPath, zipName);
 
@@ -254,6 +262,22 @@ function destroySteamCmdChild() {
     steamCmdChild = null;
     console.log("✅ steamcmd 子進程已銷毀");
   }
+}
+
+function formatBytes(size) {
+  if (size >= 1024 * 1024 * 1024) {
+    return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  } else if (size >= 1024 * 1024) {
+    return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+  } else if (size >= 1024) {
+    return `${(size / 1024).toFixed(2)} KB`;
+  } else {
+    return `${size} B`;
+  }
+}
+
+function formatDate(date, format = "YYYY-MM-DD HH:mm:ss") {
+  return dayjs(date).format(format);
 }
 
 function sendResponse(res, message, status = 200) {

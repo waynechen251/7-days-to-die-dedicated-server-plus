@@ -21,3 +21,15 @@ textarea {
   white-space: pre-wrap;
   resize: none;
 }
+
+.toolbar {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.github-link {
+  text-decoration: none;
+  color: #007BFF;
+  font-weight: bold;
+  font-size: 18px;
+}

@@ -9,7 +9,7 @@ const stopServerBtn = document.getElementById("stopServerBtn");
 const versionSelect = document.getElementById("versionSelect");
 const abortInstallBtn = document.getElementById("abortInstallBtn");
 
-function updateOutput(message, append = false) {
+function updateOutput(message, append = true) {
   const output = document.getElementById("output");
   if (append) {
     output.value += message;
@@ -54,7 +54,7 @@ async function fetchApi(url, options = {}) {
     const text = await res.text();
     updateOutput(text);
   } catch (err) {
-    updateOutput("❌ 發生錯誤：" + err.message);
+    updateOutput(`❌ 發生錯誤：${err.message}`);
   }
 }
 
@@ -63,13 +63,7 @@ function viewSaves() {
 }
 
 function viewConfig() {
-  fetch("/api/view-config", { method: "POST" })
-    .then((res) => {
-      if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-      return res.json();
-    })
-    .then((data) => updateOutput(JSON.stringify(data, null, 2)))
-    .catch((err) => updateOutput("❌ 發生錯誤：" + err.message));
+  fetchApi("/api/view-config", { method: "POST" });
 }
 
 function startServerGUI() {
@@ -108,19 +102,20 @@ installServerBtn.addEventListener("click", () => {
         reader.read().then(({ done, value }) => {
           if (done) return;
           const text = decoder.decode(value);
-          updateOutput(text, true);
+          updateOutput(text);
           read();
         });
       }
       read();
-    });
+    })
+    .catch((err) => updateOutput(`❌ 發生錯誤：${err.message}`));
 });
 
 abortInstallBtn.addEventListener("click", () => {
   fetch("/api/install-abort", { method: "POST" })
     .then((res) => res.text())
-    .then((text) => updateOutput(text, true))
-    .catch((err) => updateOutput("❌ 發生錯誤：" + err.message));
+    .then((text) => updateOutput(text))
+    .catch((err) => updateOutput(`❌ 發生錯誤：${err.message}`));
 });
 
 backupBtn.addEventListener("click", onBackupClick);
