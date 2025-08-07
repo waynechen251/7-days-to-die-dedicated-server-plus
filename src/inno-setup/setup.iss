@@ -41,6 +41,7 @@ Name: "chinesetraditional"; MessagesFile: "Languages\ChineseTraditional.isl"
 [Dirs]
 Name: "{app}\7-Zip"
 Name: "{app}\nssm"
+Name: "{app}\steamcmd"
 Name: "{app}\scripts"
 Name: "{app}\dependency"
 Name: "{app}\public"
@@ -53,11 +54,11 @@ Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
 [Files]
 Source: "{#DEPENDENCY}\7-Zip\*"; DestDir: "{app}\7-Zip"; Flags: ignoreversion recursesubdirs
 Source: "{#DEPENDENCY}\nssm-2.24\win64\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#DEPENDENCY}\steamcmd\steamcmd.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#DEPENDENCY}\steamcmd\*"; DestDir: "{app}\steamcmd"; Flags: ignoreversion recursesubdirs
 Source: "{#DEPENDENCY}\Amazon Root CA 1.crt"; DestDir: "{app}\dependency"; Flags: ignoreversion
 Source: "{#DEPENDENCY}\VC_redist.x64.exe"; DestDir: "{app}\dependency"; Flags: ignoreversion
 Source: "{#SCRIPTSSRC}\*"; DestDir: "{app}\scripts"; Flags: ignoreversion recursesubdirs
-Source: "{#WEBSRC}\public\index.html"; DestDir: "{app}\public"; Flags: ignoreversion
+Source: "{#WEBSRC}\public\*"; DestDir: "{app}\public"; Flags: ignoreversion recursesubdirs
 Source: "{#WEBSRC}\server.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#WEBSRC}\server.sample.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#INNOSRC}\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion

@@ -3,37 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <title>7 Days To Die Dedicated Server Plus 控制台</title>
-    <style>
-      body {
-        font-family: sans-serif;
-        padding: 1rem;
-        background-color: #f8f8f8;
-      }
-
-      h2 {
-        margin-top: 2rem;
-        color: #333;
-      }
-
-      button {
-        margin: 0.5rem 0.25rem;
-        padding: 0.5rem 1rem;
-      }
-
-      textarea {
-        width: 100%;
-        height: 40vh;
-        font-family: monospace;
-        white-space: pre-wrap;
-        resize: none;
-      }
-    </style>
+    <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
     <h1>7 Days To Die Dedicated Server Plus 控制面板</h1>
 
     <h2>⚙️ 安裝或更新 Dedicated Server</h2>
     <button id="installServerBtn">📥 安裝 / 更新 Dedicated Server</button>
+    <button id="abortInstallBtn">❌ 中斷安裝</button>
     <select id="versionSelect">
       <option value="">Stable (public)</option>
       <option value="v2.0">v2.0 Stable</option>
@@ -59,124 +36,8 @@
       <button onclick="sendTelnet('getgamepref')">⚙️ 查看伺服器設定</button>
     </div>
 
-    <textarea
-      id="output"
-      readonly
-    ></textarea>
+    <textarea id="output" readonly></textarea>
 
-    <script>
-      async function fetchApi(url, options = {}) {
-        const res = await fetch(url, options);
-        const text = await res.text();
-        document.getElementById("output").value = text;
-      }
-
-      function viewSaves() {
-        fetchApi("/api/view-saves", { method: "POST" });
-      }
-
-      function viewConfig() {
-        fetch("/api/view-config", { method: "POST" })
-          .then((res) => {
-            if (!res.ok) {
-              throw new Error(`HTTP error! status: ${res.status}`);
-            }
-            return res.json();
-          })
-          .then((data) => {
-            document.getElementById("output").value = JSON.stringify(
-              data,
-              null,
-              2
-            );
-          })
-          .catch((err) => {
-            document.getElementById("output").value =
-              "❌ 發生錯誤：" + err.message;
-          });
-      }
-
-      const installServerBtn = document.getElementById("installServerBtn");
-      const backupBtn = document.getElementById("backupBtn");
-      const viewConfigBtn = document.getElementById("viewConfigBtn");
-      const viewSavesBtn = document.getElementById("viewSavesBtn");
-      const startServerGUIBtn = document.getElementById("startServerGUIBtn");
-      const startServerNOGUIBtn = document.getElementById(
-        "startServerNOGUIBtn"
-      );
-      const stopServerBtn = document.getElementById("stopServerBtn");
-      const versionSelect = document.getElementById("versionSelect");
-
-      installServerBtn.addEventListener("click", () => {
-        fetchApi("/api/install", {
-          method: "POST",
-          body: JSON.stringify({ version: versionSelect.value }),
-        });
-      });
-
-      async function onBackupClick() {
-        backupBtn.disabled = true;
-        backupBtn.textContent = "備份中…";
-
-        const timeoutMs = 30_000;
-        const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-        const output = document.getElementById("output");
-
-        try {
-          const res = await fetch("/api/backup", {
-            method: "POST",
-            signal: controller.signal,
-          });
-          const text = await res.text();
-          output.value = text; // 將結果顯示在 console 區塊
-        } catch (err) {
-          if (err.name === "AbortError") {
-            output.value = "❌ 已超時，請稍後再試";
-          } else {
-            output.value = "❌ 發生錯誤：" + err.message;
-          }
-        } finally {
-          clearTimeout(timer);
-          backupBtn.disabled = false;
-          backupBtn.textContent = "💾 備份伺服器存檔";
-        }
-      }
-
-      function startServerGUI() {
-        fetchApi("/api/start", {
-          method: "POST",
-          body: JSON.stringify({ nographics: false }),
-        });
-      }
-
-      function startServerNOGUI() {
-        fetchApi("/api/start", {
-          method: "POST",
-          body: JSON.stringify({ nographics: true }),
-        });
-      }
-
-      function stopServer() {
-        fetchApi("/api/stop", { method: "POST" });
-      }
-
-      function sendTelnet(cmd) {
-        fetchApi("/api/telnet", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ command: cmd }),
-        });
-      }
-
-      // 綁定按鈕事件
-      backupBtn.addEventListener("click", onBackupClick);
-      viewSavesBtn.addEventListener("click", viewSaves);
-      startServerGUIBtn.addEventListener("click", startServerGUI);
-      startServerNOGUIBtn.addEventListener("click", startServerNOGUI);
-      stopServerBtn.addEventListener("click", stopServer);
-      viewConfigBtn.addEventListener("click", viewConfig);
-    </script>
+    <script src="js/app.js"></script>
   </body>
 </html>

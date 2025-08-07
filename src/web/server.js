@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const TelnetClient = require("telnet-client");
 const { promisify } = require("util");
+const { spawn } = require("child_process");
 
 const execAsync = promisify(exec);
 
@@ -29,6 +30,8 @@ const zipExePath = path.join(baseDir, "7-Zip", "7z.exe");
 const startServerBatPath = path.join(baseDir, "scripts", "start-server.bat");
 const updateServerBatPath = path.join(baseDir, "scripts", "update-server.bat");
 const backupSavesPath = path.join(baseDir, "public", "saves");
+
+let steamCmdChild = null;
 
 const app = express();
 app.use(express.json());
@@ -93,14 +96,78 @@ app.post("/api/backup", async (_, res) => {
 });
 
 // 安裝 / 更新伺服器
-app.post("/api/install", async (req, res) => {
+app.post("/api/install", (req, res) => {
+  if (steamCmdChild) {
+    sendResponse(res, "❌ 安裝已經在進行中，請先中斷再試。");
+    return;
+  }
+
   const version = req.body?.version ?? "";
-  try {
-    const cmd = `cmd /c start "" "${updateServerBatPath}" ${version}`;
-    await execAsync(cmd);
-    sendResponse(res, `✅ 安裝 / 更新已觸發，請稍候伺服器更新...`);
-  } catch (err) {
-    sendError(res, `❌ 安裝 / 更新失敗:\n${err}`);
+  const args = [
+    "+login",
+    "anonymous",
+    "+force_install_dir",
+    "..\\7DaysToDieServer",
+    "+app_update",
+    "294420",
+    ...(version ? ["-beta", version] : []),
+    "validate",
+    "+quit",
+  ];
+
+  res.setHeader("Content-Type", "text/plain; charset=utf-8");
+
+  steamCmdChild = spawn(path.join("steamcmd", "steamcmd.exe"), args, {
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+
+  // 強制關閉 stdin，避免等待輸入
+  steamCmdChild.stdin.end();
+
+  // 安全 timeout（例如 5 分鐘後自動殺掉）
+  // const timeout = setTimeout(() => {
+  //   if (steamCmdChild) {
+  //     console.log("⏱ 自動中止安裝：超過 5 分鐘");
+  //     steamCmdChild.kill("SIGTERM");
+  //     steamCmdChild = null;
+  //   }
+  // }, 5 * 60 * 1000);
+
+  steamCmdChild.stdout.on("data", (data) => {
+    const text = data.toString();
+    res.write(`[stdout] ${text}`);
+    console.log(`[stdout-steamcmd] ${text}`);
+  });
+
+  steamCmdChild.stderr.on("data", (data) => {
+    const text = data.toString();
+    res.write(`[stderr] ${text}`);
+    console.error(`[stderr-steamcmd] ${text}`);
+  });
+
+  steamCmdChild.on("close", (code) => {
+    clearTimeout(timeout);
+    res.write(`\n✅ 安裝 / 更新結束，Exit Code: ${code}\n`);
+    res.end();
+    destroySteamCmdChild();
+  });
+
+  steamCmdChild.on("error", (err) => {
+    clearTimeout(timeout);
+    res.write(`❌ 發生錯誤: ${err.message}\n`);
+    res.end();
+    destroySteamCmdChild();
+  });
+});
+
+// 中止安裝 / 更新伺服器
+app.post("/api/install-abort", (_, res) => {
+  if (steamCmdChild) {
+    steamCmdChild.kill("SIGTERM");
+    steamCmdChild = null;
+    sendResponse(res, "✅ 已請求中止安裝");
+  } else {
+    sendResponse(res, "⚠️ 沒有正在執行的安裝任務");
   }
 });
 
@@ -181,14 +248,22 @@ async function sendTelnetCommand(command) {
   }
 }
 
+function destroySteamCmdChild() {
+  if (steamCmdChild) {
+    steamCmdChild.kill("SIGTERM");
+    steamCmdChild = null;
+    console.log("✅ steamcmd 子進程已銷毀");
+  }
+}
+
 function sendResponse(res, message, status = 200) {
   res.setHeader("Content-Type", "text/plain; charset=utf-8");
-  res.status(status).send(message);
+  res.status(status).send(`${message}\n`);
 }
 
 function sendError(res, message, status = 500) {
   console.error(message);
-  sendResponse(res, message, status);
+  sendResponse(res, `${message}`, status);
   res.status(status).end();
 }
 
