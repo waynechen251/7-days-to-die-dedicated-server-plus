@@ -7,7 +7,7 @@ const { promisify } = require("util");
 const { spawn } = require("child_process");
 const dayjs = require("dayjs");
 // Custom utility functions
-const processManager = require("./processManager");
+const processManager = require("./public/js/processManager");
 
 const execAsync = promisify(exec);
 
