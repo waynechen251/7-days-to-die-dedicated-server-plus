@@ -1,11 +1,8 @@
 {
+  "game_server": {
+    "saves": "C:\\Users\\<USER>\\AppData\\Roaming\\7DaysToDie\\Saves"
+  },
   "web": {
     "port": 26902
-  },
-  "game_server": {
-    "port": 26900,
-    "telnetPort": 26901,
-    "telnetPassword": "serverpassword",
-    "serverConfig": "C:\\Program Files (x86)\\7DTD-DS-P\\serverconfig.xml"
   }
 }

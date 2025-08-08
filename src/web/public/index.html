@@ -19,6 +19,13 @@
 
     <h1>7 Days To Die Dedicated Server Plus 控制面板</h1>
 
+    <h2>🗂️ 管理後台</h2>
+    <div>
+      <button id="viewConfigBtn">⚙️ 查看管理後台設定</button>
+      <button id="viewSavesBtn">📂 查看伺服器備份存檔清單</button>
+      <button id="backupBtn">💾 備份伺服器存檔</button>
+    </div>
+
     <h2>⚙️ 安裝或更新 Dedicated Server</h2>
     <button id="installServerBtn">📥 安裝 / 更新 Dedicated Server</button>
     <button id="abortInstallBtn">❌ 中斷安裝</button>
@@ -30,13 +37,6 @@
       <option value="v1.3">v1.3 Stable</option>
     </select>
 
-    <h2>🗂️ 管理後台</h2>
-    <div>
-      <button id="viewConfigBtn">⚙️ 查看管理後台設定</button>
-      <button id="viewSavesBtn">📂 查看伺服器備份存檔清單</button>
-      <button id="backupBtn">💾 備份伺服器存檔</button>
-    </div>
-
     <h2>📡 伺服器管理</h2>
     <div>
       <button id="startServerGUIBtn">▶️ 啟動伺服器(GUI)</button>
@@ -47,13 +47,20 @@
     <h2>📡 伺服器資訊</h2>
     <div id="serverStatus"></div>
     <div>
-      <button onclick="sendTelnet('version')">🔍 查看版本</button>
-      <button onclick="sendTelnet('listplayers')">🧑‍🤝‍🧑 玩家清單</button>
-      <button onclick="sendTelnet('getgamepref')">⚙️ 查看伺服器設定</button>
+      <button data-role="telnet" onclick="sendTelnet('version')">
+        🔍 查看版本
+      </button>
+      <button data-role="telnet" onclick="sendTelnet('listplayers')">
+        🧑‍🤝‍🧑 玩家清單
+      </button>
+      <button data-role="telnet" onclick="sendTelnet('getgamepref')">
+        ⚙️ 查看伺服器設定
+      </button>
     </div>
 
     <textarea id="output" readonly></textarea>
 
     <script src="js/app.js"></script>
+    <script src="js/scx.js"></script>
   </body>
 </html>

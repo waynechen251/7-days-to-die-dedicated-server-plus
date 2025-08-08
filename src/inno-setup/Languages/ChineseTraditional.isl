@@ -384,8 +384,8 @@ AddonHostProgramNotFound=%1 無法在您所選的資料夾中找到。%n%n您是
 
 ConfigPageTitle=配置頁面
 ConfigPageDescription=請在下面的欄位中輸入配置資訊。
-WebPort=管理後臺通訊埠
-WebPortEmpty=管理後臺通訊埠不能為空。
+WebPort=管理後台通訊埠
+WebPortEmpty=管理後台通訊埠不能為空。
 portIsUsed=通訊埠已被占用。
 IpEmpty=IP 地址不能為空。
 IpInvalid=IP 地址無效。

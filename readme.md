@@ -99,7 +99,7 @@ copy server.sample.json server.json
 npm start
 ```
 
-#### 5. 訪問管理後臺
+#### 5. 訪問管理後台
 
 結束安裝後，瀏覽器將自動開啟：
 

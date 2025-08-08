@@ -4,5 +4,7 @@ output
 
 *.log
 *.tmp
+server.json
+package-lock.json
 7DTD-DS-P*.exe
 server.exe

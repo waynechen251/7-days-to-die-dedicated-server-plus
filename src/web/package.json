@@ -14,8 +14,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "archiver": "^6.0.2",
     "dayjs": "^1.11.13",
     "express": "^5.1.0",
-    "telnet-client": "^2.2.6"
+    "telnet-client": "^2.2.6",
+    "tree-kill": "^1.2.2"
   }
 }
