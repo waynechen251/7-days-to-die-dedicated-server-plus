@@ -1,7 +1,7 @@
 #include "utils.iss"
 #include "config.iss"
 
-#define public DEPENDENCY "..\..\dependency"
+#define public DEPENDENCIES "..\..\dependencies"
 #define public INNOSRC "."
 #define public WEBSRC "..\web"
 #define public SCRIPTSSRC "..\scripts"
@@ -42,7 +42,7 @@ Name: "chinesetraditional"; MessagesFile: "Languages\ChineseTraditional.isl"
 Name: "{app}\nssm"
 Name: "{app}\steamcmd"
 Name: "{app}\scripts"
-Name: "{app}\dependency"
+Name: "{app}\dependencies"
 Name: "{app}\public"
 Name: "{app}\logs"
 
@@ -51,10 +51,10 @@ Name: "{group}\{cm:ProgramOnTheWeb,{#AppName}}"; Filename: "{#AppURL}"
 Name: "{group}\{cm:UninstallProgram,{#AppName}}"; Filename: "{uninstallexe}"
 
 [Files]
-Source: "{#DEPENDENCY}\nssm-2.24\win64\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#DEPENDENCY}\steamcmd\*"; DestDir: "{app}\steamcmd"; Flags: ignoreversion recursesubdirs
-Source: "{#DEPENDENCY}\Amazon Root CA 1.crt"; DestDir: "{app}\dependency"; Flags: ignoreversion
-Source: "{#DEPENDENCY}\VC_redist.x64.exe"; DestDir: "{app}\dependency"; Flags: ignoreversion
+Source: "{#DEPENDENCIES}\nssm-2.24\win64\nssm.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#DEPENDENCIES}\steamcmd\*"; DestDir: "{app}\steamcmd"; Flags: ignoreversion recursesubdirs
+Source: "{#DEPENDENCIES}\Amazon Root CA 1.crt"; DestDir: "{app}\dependencies"; Flags: ignoreversion
+Source: "{#DEPENDENCIES}\VC_redist.x64.exe"; DestDir: "{app}\dependencies"; Flags: ignoreversion
 Source: "{#SCRIPTSSRC}\*"; DestDir: "{app}\scripts"; Flags: ignoreversion recursesubdirs
 Source: "{#WEBSRC}\public\*"; DestDir: "{app}\public"; Flags: ignoreversion recursesubdirs
 Source: "{#WEBSRC}\server.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -96,8 +96,8 @@ begin
       Exec('cmd.exe', '/C net stop {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
       Exec('cmd.exe', '/C sc delete {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 
-      Exec('{app}\dependency\VC_redist.x64.exe', '/passive /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
-      Exec('cmd.exe', '/C certutil -addstore -f Root "{app}\dependency\Amazon Root CA 1.crt"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+      Exec('{app}\dependencies\VC_redist.x64.exe', '/passive /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode);
+      Exec('cmd.exe', '/C certutil -addstore -f Root "{app}\dependencies\Amazon Root CA 1.crt"', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 
     end;
 
