@@ -2,33 +2,28 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <title>7 Days To Die Dedicated Server Plus 控制台</title>
+    <title>7 Days To Die Dedicated Server Plus 管理後台</title>
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">7 Days To Die Dedicated Server Plus 控制面板</div>
+      <div class="brand">7 Days To Die Dedicated Server Plus 管理後台</div>
       <a
         href="https://github.com/waynechen251/7-days-to-die-dedicated-server-plus.git"
         target="_blank"
         rel="noopener noreferrer"
         class="github-link"
+        >🌐 GitHub</a
       >
-        🌐 GitHub
-      </a>
+      <div class="status-inline">
+        <span id="st-backend" class="badge">管理後台</span>
+        <span id="st-steam" class="badge">SteamCMD</span>
+        <span id="st-game" class="badge">7DaysToDieServer</span>
+        <span id="st-telnet" class="badge">Telnet</span>
+      </div>
     </header>
 
     <main class="grid">
-      <section class="card">
-        <h2>狀態總覽</h2>
-        <div id="statusRow" class="status-row">
-          <span id="st-backend" class="badge">管理後台</span>
-          <span id="st-steam" class="badge">SteamCMD</span>
-          <span id="st-game" class="badge">7 Days To Die Dedicated Server</span>
-          <span id="st-telnet" class="badge">Dedicated Server Telnet</span>
-        </div>
-      </section>
-
       <section class="card">
         <h2>SteamCMD</h2>
         <div class="row">
@@ -70,40 +65,101 @@
         <h2>管理後台</h2>
         <div class="row">
           <button id="viewConfigBtn">⚙️ 查看管理後台設定檔</button>
-          <button id="viewSavesBtn">📂 查看遊戲伺服器存檔清單</button>
           <button id="backupBtn">💾 備份遊戲伺服器存檔</button>
         </div>
       </section>
 
-      <!-- 新增：存檔管理 -->
-      <section class="card">
-        <h2>存檔管理</h2>
-        <div class="row">
-          <label style="min-width: 80px">GameWorld</label>
-          <select id="gwSelect" style="min-width: 220px"></select>
-          <label style="min-width: 80px; margin-left: 8px">GameName</label>
-          <select id="gnSelect" style="min-width: 220px"></select>
-          <button id="exportOneBtn" style="margin-left: 8px">
-            📤 匯出選擇存檔
-          </button>
-          <button id="refreshSavesBtn" style="margin-left: 8px">
-            🔄 重新整理
-          </button>
-        </div>
-        <div class="row">
-          <label style="min-width: 180px">匯入（選擇後台備份 ZIP）</label>
-          <select id="backupSelect" style="min-width: 360px"></select>
-          <button id="importBackupBtn" style="margin-left: 8px">
-            📥 從備份匯入
-          </button>
-        </div>
-        <div class="row">
-          <label style="min-width: 180px">匯入（上傳 ZIP）</label>
-          <input id="importUploadFile" type="file" accept=".zip" />
-          <button id="importUploadBtn" style="margin-left: 8px">
-            📤 上傳並匯入
-          </button>
-        </div>
+      <section class="card card-saves">
+        <header class="saves-header">
+          <h2 class="card-title">存檔管理</h2>
+          <div class="btn-bar">
+            <button
+              id="refreshSavesBtn"
+              class="btn btn--ghost"
+              title="重新整理存檔/備份清單"
+            >
+              🔄 重新整理
+            </button>
+            <button
+              id="viewBackupsBtn"
+              class="btn btn--ghost"
+              title="列出備份檔"
+            >
+              📂 備份清單
+            </button>
+          </div>
+        </header>
+
+        <section class="saves-group">
+          <h3 class="saves-group__title">遊戲選擇</h3>
+          <div class="form-grid">
+            <label class="field">
+              <span class="field__label">GameWorld</span>
+              <select id="gwSelect" class="field__control"></select>
+            </label>
+            <label class="field">
+              <span class="field__label">GameName</span>
+              <select id="gnSelect" class="field__control"></select>
+            </label>
+          </div>
+        </section>
+
+        <section class="saves-group">
+          <h3 class="saves-group__title">匯出</h3>
+          <div class="btn-row wrap">
+            <button
+              id="exportOneBtn"
+              class="btn"
+              title="備份目前選擇的世界+存檔"
+            >
+              📤 備份所選存檔
+            </button>
+            <button
+              id="backupFullBtn"
+              class="btn btn--primary"
+              title="完整壓縮全部存檔(慢)"
+            >
+              💾 備份完整存檔
+            </button>
+          </div>
+        </section>
+
+        <section class="saves-group">
+          <h3 class="saves-group__title">匯入 (管理後台備份)</h3>
+          <div class="form-grid">
+            <label class="field span-2">
+              <span class="field__label">選擇備份檔</span>
+              <select id="backupSelect" class="field__control"></select>
+            </label>
+            <div class="field">
+              <span class="field__label sr-only">執行匯入</span>
+              <button id="importBackupBtn" class="btn btn--accent full">
+                📥 從備份匯入
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section class="saves-group">
+          <h3 class="saves-group__title">匯入 (自行上傳 ZIP)</h3>
+          <div class="form-grid">
+            <label class="field">
+              <span class="field__label">選擇 ZIP</span>
+              <input
+                id="importUploadFile"
+                type="file"
+                accept=".zip"
+                class="field__control"
+              />
+            </label>
+            <div class="field">
+              <span class="field__label sr-only">上傳並匯入</span>
+              <button id="importUploadBtn" class="btn full">
+                📤 上傳並匯入
+              </button>
+            </div>
+          </div>
+        </section>
       </section>
 
       <section class="card card-console span2">

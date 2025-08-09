@@ -228,7 +228,7 @@ app.post("/api/saves/export-one", async (req, res) => {
 
     ensureDir(BACKUP_SAVES_DIR);
     const timestamp = format(new Date(), "YYYYMMDDHHmmss");
-    const zipName = `Save-${world}-${name}-${timestamp}.zip`;
+    const zipName = `Saves-${world}-${name}-${timestamp}.zip`;
     const outPath = path.join(BACKUP_SAVES_DIR, zipName);
 
     await archive.zipDirectory(src, outPath);

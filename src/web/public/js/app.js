@@ -2,7 +2,6 @@
 const installServerBtn = document.getElementById("installServerBtn");
 const backupBtn = document.getElementById("backupBtn");
 const viewConfigBtn = document.getElementById("viewConfigBtn");
-const viewSavesBtn = document.getElementById("viewSavesBtn");
 const startServerBtn = document.getElementById("startServerBtn");
 const stopServerBtn = document.getElementById("stopServerBtn");
 const killServerBtn = document.getElementById("killServerBtn");
@@ -19,15 +18,16 @@ const gwSelect = document.getElementById("gwSelect");
 const gnSelect = document.getElementById("gnSelect");
 const exportOneBtn = document.getElementById("exportOneBtn");
 const refreshSavesBtn = document.getElementById("refreshSavesBtn");
+const viewBackupsBtn = document.getElementById("viewBackupsBtn");
 const backupSelect = document.getElementById("backupSelect");
 const importBackupBtn = document.getElementById("importBackupBtn");
 const importUploadFile = document.getElementById("importUploadFile");
 const importUploadBtn = document.getElementById("importUploadBtn");
-
 const stBackend = document.getElementById("st-backend");
 const stSteam = document.getElementById("st-steam");
 const stGame = document.getElementById("st-game");
 const stTelnet = document.getElementById("st-telnet");
+const backupFullBtn = document.getElementById("backupFullBtn");
 
 // Console panes & tabs
 const panes = {
@@ -58,10 +58,8 @@ function switchTab(tab) {
     .querySelectorAll(".console")
     .forEach((p) => p.classList.remove("active"));
   panes[tab].classList.add("active");
-  // 進入分頁時直接看最後一行
   panes[tab].scrollTop = panes[tab].scrollHeight;
 
-  // 標記已讀
   lastRead[tab] = Date.now();
   persistLastRead();
   if (lastSeen[tab] && lastSeen[tab] > lastRead[tab]) {
@@ -72,8 +70,6 @@ function switchTab(tab) {
 
 function appendLog(topic, line, ts) {
   const p = panes[topic] || panes.system;
-
-  // 使用者是否正在底部（只要在底部才自動捲動）
   const nearBottom = p.scrollTop + p.clientHeight >= p.scrollHeight - 5;
 
   p.textContent += line.endsWith("\n") ? line : line + "\n";
@@ -169,8 +165,8 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
     installServerBtn,
     abortInstallBtn,
     backupBtn,
+    backupFullBtn,
     viewConfigBtn,
-    viewSavesBtn,
     startServerBtn,
     stopServerBtn,
     killServerBtn,
@@ -178,18 +174,17 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
     telnetInput,
     telnetSendBtn,
     ...telnetBtns,
-    // 存檔管理
     gwSelect,
     gnSelect,
     exportOneBtn,
     refreshSavesBtn,
+    viewBackupsBtn,
     backupSelect,
     importBackupBtn,
     importUploadFile,
     importUploadBtn,
   ];
 
-  // 徽章
   const backendStatus = backendUp ? "ok" : "err";
   const steamStatus = steamRunning ? "ok" : "err";
   let gameStatus = "err";
@@ -210,18 +205,16 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
 
   if (steamRunning) {
     setDisabled(all, true);
-    setDisabled([abortInstallBtn, viewConfigBtn, viewSavesBtn], false);
+    setDisabled([abortInstallBtn, viewConfigBtn], false);
     return;
   }
 
   const lockBecauseBackup = backupInProgress;
 
-  // 安裝
   const canInstall = !gameRunning && !lockBecauseBackup;
   setDisabled([installServerBtn, versionSelect], !canInstall);
   setDisabled(abortInstallBtn, true);
 
-  // 伺服器啟停
   const canStart = !gameRunning && !lockBecauseBackup;
   setDisabled([startServerBtn], !canStart);
 
@@ -232,11 +225,9 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
   );
 
   setDisabled(killServerBtn, !gameRunning);
-
-  // 備份：伺服器需關閉
   setDisabled(backupBtn, gameRunning || lockBecauseBackup);
+  setDisabled(backupFullBtn, gameRunning || lockBecauseBackup);
 
-  // 存檔管理：統一要求伺服器關閉
   const canManageSaves = !gameRunning && !lockBecauseBackup;
   setDisabled(
     [
@@ -244,6 +235,7 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
       gnSelect,
       exportOneBtn,
       refreshSavesBtn,
+      viewBackupsBtn,
       backupSelect,
       importBackupBtn,
       importUploadFile,
@@ -283,14 +275,12 @@ async function fetchJSON(url, options = {}, timeoutMs = 10000) {
 }
 
 // ========== 存檔管理（前端） ==========
-let worldMap = new Map(); // world -> [name]
+let worldMap = new Map();
 
 function fillWorldAndName() {
-  // 保存當前選擇
   const prevWorld = gwSelect.value;
   const prevName = gnSelect.value;
 
-  // world
   gwSelect.innerHTML = "";
   const worlds = Array.from(worldMap.keys()).sort();
   worlds.forEach((w) => {
@@ -305,14 +295,9 @@ function fillWorldAndName() {
     opt.textContent = "(無)";
     gwSelect.appendChild(opt);
   }
-
-  // 盡量還原選擇
   if (worlds.includes(prevWorld)) gwSelect.value = prevWorld;
 
-  // name
   fillNamesFor(gwSelect.value || worlds[0] || "");
-
-  // 還原 name
   if (
     prevName &&
     Array.from(gnSelect.options).some((o) => o.value === prevName)
@@ -346,7 +331,6 @@ async function loadSaves() {
     const saves = resp?.data?.saves || [];
     const backups = resp?.data?.backups || [];
 
-    // world map
     worldMap = new Map();
     saves.forEach((s) => {
       const arr = worldMap.get(s.world) || [];
@@ -355,7 +339,6 @@ async function loadSaves() {
     });
     fillWorldAndName();
 
-    // backups
     backupSelect.innerHTML = "";
     if (backups.length === 0) {
       const opt = document.createElement("option");
@@ -492,19 +475,6 @@ abortInstallBtn.addEventListener("click", async () => {
   }
 });
 
-viewSavesBtn.addEventListener("click", async () => {
-  switchTab("backup");
-  try {
-    appendLog(
-      "backup",
-      await fetchText("/api/view-saves", { method: "POST" }),
-      Date.now()
-    );
-  } catch (e) {
-    appendLog("backup", `❌ ${e.message}`, Date.now());
-  }
-});
-
 backupBtn.addEventListener("click", async () => {
   switchTab("backup");
   backupInProgress = true;
@@ -599,6 +569,16 @@ window.sendTelnet = sendTelnet;
 // 存檔管理：事件
 refreshSavesBtn.addEventListener("click", () => loadSaves());
 
+viewBackupsBtn.addEventListener("click", async () => {
+  switchTab("backup");
+  try {
+    const msg = await fetchText("/api/view-saves", { method: "POST" });
+    appendLog("backup", msg, Date.now());
+  } catch (e) {
+    appendLog("backup", `❌ ${e.message}`, Date.now());
+  }
+});
+
 exportOneBtn.addEventListener("click", async () => {
   const world = gwSelect.value || "";
   const name = gnSelect.value || "";
@@ -660,5 +640,21 @@ importUploadBtn.addEventListener("click", async () => {
     appendLog("backup", `❌ ${e.message}`, Date.now());
   } finally {
     importUploadFile.value = "";
+  }
+});
+
+backupFullBtn.addEventListener("click", async () => {
+  switchTab("backup");
+  backupInProgress = true;
+  applyUIState(currentState);
+  try {
+    const msg = await fetchText("/api/backup", { method: "POST" });
+    appendLog("backup", msg, Date.now());
+    loadSaves();
+  } catch (e) {
+    appendLog("backup", `❌ ${e.message}`, Date.now());
+  } finally {
+    backupInProgress = false;
+    applyUIState(currentState);
   }
 });
