@@ -7,7 +7,7 @@
   </head>
   <body>
     <header class="topbar">
-      <div class="brand">7DTD-DS-P 控制面板</div>
+      <div class="brand">7 Days To Die Dedicated Server Plus 控制面板</div>
       <a
         href="https://github.com/waynechen251/7-days-to-die-dedicated-server-plus.git"
         target="_blank"
@@ -24,16 +24,16 @@
         <div id="statusRow" class="status-row">
           <span id="st-backend" class="badge">管理後台</span>
           <span id="st-steam" class="badge">SteamCMD</span>
-          <span id="st-game" class="badge">GameServer</span>
-          <span id="st-telnet" class="badge">Telnet</span>
+          <span id="st-game" class="badge">7 Days To Die Dedicated Server</span>
+          <span id="st-telnet" class="badge">Dedicated Server Telnet</span>
         </div>
       </section>
 
       <section class="card">
-        <h2>安裝 / 更新 Dedicated Server</h2>
+        <h2>SteamCMD</h2>
         <div class="row">
           <button id="installServerBtn">📥 安裝 / 更新</button>
-          <button id="abortInstallBtn" disabled>❌ 中斷安裝</button>
+          <button id="abortInstallBtn" disabled>❌ 中斷安裝 / 更新</button>
           <select id="versionSelect">
             <option value="">Stable (public)</option>
             <option value="v2.1">v2.1 Stable</option>
@@ -45,10 +45,9 @@
       </section>
 
       <section class="card">
-        <h2>伺服器控制</h2>
+        <h2>7 Days To Die Dedicated Server</h2>
         <div class="row">
-          <button id="startServerGUIBtn">▶️ 啟動伺服器(GUI)</button>
-          <button id="startServerNOGUIBtn">▶️ 啟動伺服器(NO GUI)</button>
+          <button id="startServerBtn">▶️ 啟動伺服器</button>
           <button id="stopServerBtn">⏹️ 關閉伺服器</button>
           <button id="killServerBtn">⚠️ 強制結束</button>
         </div>
@@ -68,11 +67,11 @@
       </section>
 
       <section class="card">
-        <h2>備份 / 檔案</h2>
+        <h2>管理後台</h2>
         <div class="row">
-          <button id="viewConfigBtn">⚙️ 查看管理後台設定</button>
-          <button id="viewSavesBtn">📂 存檔清單</button>
-          <button id="backupBtn">💾 建立備份</button>
+          <button id="viewConfigBtn">⚙️ 查看管理後台設定檔</button>
+          <button id="viewSavesBtn">📂 查看遊戲伺服器存檔清單</button>
+          <button id="backupBtn">💾 備份遊戲伺服器存檔</button>
         </div>
       </section>
 

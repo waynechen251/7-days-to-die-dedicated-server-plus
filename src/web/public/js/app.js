@@ -3,8 +3,7 @@ const installServerBtn = document.getElementById("installServerBtn");
 const backupBtn = document.getElementById("backupBtn");
 const viewConfigBtn = document.getElementById("viewConfigBtn");
 const viewSavesBtn = document.getElementById("viewSavesBtn");
-const startServerGUIBtn = document.getElementById("startServerGUIBtn");
-const startServerNOGUIBtn = document.getElementById("startServerNOGUIBtn");
+const startServerBtn = document.getElementById("startServerBtn");
 const stopServerBtn = document.getElementById("stopServerBtn");
 const killServerBtn = document.getElementById("killServerBtn");
 const versionSelect = document.getElementById("versionSelect");
@@ -156,8 +155,7 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
     backupBtn,
     viewConfigBtn,
     viewSavesBtn,
-    startServerGUIBtn,
-    startServerNOGUIBtn,
+    startServerBtn,
     stopServerBtn,
     killServerBtn,
     versionSelect,
@@ -199,7 +197,7 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
   setDisabled(abortInstallBtn, true);
 
   const canStart = !gameRunning && !lockBecauseBackup;
-  setDisabled([startServerGUIBtn, startServerNOGUIBtn], !canStart);
+  setDisabled([startServerBtn], !canStart);
 
   const canManage = gameRunning && telnetOk && !lockBecauseBackup;
   setDisabled(
@@ -385,7 +383,7 @@ viewConfigBtn.addEventListener("click", async () => {
   }
 });
 
-startServerGUIBtn.addEventListener("click", async () => {
+startServerBtn.addEventListener("click", async () => {
   switchTab("system");
   try {
     appendLog(
@@ -394,23 +392,6 @@ startServerGUIBtn.addEventListener("click", async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nographics: false }),
-      }),
-      Date.now()
-    );
-  } catch (e) {
-    appendLog("system", `❌ ${e.message}`, Date.now());
-  }
-});
-
-startServerNOGUIBtn.addEventListener("click", async () => {
-  switchTab("system");
-  try {
-    appendLog(
-      "system",
-      await fetchText("/api/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nographics: true }),
       }),
       Date.now()
     );

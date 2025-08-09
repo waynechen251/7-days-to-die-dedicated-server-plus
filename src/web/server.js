@@ -293,8 +293,7 @@ app.post("/api/start", async (req, res) => {
     let configArg = null;
     for (const c of cfgCandidates) {
       if (c && fs.existsSync(c)) {
-        const v = c.includes(" ") ? `"${c}"` : c;
-        configArg = `-configfile=${v}`;
+        configArg = c;
         break;
       }
     }
@@ -310,9 +309,9 @@ app.post("/api/start", async (req, res) => {
       logFilePath,
       "-batchmode",
       ...(nographics ? ["-nographics"] : []),
-      ...(configArg ? [configArg] : []),
+      ...(configArg ? [`-configfile=${configArg}`] : []), // 以等號形式傳遞
       "-dedicated",
-    ]; // 移除 -quit，避免快速退出
+    ];
 
     processManager.gameServer.start(args, GAME_DIR, {
       exeName,
