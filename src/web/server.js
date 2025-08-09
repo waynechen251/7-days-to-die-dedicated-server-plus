@@ -3,7 +3,6 @@ const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const net = require("net");
-const { promisify } = require("util");
 const { format, ts } = require("./public/lib/time");
 const { log, error } = require("./public/lib/logger");
 const http = require("./public/lib/http");
@@ -14,8 +13,6 @@ const archive = require("./public/lib/archive");
 const eventBus = require("./public/lib/eventBus");
 const { tailFile } = require("./public/lib/tailer");
 const serverConfigLib = require("./public/lib/serverConfig");
-
-const execAsync = promisify(exec);
 
 if (process.platform === "win32") exec("chcp 65001 >NUL");
 
