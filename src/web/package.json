@@ -17,7 +17,9 @@
     "archiver": "^6.0.2",
     "dayjs": "^1.11.13",
     "express": "^5.1.0",
+    "extract-zip": "^2.0.1",
     "telnet-client": "^2.2.6",
-    "tree-kill": "^1.2.2"
+    "tree-kill": "^1.2.2",
+    "yauzl": "^3.2.0"
   }
 }
