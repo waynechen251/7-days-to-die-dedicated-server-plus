@@ -52,6 +52,8 @@ body {
   color: var(--c-text);
   -webkit-font-smoothing: antialiased;
   overflow: hidden;
+  height: 100%;
+  padding-bottom: calc(var(--console-dock-collapsed) + 4px);
 }
 
 h1,
@@ -429,80 +431,14 @@ select:focus {
   flex-wrap: wrap;
   margin-top: var(--space-1);
 }
-
 .console-tabs button.active {
   box-shadow: 0 0 0 2px var(--c-primary) inset;
   background: var(--c-primary);
   color: #fff;
   font-weight: 600;
 }
-
 .console-tabs button.unread {
   box-shadow: 0 0 0 2px #f59e0b inset;
-}
-
-.card .console {
-  font: 400 0.72rem/1.25 var(--mono);
-  background: #111;
-  color: #e2e8f0;
-  padding: var(--space-3);
-  border-radius: var(--radius-s);
-  border: 1px solid #222;
-  min-height: clamp(16rem, 40vh, 34rem);
-  max-height: 60vh;
-  overflow: auto;
-  white-space: pre-wrap;
-  word-break: break-word;
-  display: none;
-}
-.card .console.active {
-  display: block;
-}
-
-.pane-console .console-shell {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-}
-.pane-console .console-panes {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  overflow: hidden;
-}
-.pane-console .console {
-  display: none;
-  flex: 1;
-  min-height: 0;
-  max-height: none;
-  height: auto;
-  margin: 0;
-  border: 0;
-  background: #111;
-  padding: 0.65rem 0.9rem 0.9rem;
-  overflow: auto;
-  font: 400 0.72rem/1.25 var(--mono);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-.pane-console .console.active {
-  display: block;
-}
-
-.pane-console .console::-webkit-scrollbar {
-  width: 0.7rem;
-}
-.pane-console .console::-webkit-scrollbar-track {
-  background: #111;
-}
-.pane-console .console::-webkit-scrollbar-thumb {
-  background: #334155;
-  border-radius: 4px;
-}
-.pane-console .console::-webkit-scrollbar-thumb:hover {
-  background: #475569;
 }
 
 .console {
@@ -537,6 +473,42 @@ select:focus {
   background: #475569;
 }
 
+.pane-console .console-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.pane-console .console-panes {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.pane-console .console {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  height: auto;
+  margin: 0;
+  border: 0;
+  padding: 0.65rem 0.9rem 0.9rem;
+}
+.pane-console .console::-webkit-scrollbar {
+  width: 0.7rem;
+}
+.pane-console .console::-webkit-scrollbar-track {
+  background: #111;
+}
+.pane-console .console::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+.pane-console .console::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
 .console-dock {
   position: fixed;
   left: 0;
@@ -552,30 +524,24 @@ select:focus {
   z-index: 50;
   box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.35);
 }
-
 .console-dock.resizing {
   transition: none;
 }
-
 .console-dock .console {
   padding: 0.5rem 0.75rem;
 }
-
 .console-dock .console::after {
   content: "";
   display: block;
   height: 0.6rem;
 }
-
 .console-dock .resize-grip {
   height: 10px;
 }
-
 .console-dock.collapsed {
   height: var(--console-dock-collapsed);
   overflow: hidden;
 }
-
 .console-dock .dock-bar {
   display: flex;
   align-items: center;
@@ -586,7 +552,6 @@ select:focus {
   border-bottom: 1px solid #2a3139;
   user-select: none;
 }
-
 .dock-toggle {
   font: 600 0.65rem/1 var(--font-stack);
   padding: 0.35rem 0.6rem;
@@ -602,11 +567,9 @@ select:focus {
 .dock-toggle:hover {
   background: #3e4f60;
 }
-
 .dock-bar-spacer {
   flex: 1;
 }
-
 .console-dock .console-tabs button {
   font-size: 0.65rem;
   padding: 0.35rem 0.55rem;
@@ -623,7 +586,6 @@ select:focus {
 .console-dock .console-tabs button.unread:not(.active) {
   box-shadow: 0 0 0 2px #f59e0b inset;
 }
-
 .console-dock .resize-grip {
   height: 6px;
   cursor: row-resize;
@@ -643,11 +605,9 @@ select:focus {
   transform: translate(-50%, -50%);
   border-radius: 2px;
 }
-
 .console-dock.collapsed .resize-grip {
   display: none;
 }
-
 .console-dock .console-panes {
   flex: 1;
   display: flex;
@@ -655,7 +615,6 @@ select:focus {
   overflow: hidden;
   position: relative;
 }
-
 .console-dock .console {
   flex: 1;
   margin: 0;
@@ -669,13 +628,8 @@ select:focus {
   white-space: pre-wrap;
   word-break: break-word;
 }
-
 .console-dock .console.active {
   display: block;
-}
-
-body {
-  padding-bottom: calc(var(--console-dock-collapsed) + 4px);
 }
 
 body.has-dock-open {
@@ -727,24 +681,6 @@ body.has-dock-open {
   .console {
     border-color: #334155;
   }
-}
-
-html,
-body {
-  height: 100%;
-}
-
-body {
-  overflow: hidden;
-}
-
-:root {
-  --topbar-h: 48px;
-}
-
-.topbar {
-  height: var(--topbar-h);
-  box-sizing: border-box;
 }
 
 .app-split {
@@ -869,14 +805,15 @@ body {
 
 .cfg-grid {
   display: grid;
-  grid-template-columns: 240px 1fr;
+  grid-template-columns: minmax(180px, max-content) 1fr;
   gap: 10px 12px;
   align-items: center;
 }
 .cfg-grid .cfg-label {
   color: var(--c-text-sec);
   font-weight: 600;
-  word-break: break-all;
+  word-break: normal;
+  white-space: nowrap;
 }
 .cfg-grid input[type="text"],
 .cfg-grid input[type="number"],
@@ -904,6 +841,9 @@ body {
 @media (max-width: 900px) {
   .cfg-grid {
     grid-template-columns: 1fr;
+  }
+  .cfg-grid .cfg-label {
+    white-space: normal;
   }
 }
 
