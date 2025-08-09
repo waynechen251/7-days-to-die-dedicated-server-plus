@@ -49,7 +49,7 @@ body {
   margin: 0;
   font-family: var(--font-stack);
   line-height: 1.4;
-  background: linear-gradient(180deg, var(--c-bg), #eef2f6 60%);
+  background: var(--c-bg);
   color: var(--c-text);
   -webkit-font-smoothing: antialiased;
   overflow: hidden; /* 由兩 pane 自行滾動 */
@@ -703,7 +703,7 @@ body.has-dock-open {
     --c-text-sec: #cbd5e1;
   }
   body {
-    background: linear-gradient(180deg, #0f172a, #1e293b 60%);
+    background: var(--c-bg);
   }
   .card {
     border-color: var(--c-border);
@@ -764,7 +764,7 @@ body {
   flex: 0 0 var(--split-main-size);
   min-height: 120px;
   overflow: auto;
-  background: linear-gradient(180deg, var(--c-bg), #eef2f6 60%);
+  background: var(--c-bg);
   scroll-behavior: smooth;
   padding-bottom: var(--space-4);
 }
