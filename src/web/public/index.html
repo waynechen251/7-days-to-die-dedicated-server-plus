@@ -75,6 +75,37 @@
         </div>
       </section>
 
+      <!-- 新增：存檔管理 -->
+      <section class="card">
+        <h2>存檔管理</h2>
+        <div class="row">
+          <label style="min-width: 80px">GameWorld</label>
+          <select id="gwSelect" style="min-width: 220px"></select>
+          <label style="min-width: 80px; margin-left: 8px">GameName</label>
+          <select id="gnSelect" style="min-width: 220px"></select>
+          <button id="exportOneBtn" style="margin-left: 8px">
+            📤 匯出選擇存檔
+          </button>
+          <button id="refreshSavesBtn" style="margin-left: 8px">
+            🔄 重新整理
+          </button>
+        </div>
+        <div class="row">
+          <label style="min-width: 180px">匯入（選擇後台備份 ZIP）</label>
+          <select id="backupSelect" style="min-width: 360px"></select>
+          <button id="importBackupBtn" style="margin-left: 8px">
+            📥 從備份匯入
+          </button>
+        </div>
+        <div class="row">
+          <label style="min-width: 180px">匯入（上傳 ZIP）</label>
+          <input id="importUploadFile" type="file" accept=".zip" />
+          <button id="importUploadBtn" style="margin-left: 8px">
+            📤 上傳並匯入
+          </button>
+        </div>
+      </section>
+
       <section class="card card-console span2">
         <h2>Web Console</h2>
         <div class="console-tabs">

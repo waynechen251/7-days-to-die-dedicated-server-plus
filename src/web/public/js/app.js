@@ -14,6 +14,16 @@ const telnetBtns = Array.from(
   document.querySelectorAll('button[data-role="telnet"]')
 );
 
+// 存檔管理 DOM
+const gwSelect = document.getElementById("gwSelect");
+const gnSelect = document.getElementById("gnSelect");
+const exportOneBtn = document.getElementById("exportOneBtn");
+const refreshSavesBtn = document.getElementById("refreshSavesBtn");
+const backupSelect = document.getElementById("backupSelect");
+const importBackupBtn = document.getElementById("importBackupBtn");
+const importUploadFile = document.getElementById("importUploadFile");
+const importUploadBtn = document.getElementById("importUploadBtn");
+
 const stBackend = document.getElementById("st-backend");
 const stSteam = document.getElementById("st-steam");
 const stGame = document.getElementById("st-game");
@@ -36,29 +46,6 @@ document.querySelectorAll(".console-tabs button").forEach((btn) => {
 });
 
 // ========== 小工具 ==========
-function isNearBottom(el, threshold = 40) {
-  // 距離底部 <= threshold 視為釘在底部
-  return el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
-}
-function scrollToBottom(el) {
-  el.scrollTop = el.scrollHeight;
-}
-
-// 每個頻道是否釘住底部（使用者沒往上翻）
-const pinToBottom = {
-  system: true,
-  steamcmd: true,
-  game: true,
-  telnet: true,
-  backup: true,
-};
-// 監聽每個 console 的捲動，使用者往上看就解除釘住
-Object.entries(panes).forEach(([topic, el]) => {
-  el.addEventListener("scroll", () => {
-    pinToBottom[topic] = isNearBottom(el);
-  });
-});
-
 function switchTab(tab) {
   if (!panes[tab]) return;
   activeTab = tab;
@@ -71,15 +58,12 @@ function switchTab(tab) {
     .querySelectorAll(".console")
     .forEach((p) => p.classList.remove("active"));
   panes[tab].classList.add("active");
+  // 進入分頁時直接看最後一行
+  panes[tab].scrollTop = panes[tab].scrollHeight;
 
-  // 點擊頻道：先捲到最底並釘住
-  scrollToBottom(panes[tab]);
-  pinToBottom[tab] = true;
-
-  // 標記已讀時間
+  // 標記已讀
   lastRead[tab] = Date.now();
   persistLastRead();
-  // 既然切到該頻道，也同步把 lastSeen 補上（避免 race condition）
   if (lastSeen[tab] && lastSeen[tab] > lastRead[tab]) {
     lastRead[tab] = lastSeen[tab];
     persistLastRead();
@@ -89,20 +73,19 @@ function switchTab(tab) {
 function appendLog(topic, line, ts) {
   const p = panes[topic] || panes.system;
 
-  // 追加內容
+  // 使用者是否正在底部（只要在底部才自動捲動）
+  const nearBottom = p.scrollTop + p.clientHeight >= p.scrollHeight - 5;
+
   p.textContent += line.endsWith("\n") ? line : line + "\n";
 
-  // 僅在該 pane 為可見分頁 且 仍釘在底部時，才跟隨到底部
-  if (topic === activeTab && pinToBottom[topic]) {
-    scrollToBottom(p);
+  if (topic === activeTab && nearBottom) {
+    p.scrollTop = p.scrollHeight;
   }
 
-  // 更新最後看到的訊息時間（無論當前是否在該分頁）
   const t = Number(ts) || Date.now();
   lastSeen[topic] = Math.max(lastSeen[topic] || 0, t);
   persistLastSeen();
 
-  // 未讀判斷：只在不是當前分頁，且訊息時間大於最後已讀時間時標示
   if (topic !== activeTab && t > (lastRead[topic] || 0)) {
     tabBtns[topic]?.classList.add("unread");
   }
@@ -165,7 +148,6 @@ function persistLastSeen() {
   } catch (_) {}
 }
 function restoreUnreadBadges() {
-  // 開頁就依據 lastSeen vs lastRead 恢復徽章，而不是等 SSE replay
   Object.keys(panes).forEach((topic) => {
     if (topic === activeTab) {
       tabBtns[topic]?.classList.remove("unread");
@@ -196,21 +178,25 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
     telnetInput,
     telnetSendBtn,
     ...telnetBtns,
+    // 存檔管理
+    gwSelect,
+    gnSelect,
+    exportOneBtn,
+    refreshSavesBtn,
+    backupSelect,
+    importBackupBtn,
+    importUploadFile,
+    importUploadBtn,
   ];
 
-  // 先算出四個徽章的狀態（只使用規格允許的值）
-  // 1) 管理後台：ok / err
+  // 徽章
   const backendStatus = backendUp ? "ok" : "err";
-  // 2) SteamCMD：ok / err
   const steamStatus = steamRunning ? "ok" : "err";
-  // 3) 遊戲伺服器：ok(啟動+telnetOK) / warn(啟動+telnetFail) / err(未啟動)
   let gameStatus = "err";
   if (gameRunning && telnetOk) gameStatus = "ok";
   else if (gameRunning && !telnetOk) gameStatus = "warn";
-  // 4) Dedicated Server Telnet：ok / err
   const telnetStatus = telnetOk ? "ok" : "err";
 
-  // 套用徽章
   setBadge(stBackend, backendStatus);
   setBadge(stSteam, steamStatus);
   setBadge(stGame, gameStatus);
@@ -222,37 +208,49 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
     return;
   }
 
-  const lockBecauseBackup = backupInProgress;
-
-  // SteamCMD 執行中
   if (steamRunning) {
     setDisabled(all, true);
-    // 允許：中止安裝、查看設定、查看存檔
     setDisabled([abortInstallBtn, viewConfigBtn, viewSavesBtn], false);
     return;
   }
 
-  // 安裝：Game 不在跑、且沒有備份中
+  const lockBecauseBackup = backupInProgress;
+
+  // 安裝
   const canInstall = !gameRunning && !lockBecauseBackup;
   setDisabled([installServerBtn, versionSelect], !canInstall);
   setDisabled(abortInstallBtn, true);
 
-  // 啟動：Game 不在跑、且沒有備份中
+  // 伺服器啟停
   const canStart = !gameRunning && !lockBecauseBackup;
   setDisabled([startServerBtn], !canStart);
 
-  // 管理（Telnet 指令/停服）：Game 在跑且 telnet OK，且沒有備份中
   const canManage = gameRunning && telnetOk && !lockBecauseBackup;
   setDisabled(
     [stopServerBtn, telnetInput, telnetSendBtn, ...telnetBtns],
     !canManage
   );
 
-  // 強制結束：只要 Game 在跑就開
   setDisabled(killServerBtn, !gameRunning);
 
-  // 備份：Game 必須關閉、且目前沒有備份中
+  // 備份：伺服器需關閉
   setDisabled(backupBtn, gameRunning || lockBecauseBackup);
+
+  // 存檔管理：統一要求伺服器關閉
+  const canManageSaves = !gameRunning && !lockBecauseBackup;
+  setDisabled(
+    [
+      gwSelect,
+      gnSelect,
+      exportOneBtn,
+      refreshSavesBtn,
+      backupSelect,
+      importBackupBtn,
+      importUploadFile,
+      importUploadBtn,
+    ],
+    !canManageSaves
+  );
 }
 
 // ========== API ==========
@@ -284,6 +282,100 @@ async function fetchJSON(url, options = {}, timeoutMs = 10000) {
   }
 }
 
+// ========== 存檔管理（前端） ==========
+let worldMap = new Map(); // world -> [name]
+
+function fillWorldAndName() {
+  // 保存當前選擇
+  const prevWorld = gwSelect.value;
+  const prevName = gnSelect.value;
+
+  // world
+  gwSelect.innerHTML = "";
+  const worlds = Array.from(worldMap.keys()).sort();
+  worlds.forEach((w) => {
+    const opt = document.createElement("option");
+    opt.value = w;
+    opt.textContent = w;
+    gwSelect.appendChild(opt);
+  });
+  if (worlds.length === 0) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "(無)";
+    gwSelect.appendChild(opt);
+  }
+
+  // 盡量還原選擇
+  if (worlds.includes(prevWorld)) gwSelect.value = prevWorld;
+
+  // name
+  fillNamesFor(gwSelect.value || worlds[0] || "");
+
+  // 還原 name
+  if (
+    prevName &&
+    Array.from(gnSelect.options).some((o) => o.value === prevName)
+  ) {
+    gnSelect.value = prevName;
+  }
+}
+
+function fillNamesFor(world) {
+  gnSelect.innerHTML = "";
+  const names = (worldMap.get(world) || []).slice().sort();
+  names.forEach((n) => {
+    const opt = document.createElement("option");
+    opt.value = n;
+    opt.textContent = n;
+    gnSelect.appendChild(opt);
+  });
+  if (names.length === 0) {
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = "(無)";
+    gnSelect.appendChild(opt);
+  }
+}
+
+gwSelect?.addEventListener("change", () => fillNamesFor(gwSelect.value));
+
+async function loadSaves() {
+  try {
+    const resp = await fetchJSON("/api/saves/list", { method: "GET" });
+    const saves = resp?.data?.saves || [];
+    const backups = resp?.data?.backups || [];
+
+    // world map
+    worldMap = new Map();
+    saves.forEach((s) => {
+      const arr = worldMap.get(s.world) || [];
+      if (!arr.includes(s.name)) arr.push(s.name);
+      worldMap.set(s.world, arr);
+    });
+    fillWorldAndName();
+
+    // backups
+    backupSelect.innerHTML = "";
+    if (backups.length === 0) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = "(沒有備份)";
+      backupSelect.appendChild(opt);
+    } else {
+      backups.forEach((b) => {
+        const opt = document.createElement("option");
+        opt.value = b.file;
+        const dt = new Date(b.mtime).toLocaleString();
+        opt.textContent = `${b.file} (${dt})`;
+        backupSelect.appendChild(opt);
+      });
+    }
+  } catch (e) {
+    appendLog("backup", `❌ 讀取存檔清單失敗：${e.message}`, Date.now());
+  }
+}
+
 // ========== 初始化 ==========
 (async function initUI() {
   try {
@@ -296,8 +388,8 @@ async function fetchJSON(url, options = {}, timeoutMs = 10000) {
       if (opt) versionSelect.value = last;
     }
   } catch (_) {}
-  // 初始就恢復徽章（避免 F5 後未讀消失）
   restoreUnreadBadges();
+  loadSaves();
 })();
 
 // ========== SSE ==========
@@ -328,7 +420,7 @@ function setState(s) {
   applyUIState(s);
 }
 
-// ========== 狀態輪詢（依規則更新徽章） ==========
+// ========== 狀態輪詢 ==========
 async function refreshStatus() {
   try {
     const s = await fetchJSON("/api/process-status", { method: "GET" });
@@ -336,9 +428,9 @@ async function refreshStatus() {
     const steam = s.data?.steamCmd || {};
     setState({
       backendUp: true,
-      steamRunning: !!steam.isRunning, // SteamCMD：ok(啟動)/err(未啟動)
-      gameRunning: !!game.isRunning, // Game：ok/warn/err 由 applyUIState 判斷
-      telnetOk: !!game.isTelnetConnected, // Telnet：ok(連得上)/err(連不上)
+      steamRunning: !!steam.isRunning,
+      gameRunning: !!game.isRunning,
+      telnetOk: !!game.isTelnetConnected,
     });
   } catch {
     setState({
@@ -420,6 +512,7 @@ backupBtn.addEventListener("click", async () => {
   try {
     const msg = await fetchText("/api/backup", { method: "POST" });
     appendLog("backup", msg, Date.now());
+    loadSaves();
   } catch (e) {
     appendLog("backup", `❌ ${e.message}`, Date.now());
   } finally {
@@ -502,3 +595,70 @@ telnetSendBtn.addEventListener("click", () => {
   sendTelnet(cmd);
 });
 window.sendTelnet = sendTelnet;
+
+// 存檔管理：事件
+refreshSavesBtn.addEventListener("click", () => loadSaves());
+
+exportOneBtn.addEventListener("click", async () => {
+  const world = gwSelect.value || "";
+  const name = gnSelect.value || "";
+  if (!world || !name) {
+    appendLog("backup", "❌ 請選擇 GameWorld / GameName", Date.now());
+    return;
+  }
+  switchTab("backup");
+  try {
+    const msg = await fetchText("/api/saves/export-one", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ world, name }),
+    });
+    appendLog("backup", msg, Date.now());
+    loadSaves();
+  } catch (e) {
+    appendLog("backup", `❌ ${e.message}`, Date.now());
+  }
+});
+
+importBackupBtn.addEventListener("click", async () => {
+  const file = backupSelect.value || "";
+  if (!file) {
+    appendLog("backup", "❌ 請選擇備份檔", Date.now());
+    return;
+  }
+  switchTab("backup");
+  try {
+    const msg = await fetchText("/api/saves/import-backup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ file }),
+    });
+    appendLog("backup", msg, Date.now());
+  } catch (e) {
+    appendLog("backup", `❌ ${e.message}`, Date.now());
+  }
+});
+
+importUploadBtn.addEventListener("click", async () => {
+  const f = importUploadFile.files?.[0];
+  if (!f) {
+    appendLog("backup", "❌ 請選擇要上傳的 ZIP 檔", Date.now());
+    return;
+  }
+  switchTab("backup");
+  try {
+    const msg = await fetchText(
+      `/api/saves/import-upload?filename=${encodeURIComponent(f.name)}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/octet-stream" },
+        body: f,
+      }
+    );
+    appendLog("backup", msg, Date.now());
+  } catch (e) {
+    appendLog("backup", `❌ ${e.message}`, Date.now());
+  } finally {
+    importUploadFile.value = "";
+  }
+});

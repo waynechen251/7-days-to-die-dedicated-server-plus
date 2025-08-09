@@ -9,7 +9,7 @@ const http = require("./public/lib/http");
 const { formatBytes } = require("./public/lib/bytes");
 const { sendTelnetCommand } = require("./public/lib/telnet");
 const processManager = require("./public/lib/processManager");
-const zip = require("./public/lib/zip");
+const archive = require("./public/lib/archive");
 const eventBus = require("./public/lib/eventBus");
 const { tailFile } = require("./public/lib/tailer");
 
@@ -27,6 +27,7 @@ const serverJsonPath = fs.existsSync(path.join(baseDir, "server.json"))
 let CONFIG = loadConfig();
 const PUBLIC_DIR = path.join(baseDir, "public");
 const BACKUP_SAVES_DIR = path.join(PUBLIC_DIR, "saves");
+const UPLOADS_DIR = path.join(BACKUP_SAVES_DIR, "_uploads");
 
 /** 在 baseDir 內以不分大小寫尋找子目錄名 */
 function resolveDirCaseInsensitive(root, want) {
@@ -73,6 +74,11 @@ const app = express();
 app.use(express.json());
 app.use(express.static(PUBLIC_DIR));
 
+const rawUpload = express.raw({
+  type: "application/octet-stream",
+  limit: "4096mb",
+});
+
 function loadConfig() {
   try {
     const rawData = fs
@@ -92,6 +98,39 @@ function loadConfig() {
 
 function ensureDir(p) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
+}
+function safeJoin(root, p) {
+  const abs = path.resolve(root, p || "");
+  if (!abs.startsWith(path.resolve(root))) throw new Error("非法路徑");
+  return abs;
+}
+function sanitizeName(s) {
+  return String(s || "")
+    .replace(/[\\/:*?"<>|]/g, "_")
+    .trim()
+    .slice(0, 180);
+}
+function listGameSaves(root) {
+  const result = [];
+  try {
+    const worlds = fs
+      .readdirSync(root, { withFileTypes: true })
+      .filter((d) => d.isDirectory());
+    for (const w of worlds) {
+      const worldPath = path.join(root, w.name);
+      const names = fs
+        .readdirSync(worldPath, { withFileTypes: true })
+        .filter((d) => d.isDirectory());
+      for (const n of names) {
+        result.push({
+          world: w.name,
+          name: n.name,
+          path: path.join(worldPath, n.name),
+        });
+      }
+    }
+  } catch (_) {}
+  return result;
 }
 
 /* SSE */
@@ -126,6 +165,30 @@ app.get("/api/process-status", async (req, res) => {
 });
 
 /* 存檔清單 */
+app.get("/api/saves/list", (req, res) => {
+  try {
+    const savesRoot = CONFIG?.game_server?.saves;
+    const saves =
+      savesRoot && fs.existsSync(savesRoot) ? listGameSaves(savesRoot) : [];
+    ensureDir(BACKUP_SAVES_DIR);
+    const files = fs
+      .readdirSync(BACKUP_SAVES_DIR, { withFileTypes: true })
+      .filter((f) => f.isFile() && /\.zip$/i.test(f.name))
+      .map((f) => {
+        const p = path.join(BACKUP_SAVES_DIR, f.name);
+        const st = fs.statSync(p);
+        return { file: f.name, size: st.size, mtime: st.mtimeMs };
+      })
+      .sort((a, b) => b.mtime - a.mtime);
+    return http.respondJson(
+      res,
+      { ok: true, data: { saves, backups: files } },
+      200
+    );
+  } catch (err) {
+    return http.respondJson(res, { ok: false, message: err.message }, 500);
+  }
+});
 app.post("/api/view-saves", (req, res) => {
   ensureDir(BACKUP_SAVES_DIR);
   fs.readdir(BACKUP_SAVES_DIR, (err, files) => {
@@ -143,7 +206,111 @@ app.post("/api/view-saves", (req, res) => {
   });
 });
 
-/* 備份 */
+/* 匯出：指定 GameWorld/GameName 的單一世界存檔為 zip */
+app.post("/api/saves/export-one", async (req, res) => {
+  try {
+    const savesRoot = CONFIG?.game_server?.saves;
+    if (!savesRoot || !fs.existsSync(savesRoot)) {
+      return http.sendErr(
+        req,
+        res,
+        "❌ 找不到遊戲存檔根目錄（CONFIG.game_server.saves）"
+      );
+    }
+    const world = sanitizeName(req.body?.world);
+    const name = sanitizeName(req.body?.name);
+    if (!world || !name)
+      return http.sendErr(req, res, "❌ 需提供 world 與 name");
+
+    const src = path.join(savesRoot, world, name);
+    if (!fs.existsSync(src))
+      return http.sendErr(req, res, `❌ 存檔不存在: ${world}/${name}`);
+
+    ensureDir(BACKUP_SAVES_DIR);
+    const timestamp = format(new Date(), "YYYYMMDDHHmmss");
+    const zipName = `Save-${world}-${name}-${timestamp}.zip`;
+    const outPath = path.join(BACKUP_SAVES_DIR, zipName);
+
+    await archive.zipDirectory(src, outPath);
+    const line = `✅ 匯出完成: ${zipName}`;
+    log(line);
+    eventBus.push("backup", { text: line });
+    return http.sendOk(req, res, line);
+  } catch (err) {
+    const msg = `❌ 匯出失敗: ${err?.message || err}`;
+    error(msg);
+    eventBus.push("backup", { level: "error", text: msg });
+    return http.sendErr(req, res, msg);
+  }
+});
+
+/* 匯入：從後台備份清單選擇 zip 還原至 Saves 根目錄 */
+app.post("/api/saves/import-backup", async (req, res) => {
+  try {
+    const file = req.body?.file;
+    if (!file) return http.sendErr(req, res, "❌ 需提供 file");
+    const zipPath = safeJoin(BACKUP_SAVES_DIR, file);
+    if (!fs.existsSync(zipPath))
+      return http.sendErr(req, res, "❌ 指定備份不存在");
+
+    const savesRoot = CONFIG?.game_server?.saves;
+    if (!savesRoot || !fs.existsSync(savesRoot)) {
+      return http.sendErr(
+        req,
+        res,
+        "❌ 找不到遊戲存檔根目錄（CONFIG.game_server.saves）"
+      );
+    }
+
+    await archive.unzipArchive(zipPath, savesRoot);
+    const line = `✅ 匯入完成: ${path.basename(zipPath)}`;
+    log(line);
+    eventBus.push("backup", { text: line });
+    return http.sendOk(req, res, line);
+  } catch (err) {
+    const msg = `❌ 匯入失敗: ${err?.message || err}`;
+    error(msg);
+    eventBus.push("backup", { level: "error", text: msg });
+    return http.sendErr(req, res, msg);
+  }
+});
+
+/* 匯入：直接上傳 zip 還原至 Saves 根目錄（Content-Type: application/octet-stream） */
+app.post("/api/saves/import-upload", rawUpload, async (req, res) => {
+  try {
+    const buf = req.body;
+    if (!buf || !buf.length) return http.sendErr(req, res, "❌ 未收到檔案");
+    const savesRoot = CONFIG?.game_server?.saves;
+    if (!savesRoot || !fs.existsSync(savesRoot)) {
+      return http.sendErr(
+        req,
+        res,
+        "❌ 找不到遊戲存檔根目錄（CONFIG.game_server.saves）"
+      );
+    }
+
+    ensureDir(UPLOADS_DIR);
+    const filename =
+      sanitizeName(req.query?.filename) ||
+      `Upload-${format(new Date(), "YYYYMMDDHHmmss")}.zip`;
+    const uploadPath = safeJoin(UPLOADS_DIR, filename);
+
+    fs.writeFileSync(uploadPath, buf);
+    await archive.unzipArchive(uploadPath, savesRoot);
+
+    const line = `✅ 匯入完成(上傳): ${path.basename(uploadPath)}`;
+    log(line);
+    eventBus.push("backup", { text: line });
+    return http.sendOk(req, res, line);
+  } catch (err) {
+    const msg = `❌ 匯入失敗(上傳): ${err?.message || err}`;
+    error(msg);
+    eventBus.push("backup", { level: "error", text: msg });
+    return http.sendErr(req, res, msg);
+  }
+});
+
+/* 全量備份（沿用舊路由）：壓縮整個 Saves 根目錄內容 */
 app.post("/api/backup", async (req, res) => {
   try {
     const src = CONFIG?.game_server?.saves;
@@ -157,7 +324,7 @@ app.post("/api/backup", async (req, res) => {
     const outPath = path.join(BACKUP_SAVES_DIR, zipName);
 
     ensureDir(BACKUP_SAVES_DIR);
-    await zip.zipDirectory(src, outPath);
+    await archive.zipDirectory(src, outPath);
 
     const line = `✅ 備份完成: ${zipName}`;
     log(line);
