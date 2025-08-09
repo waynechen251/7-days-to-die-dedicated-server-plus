@@ -36,6 +36,29 @@ document.querySelectorAll(".console-tabs button").forEach((btn) => {
 });
 
 // ========== 小工具 ==========
+function isNearBottom(el, threshold = 40) {
+  // 距離底部 <= threshold 視為釘在底部
+  return el.scrollHeight - el.scrollTop - el.clientHeight <= threshold;
+}
+function scrollToBottom(el) {
+  el.scrollTop = el.scrollHeight;
+}
+
+// 每個頻道是否釘住底部（使用者沒往上翻）
+const pinToBottom = {
+  system: true,
+  steamcmd: true,
+  game: true,
+  telnet: true,
+  backup: true,
+};
+// 監聽每個 console 的捲動，使用者往上看就解除釘住
+Object.entries(panes).forEach(([topic, el]) => {
+  el.addEventListener("scroll", () => {
+    pinToBottom[topic] = isNearBottom(el);
+  });
+});
+
 function switchTab(tab) {
   if (!panes[tab]) return;
   activeTab = tab;
@@ -48,6 +71,11 @@ function switchTab(tab) {
     .querySelectorAll(".console")
     .forEach((p) => p.classList.remove("active"));
   panes[tab].classList.add("active");
+
+  // 點擊頻道：先捲到最底並釘住
+  scrollToBottom(panes[tab]);
+  pinToBottom[tab] = true;
+
   // 標記已讀時間
   lastRead[tab] = Date.now();
   persistLastRead();
@@ -60,8 +88,14 @@ function switchTab(tab) {
 
 function appendLog(topic, line, ts) {
   const p = panes[topic] || panes.system;
+
+  // 追加內容
   p.textContent += line.endsWith("\n") ? line : line + "\n";
-  p.scrollTop = p.scrollHeight;
+
+  // 僅在該 pane 為可見分頁 且 仍釘在底部時，才跟隨到底部
+  if (topic === activeTab && pinToBottom[topic]) {
+    scrollToBottom(p);
+  }
 
   // 更新最後看到的訊息時間（無論當前是否在該分頁）
   const t = Number(ts) || Date.now();
@@ -145,7 +179,7 @@ function restoreUnreadBadges() {
   });
 }
 
-// ========== 互斥規則 ==========
+// ========== 互斥規則與狀態展示 ==========
 let backupInProgress = false;
 
 function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
@@ -164,48 +198,60 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
     ...telnetBtns,
   ];
 
+  // 先算出四個徽章的狀態（只使用規格允許的值）
+  // 1) 管理後台：ok / err
+  const backendStatus = backendUp ? "ok" : "err";
+  // 2) SteamCMD：ok / err
+  const steamStatus = steamRunning ? "ok" : "err";
+  // 3) 遊戲伺服器：ok(啟動+telnetOK) / warn(啟動+telnetFail) / err(未啟動)
+  let gameStatus = "err";
+  if (gameRunning && telnetOk) gameStatus = "ok";
+  else if (gameRunning && !telnetOk) gameStatus = "warn";
+  // 4) Dedicated Server Telnet：ok / err
+  const telnetStatus = telnetOk ? "ok" : "err";
+
+  // 套用徽章
+  setBadge(stBackend, backendStatus);
+  setBadge(stSteam, steamStatus);
+  setBadge(stGame, gameStatus);
+  setBadge(stTelnet, telnetStatus);
   setDisabled(all, false);
 
   if (!backendUp) {
-    setBadge(stBackend, "err");
-    setBadge(stSteam, "err");
-    setBadge(stGame, "err");
-    setBadge(stTelnet, "err");
     setDisabled(all, true);
     return;
-  }
-  setBadge(stBackend, "ok");
-
-  if (steamRunning) {
-    setBadge(stSteam, "ok");
-    setBadge(stGame, gameRunning ? "warn" : "warn");
-    setBadge(stTelnet, "warn");
-    setDisabled(all, true);
-    setDisabled(abortInstallBtn, false);
-    return;
-  } else {
-    setBadge(stSteam, "warn");
   }
 
   const lockBecauseBackup = backupInProgress;
 
-  setBadge(stGame, gameRunning ? "ok" : "warn");
-  setBadge(stTelnet, telnetOk ? "ok" : gameRunning ? "warn" : "err");
+  // SteamCMD 執行中
+  if (steamRunning) {
+    setDisabled(all, true);
+    // 允許：中止安裝、查看設定、查看存檔
+    setDisabled([abortInstallBtn, viewConfigBtn, viewSavesBtn], false);
+    return;
+  }
 
+  // 安裝：Game 不在跑、且沒有備份中
   const canInstall = !gameRunning && !lockBecauseBackup;
   setDisabled([installServerBtn, versionSelect], !canInstall);
   setDisabled(abortInstallBtn, true);
 
+  // 啟動：Game 不在跑、且沒有備份中
   const canStart = !gameRunning && !lockBecauseBackup;
   setDisabled([startServerBtn], !canStart);
 
+  // 管理（Telnet 指令/停服）：Game 在跑且 telnet OK，且沒有備份中
   const canManage = gameRunning && telnetOk && !lockBecauseBackup;
   setDisabled(
     [stopServerBtn, telnetInput, telnetSendBtn, ...telnetBtns],
     !canManage
   );
 
+  // 強制結束：只要 Game 在跑就開
   setDisabled(killServerBtn, !gameRunning);
+
+  // 備份：Game 必須關閉、且目前沒有備份中
   setDisabled(backupBtn, gameRunning || lockBecauseBackup);
 }
 
@@ -270,7 +316,19 @@ function connectSSE() {
 }
 connectSSE();
 
-// ========== 狀態輪詢 ==========
+// ========== 狀態快取 ==========
+let currentState = {
+  backendUp: false,
+  steamRunning: false,
+  gameRunning: false,
+  telnetOk: false,
+};
+function setState(s) {
+  currentState = s;
+  applyUIState(s);
+}
+
+// ========== 狀態輪詢（依規則更新徽章） ==========
 async function refreshStatus() {
   try {
     const s = await fetchJSON("/api/process-status", { method: "GET" });
@@ -278,9 +336,9 @@ async function refreshStatus() {
     const steam = s.data?.steamCmd || {};
     setState({
       backendUp: true,
-      steamRunning: !!steam.isRunning,
-      gameRunning: !!game.isRunning,
-      telnetOk: !!game.isTelnetConnected,
+      steamRunning: !!steam.isRunning, // SteamCMD：ok(啟動)/err(未啟動)
+      gameRunning: !!game.isRunning, // Game：ok/warn/err 由 applyUIState 判斷
+      telnetOk: !!game.isTelnetConnected, // Telnet：ok(連得上)/err(連不上)
     });
   } catch {
     setState({
@@ -308,8 +366,8 @@ installServerBtn.addEventListener("click", () => {
       applyUIState({
         backendUp: true,
         steamRunning: true,
-        gameRunning: false,
-        telnetOk: false,
+        gameRunning: currentState.gameRunning,
+        telnetOk: currentState.telnetOk,
       });
       return res.body.getReader();
     })
@@ -444,39 +502,3 @@ telnetSendBtn.addEventListener("click", () => {
   sendTelnet(cmd);
 });
 window.sendTelnet = sendTelnet;
-
-// ========== 狀態快取 ==========
-let currentState = {
-  backendUp: false,
-  steamRunning: false,
-  gameRunning: false,
-  telnetOk: false,
-};
-function setState(s) {
-  currentState = s;
-  applyUIState(s);
-}
-
-// 覆寫 refreshStatus 的 apply，保持 currentState
-async function refreshStatus() {
-  try {
-    const s = await fetchJSON("/api/process-status", { method: "GET" });
-    const game = s.data?.gameServer || {};
-    const steam = s.data?.steamCmd || {};
-    setState({
-      backendUp: true,
-      steamRunning: !!steam.isRunning,
-      gameRunning: !!game.isRunning,
-      telnetOk: !!game.isTelnetConnected,
-    });
-  } catch {
-    setState({
-      backendUp: false,
-      steamRunning: false,
-      gameRunning: false,
-      telnetOk: false,
-    });
-  } finally {
-    setTimeout(refreshStatus, 5000);
-  }
-}
