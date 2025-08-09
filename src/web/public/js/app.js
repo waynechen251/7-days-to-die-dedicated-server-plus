@@ -208,7 +208,7 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
   );
 
   setDisabled(killServerBtn, !gameRunning);
-  setDisabled(backupBtn, gameRunning);
+  setDisabled(backupBtn, gameRunning || lockBecauseBackup);
 }
 
 // ========== API ==========
