@@ -23,11 +23,9 @@
       </div>
     </header>
 
-    <!-- 新增：上下雙區塊 (上：卡片 / 下：Console)，各自獨立滾動 -->
     <div class="app-split">
       <div class="pane pane-main">
         <main class="grid">
-          <!-- ===== 原卡片區 ===== -->
           <section class="card">
             <h2>SteamCMD</h2>
             <div class="row">
@@ -69,12 +67,10 @@
             <h2>管理後台</h2>
             <div class="row">
               <button id="viewConfigBtn">⚙️ 查看管理後台設定檔</button>
-              <button id="backupBtn">💾 備份遊戲伺服器存檔</button>
             </div>
           </section>
 
           <section class="card card-saves">
-            <!-- 保留既有存檔管理結構 -->
             <header class="saves-header">
               <h2 class="card-title">存檔管理</h2>
               <div class="btn-bar">
@@ -117,7 +113,7 @@
                   class="btn"
                   title="備份目前選擇的世界+存檔"
                 >
-                  📤 備份所選存檔
+                  📤 僅備份所選世界
                 </button>
                 <button
                   id="backupFullBtn"
@@ -166,7 +162,6 @@
               </div>
             </section>
           </section>
-          <!-- ===== /原卡片區 ===== -->
         </main>
       </div>
 

@@ -1,6 +1,5 @@
 // ========== DOM ==========
 const installServerBtn = document.getElementById("installServerBtn");
-const backupBtn = document.getElementById("backupBtn");
 const viewConfigBtn = document.getElementById("viewConfigBtn");
 const startServerBtn = document.getElementById("startServerBtn");
 const stopServerBtn = document.getElementById("stopServerBtn");
@@ -164,7 +163,6 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
   const all = [
     installServerBtn,
     abortInstallBtn,
-    backupBtn,
     backupFullBtn,
     viewConfigBtn,
     startServerBtn,
@@ -225,15 +223,14 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
   );
 
   setDisabled(killServerBtn, !gameRunning);
-  setDisabled(backupBtn, gameRunning || lockBecauseBackup);
   setDisabled(backupFullBtn, gameRunning || lockBecauseBackup);
+  setDisabled(exportOneBtn, gameRunning || lockBecauseBackup);
 
   const canManageSaves = !gameRunning && !lockBecauseBackup;
   setDisabled(
     [
       gwSelect,
       gnSelect,
-      exportOneBtn,
       refreshSavesBtn,
       viewBackupsBtn,
       backupSelect,
@@ -475,22 +472,6 @@ abortInstallBtn.addEventListener("click", async () => {
   }
 });
 
-backupBtn.addEventListener("click", async () => {
-  switchTab("backup");
-  backupInProgress = true;
-  applyUIState(currentState);
-  try {
-    const msg = await fetchText("/api/backup", { method: "POST" });
-    appendLog("backup", msg, Date.now());
-    loadSaves();
-  } catch (e) {
-    appendLog("backup", `❌ ${e.message}`, Date.now());
-  } finally {
-    backupInProgress = false;
-    applyUIState(currentState);
-  }
-});
-
 viewConfigBtn.addEventListener("click", async () => {
   switchTab("system");
   try {
@@ -587,6 +568,8 @@ exportOneBtn.addEventListener("click", async () => {
     return;
   }
   switchTab("backup");
+  backupInProgress = true;
+  applyUIState(currentState);
   try {
     const msg = await fetchText("/api/saves/export-one", {
       method: "POST",
@@ -597,6 +580,9 @@ exportOneBtn.addEventListener("click", async () => {
     loadSaves();
   } catch (e) {
     appendLog("backup", `❌ ${e.message}`, Date.now());
+  } finally {
+    backupInProgress = false;
+    applyUIState(currentState);
   }
 });
 
