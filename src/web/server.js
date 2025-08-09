@@ -87,7 +87,7 @@ app.post("/api/backup", async (req, res) => {
       return http.sendErr(
         req,
         res,
-        `❌ 備份失敗：找不到存檔資料夾（${src || "未設定"}）`
+        `❌ 備份失敗: 找不到存檔資料夾(${src || "未設定"})`
       );
     }
     const timestamp = format(new Date(), "YYYYMMDDHHmmss");
@@ -172,8 +172,8 @@ app.post("/api/install-abort", (req, res) => {
   try {
     if (processManager.steamCmd.isRunning) {
       processManager.steamCmd.abort();
-      log(`🚀 已請求中止安裝（透過 processManager）`);
-      return http.sendOk(req, res, "✅ 已請求中止安裝（透過 processManager）");
+      log(`🚀 已請求中止安裝`);
+      return http.sendOk(req, res, "✅ 已請求中止安裝");
     }
     log(`⚠️ 沒有正在執行的安裝任務`);
     return http.sendOk(req, res, "⚠️ 沒有正在執行的安裝任務");
@@ -198,7 +198,7 @@ app.post("/api/start", async (req, res) => {
       return http.sendErr(
         req,
         res,
-        `❌ 找不到執行檔：${exePath}\n請先執行「安裝 / 更新」，或確認路徑為 {app}\\gameserver\\7DaysToDieServer.exe`
+        `❌ 找不到執行檔: ${exePath}\n請先執行「安裝 / 更新」，或確認路徑為 {app}\\gameserver\\7DaysToDieServer.exe`
       );
     }
 

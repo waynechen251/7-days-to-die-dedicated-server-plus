@@ -8,7 +8,7 @@ const gameServer = {
   isTelnetConnected: false,
 
   /**
-   * 啟動 7D2D 伺服器（保留相容：由外部決定 args 與 cwd）
+   * 啟動 7D2D 伺服器(保留相容: 由外部決定 args 與 cwd)
    * @param {string[]} args
    * @param {string} gameServerPath
    * @param {{exeName?:string}} options
@@ -28,7 +28,7 @@ const gameServer = {
   },
 
   /**
-   * 若 Telnet 關不了（或 Telnet 掛了），可用 killTree 強制結束
+   * 若 Telnet 關不了(或 Telnet 掛了)，可用 killTree 強制結束
    */
   killTree() {
     if (!this.child || this.child.killed) {

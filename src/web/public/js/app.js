@@ -73,27 +73,27 @@ async function fetchJSON(url, options = {}, timeoutMs = 10000) {
   }
 }
 
-// 互斥規則：單一來源統一控管
+// 互斥規則: 單一來源統一控管
 function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
   setDisabled(allActionButtons, false);
   versionSelect.disabled = false;
 
   if (!backendUp) {
-    // 後台不可用：全部禁用
+    // 後台不可用: 全部禁用
     setDisabled(allActionButtons, true);
     versionSelect.disabled = true;
     return;
   }
 
   if (steamRunning) {
-    // SteamCMD 執行中：僅允許中斷安裝
+    // SteamCMD 執行中: 僅允許中斷安裝
     setDisabled(allActionButtons, true);
     setDisabled(abortInstallBtn, false);
     versionSelect.disabled = true;
     return;
   }
 
-  // SteamCMD 未執行：依遊戲伺服器狀態開放
+  // SteamCMD 未執行: 依遊戲伺服器狀態開放
   const canInstall = !gameRunning;
   setDisabled(installServerBtn, !canInstall);
   versionSelect.disabled = !canInstall;
@@ -106,7 +106,7 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
   setDisabled(stopServerBtn, !canManage);
   setDisabled(infoButtons, !canManage);
 
-  // 備份按鈕：僅在遊戲伺服器停止時可用
+  // 備份按鈕: 僅在遊戲伺服器停止時可用
   setDisabled(backupBtn, gameRunning);
 }
 
@@ -121,7 +121,7 @@ function renderServerStatus(data) {
   const telnetOk = !!game.isTelnetConnected;
 
   const gameText = gameRunning
-    ? `✅ 遊戲伺服器運行中（Telnet ${telnetOk ? "正常" : "異常"}）`
+    ? `✅ 遊戲伺服器運行中(Telnet ${telnetOk ? "正常" : "異常"})`
     : "❌ 遊戲伺服器未運行";
   const steamText = steamRunning ? "🟢 SteamCMD 執行中" : "⚪ SteamCMD 未執行";
 
@@ -155,7 +155,7 @@ async function fetchApi(url, options = {}) {
     const text = await fetchText(url, options);
     updateOutput(text);
   } catch (err) {
-    updateOutput(`❌ 發生錯誤：${err.message}`);
+    updateOutput(`❌ 發生錯誤: ${err.message}`);
   }
 }
 
@@ -230,7 +230,7 @@ installServerBtn.addEventListener("click", () => {
       }
       read();
     })
-    .catch((err) => updateOutput(`❌ 發生錯誤：${err.message}`));
+    .catch((err) => updateOutput(`❌ 發生錯誤: ${err.message}`));
 });
 
 abortInstallBtn.addEventListener("click", () => {
@@ -245,7 +245,7 @@ abortInstallBtn.addEventListener("click", () => {
         telnetOk: false,
       });
     })
-    .catch((err) => updateOutput(`❌ 發生錯誤：${err.message}`));
+    .catch((err) => updateOutput(`❌ 發生錯誤: ${err.message}`));
 });
 
 backupBtn.addEventListener("click", async () => {
@@ -257,7 +257,7 @@ backupBtn.addEventListener("click", async () => {
     updateOutput(
       err.name === "AbortError"
         ? "❌ 已超時，請稍後再試"
-        : `❌ 發生錯誤：${err.message}`
+        : `❌ 發生錯誤: ${err.message}`
     );
   } finally {
     backupBtn.disabled = false;

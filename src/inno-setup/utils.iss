@@ -160,7 +160,7 @@ begin
 
 end;
 
-// 輔助函數來創建下拉選單控件（禁止手動輸入）
+// 輔助函數來創建下拉選單控件(禁止手動輸入)
 function CreateComboBox(_Parent: TWinControl; const _Top: Integer; const _Left: Integer): TComboBox;
 var
   _ComboBox: TComboBox;

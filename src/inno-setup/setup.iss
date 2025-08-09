@@ -109,7 +109,7 @@ begin
 
       Log('CurStepChanged: ssDone');
 
-      // 安裝服務（注意：路徑與參數分開）
+      // 安裝服務(注意: 路徑與參數分開)
       Exec(ExpandConstant('{app}\nssm.exe'),
         'install {#AppName} ' + '"' + ExpandConstant('{app}\server.exe') + '"',
         '', SW_HIDE, ewWaitUntilTerminated, ResultCode
@@ -168,7 +168,7 @@ begin
       RegWriteStringValue(HKLM, 'Software\7DTD-DS-P', 'InstallPath', ExpandConstant('{app}'));
       RegWriteStringValue(HKLM, 'Software\7DTD-DS-P', 'WebPort', WebPortInput.Text);
 
-      // 啟動服務（如果需要安裝完成後直接啟動）
+      // 啟動服務(如果需要安裝完成後直接啟動)
       Exec('cmd.exe', '/C net start {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
 
       // 開啟瀏覽器

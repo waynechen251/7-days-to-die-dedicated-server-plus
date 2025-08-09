@@ -10,8 +10,8 @@
 
 ## 功能特色
 
-- ✅ **Web 操作伺服器**：支援啟動 / 關閉 Dedicated Server (可選 GUI / No GUI 模式)
-- 📥 **一鍵安裝 / 更新**：整合 `steamcmd` 自動安裝 / 更新遊戲伺服器
+- ✅ **Web 操作伺服器**: 支援啟動 / 關閉 Dedicated Server (可選 GUI / No GUI 模式)
+- 📥 **一鍵安裝 / 更新**: 整合 `steamcmd` 自動安裝 / 更新遊戲伺服器
 - 💾 **遊戲存檔管理功能**
 - 📜 **服務化運行** (支援安裝為 Windows 服務)
 - 🔌 **模組管理功能** (計畫中)
@@ -45,15 +45,15 @@
 
 ![Setup](demo-setup-cht.png)
 
-安裝程式會：
+安裝程式會: 
 
 - 安裝依賴工具 (7-Zip / steamcmd / nssm)
 - 自動建立 `server.json` (含使用者帳號的存檔路徑)
-- 註冊並安裝為 Windows 服務 (名稱：`7DTD-DS-P`)
+- 註冊並安裝為 Windows 服務 (名稱: `7DTD-DS-P`)
 
 #### 2. 開啟 Web 控制台
 
-安裝完成後，瀏覽器將自動開啟：
+安裝完成後，瀏覽器將自動開啟: 
 
 ```
 http://localhost:26902/
@@ -72,7 +72,7 @@ http://localhost:26902/
 
 #### 1. 安裝 Node.js (建議 v22+)
 
-以下擇一安裝：
+以下擇一安裝: 
 
 - (推薦) [nvm-windows](https://github.com/coreybutler/nvm-windows.git)
 - [Node.js](https://nodejs.org/)
@@ -101,7 +101,7 @@ npm start
 
 #### 5. 訪問管理後台
 
-結束安裝後，瀏覽器將自動開啟：
+結束安裝後，瀏覽器將自動開啟: 
 
 ```
 http://localhost:26902/
