@@ -7,14 +7,6 @@ const steamcmd = {
   isRunning: false,
   waitingForInput: false,
 
-  /**
-   * 啟動 steamcmd
-   * @param {string[]} args
-   * @param {(data:string)=>void} onData
-   * @param {(err:string)=>void} onError
-   * @param {(code:number)=>void} onClose
-   * @param {{autoQuitOnPrompt?:boolean,cwd?:string}} options
-   */
   start(args, onData, onError, onClose, options = {}) {
     if (this.isRunning) throw new Error("steamcmd 已經在執行中");
     const { autoQuitOnPrompt = true, cwd = process.cwd() } = options;

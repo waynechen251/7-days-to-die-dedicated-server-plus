@@ -12,10 +12,6 @@ function ensureDir(p) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 }
 
-/**
- * 以 PowerShell 壓縮資料夾內容(等同於 Compress-Archive -Path "<src>\*")
- * 不包含最外層資料夾本身，只收其中內容。
- */
 function zipDirectory(srcDir, outZip) {
   return new Promise((resolve, reject) => {
     const src = path.resolve(srcDir);
@@ -27,7 +23,6 @@ function zipDirectory(srcDir, outZip) {
       `if (Test-Path -LiteralPath '${esc(
         dst
       )}') { Remove-Item -LiteralPath '${esc(dst)}' -Force; }`,
-      // 以 * 包含內容
       `Compress-Archive -Path '${esc(src)}\\*' -DestinationPath '${esc(
         dst
       )}' -CompressionLevel Optimal -Force;`,
@@ -45,9 +40,6 @@ function zipDirectory(srcDir, outZip) {
   });
 }
 
-/**
- * 以 PowerShell 解壓縮至目標資料夾
- */
 function unzipArchive(zipPath, destDir) {
   return new Promise((resolve, reject) => {
     const zip = path.resolve(zipPath);

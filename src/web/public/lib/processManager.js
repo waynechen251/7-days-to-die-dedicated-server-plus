@@ -58,11 +58,9 @@ const processManager = {
     killTree() {
       gameServer.killTree();
     },
-    /** 以 PID 強制關閉(若未傳入則使用內部記錄的 PID) */
     async killByPid(pid) {
       return await gameServer.killByPid(pid);
     },
-    /** 取得目前或最後已知 PID */
     getPid() {
       return gameServer.getPid();
     },

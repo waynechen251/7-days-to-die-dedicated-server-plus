@@ -13,7 +13,7 @@ const processManager = require("./public/lib/processManager");
 const archive = require("./public/lib/archive");
 const eventBus = require("./public/lib/eventBus");
 const { tailFile } = require("./public/lib/tailer");
-const serverConfigLib = require("./public/lib/serverConfig"); // 讀寫 serverconfig.xml
+const serverConfigLib = require("./public/lib/serverConfig");
 
 const execAsync = promisify(exec);
 
@@ -31,7 +31,6 @@ const PUBLIC_DIR = path.join(baseDir, "public");
 const BACKUP_SAVES_DIR = path.join(PUBLIC_DIR, "saves");
 const UPLOADS_DIR = path.join(BACKUP_SAVES_DIR, "_uploads");
 
-/** 在 baseDir 內以不分大小寫尋找子目錄名 */
 function resolveDirCaseInsensitive(root, want) {
   try {
     const entries = fs.readdirSync(root, { withFileTypes: true });
@@ -44,7 +43,6 @@ function resolveDirCaseInsensitive(root, want) {
   }
 }
 
-/** 在 dir 內以不分大小寫尋找檔案 */
 function resolveFileCaseInsensitive(dir, file) {
   try {
     const entries = fs.readdirSync(dir, { withFileTypes: true });
@@ -57,7 +55,6 @@ function resolveFileCaseInsensitive(dir, file) {
   }
 }
 
-/** 儲存 server.json(維持現有格式) */
 function saveConfig() {
   try {
     fs.writeFileSync(serverJsonPath, JSON.stringify(CONFIG, null, 2), "utf-8");
@@ -91,6 +88,23 @@ function loadConfig() {
       `✅ 成功讀取設定檔 ${serverJsonPath}:\n${JSON.stringify(config, null, 2)}`
     );
     if (!config.web) config.web = {};
+
+    if (
+      Object.prototype.hasOwnProperty.call(config.web, "lastInstallVersion")
+    ) {
+      if (config.web.lastInstallVersion === "") {
+        config.web.lastInstallVersion = "public";
+        log("ℹ️ 遷移 lastInstallVersion 空字串為 'public'");
+        try {
+          fs.writeFileSync(
+            serverJsonPath,
+            JSON.stringify(config, null, 2),
+            "utf-8"
+          );
+        } catch (_) {}
+      }
+    }
+
     return config;
   } catch (err) {
     error(`❌ 讀取設定檔失敗: ${serverJsonPath}\n${err.message}`);
@@ -135,15 +149,12 @@ function listGameSaves(root) {
   return result;
 }
 
-/* SSE */
 app.get("/api/stream", eventBus.sseHandler);
 
-/* 讀取設定(JSON 格式，給前端初始化 UI 用) */
 app.get("/api/get-config", (req, res) => {
   return http.respondJson(res, { ok: true, data: CONFIG }, 200);
 });
 
-/* 狀態 */
 app.get("/api/process-status", async (req, res) => {
   try {
     await processManager.gameServer.checkTelnet(CONFIG.game_server);
@@ -166,9 +177,6 @@ app.get("/api/process-status", async (req, res) => {
   }
 });
 
-/* ===== 本機 TCP 連接埠檢查(多介面) =====
-   能監聽 => 未被佔用；EADDRINUSE / EACCES => 視為佔用。
-   嘗試介面: 0.0.0.0、127.0.0.1、::、::1(任一介面占用就算占用) */
 function tryBindOnce(port, host) {
   return new Promise((resolve) => {
     const srv = net.createServer();
@@ -185,7 +193,6 @@ function tryBindOnce(port, host) {
       if (err && (err.code === "EADDRINUSE" || err.code === "EACCES")) {
         done(true);
       } else {
-        // 其他錯誤(如地址不可用)，不視為佔用
         done(false);
       }
     });
@@ -195,7 +202,6 @@ function tryBindOnce(port, host) {
     try {
       srv.listen({ port, host });
     } catch (_) {
-      // 同步例外，多半為權限或占用，保守視為佔用
       done(true);
     }
   });
@@ -207,7 +213,6 @@ async function checkPortInUse(port) {
   return results.some((r) => r.inUse);
 }
 
-/* 供前端檢查連接埠佔用情況(本機 TCP，不是 HTTP) */
 app.get("/api/check-port", async (req, res) => {
   const p = parseInt(req.query?.port, 10);
   if (!Number.isFinite(p) || p <= 0 || p > 65535) {
@@ -225,7 +230,6 @@ app.get("/api/check-port", async (req, res) => {
   }
 });
 
-/* 存檔清單 */
 app.get("/api/saves/list", (req, res) => {
   try {
     const savesRoot = CONFIG?.game_server?.saves;
@@ -268,7 +272,6 @@ app.post("/api/view-saves", (req, res) => {
   });
 });
 
-/* 匯出: 指定 GameWorld/GameName 的單一世界存檔為 zip */
 app.post("/api/saves/export-one", async (req, res) => {
   try {
     const savesRoot = CONFIG?.game_server?.saves;
@@ -306,7 +309,6 @@ app.post("/api/saves/export-one", async (req, res) => {
   }
 });
 
-/* 匯入: 從後台備份清單選擇 zip 還原至 Saves 根目錄 */
 app.post("/api/saves/import-backup", async (req, res) => {
   try {
     const file = req.body?.file;
@@ -337,7 +339,6 @@ app.post("/api/saves/import-backup", async (req, res) => {
   }
 });
 
-/* 匯入: 直接上傳 zip 還原至 Saves 根目錄(Content-Type: application/octet-stream) */
 app.post("/api/saves/import-upload", rawUpload, async (req, res) => {
   try {
     const buf = req.body;
@@ -372,7 +373,6 @@ app.post("/api/saves/import-upload", rawUpload, async (req, res) => {
   }
 });
 
-/* 全量備份(沿用舊路由): 壓縮整個 Saves 根目錄內容 */
 app.post("/api/backup", async (req, res) => {
   try {
     const src = CONFIG?.game_server?.saves;
@@ -400,10 +400,10 @@ app.post("/api/backup", async (req, res) => {
   }
 });
 
-/* 安裝/更新 */
 app.post("/api/install", (req, res) => {
   try {
-    const version = req.body?.version ?? "";
+    const rawVersion = (req.body?.version ?? "").trim();
+    const version = rawVersion === "" ? "public" : rawVersion;
     CONFIG.web.lastInstallVersion = version;
     saveConfig();
 
@@ -414,7 +414,7 @@ app.post("/api/install", (req, res) => {
       GAME_DIR,
       "+app_update",
       "294420",
-      ...(version ? ["-beta", version] : []),
+      ...(version !== "public" ? ["-beta", version] : []),
       "validate",
       "+quit",
     ];
@@ -451,7 +451,6 @@ app.post("/api/install", (req, res) => {
   }
 });
 
-/* 中斷安裝 */
 app.post("/api/install-abort", (req, res) => {
   try {
     if (processManager?.steamCmd?.abort && processManager.steamCmd.isRunning) {
@@ -465,7 +464,6 @@ app.post("/api/install-abort", (req, res) => {
   }
 });
 
-/* 啟動伺服器 */
 app.post("/api/start", async (req, res) => {
   if (processManager.gameServer.isRunning) {
     return http.sendOk(req, res, "❌ 伺服器已經在運行中，請先關閉伺服器再試。");
@@ -531,7 +529,6 @@ app.post("/api/start", async (req, res) => {
       });
     }
 
-    // 讀取 serverconfig.xml 的 Telnet / Ports 設定，覆寫到運行時 CONFIG 供 Telnet 控制使用
     try {
       if (!CONFIG.game_server) CONFIG.game_server = {};
       if (configArg) {
@@ -626,7 +623,6 @@ app.post("/api/start", async (req, res) => {
   }
 });
 
-/* 正常關閉 */
 app.post("/api/stop", async (req, res) => {
   try {
     const result = await sendTelnetCommand(CONFIG.game_server, "shutdown");
@@ -647,7 +643,6 @@ app.post("/api/stop", async (req, res) => {
   }
 });
 
-/* 強制關閉(以 PID 為準) */
 app.post("/api/kill", async (req, res) => {
   try {
     const pidFromBody = req.body?.pid;
@@ -688,7 +683,6 @@ app.post("/api/kill", async (req, res) => {
   }
 });
 
-/* Telnet */
 app.post("/api/telnet", async (req, res) => {
   const command = req.body?.command ?? "";
   if (!command)
@@ -708,7 +702,6 @@ app.post("/api/telnet", async (req, res) => {
   }
 });
 
-/* 配置檢視(文字版) */
 app.post("/api/view-config", (req, res) => {
   try {
     const config = CONFIG;
@@ -722,7 +715,6 @@ app.post("/api/view-config", (req, res) => {
   }
 });
 
-/* Telnet 探測 */
 app.post("/api/server-status", async (req, res) => {
   try {
     await sendTelnetCommand(CONFIG.game_server, "version");
@@ -736,7 +728,6 @@ app.post("/api/server-status", async (req, res) => {
   }
 });
 
-// 取得 serverconfig.xml 實際路徑 (沿用 /api/start 的搜尋邏輯)
 function resolveServerConfigPath() {
   const stripQuotes = (s) =>
     typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
@@ -760,7 +751,6 @@ function resolveServerConfigPath() {
   return null;
 }
 
-// 讀取 serverconfig.xml
 app.get("/api/serverconfig", (req, res) => {
   try {
     const cfgPath = resolveServerConfigPath();
@@ -793,7 +783,6 @@ app.get("/api/serverconfig", (req, res) => {
   }
 });
 
-// 寫入 serverconfig.xml (僅更新傳入的 key)
 app.post("/api/serverconfig", (req, res) => {
   try {
     if (processManager.gameServer.isRunning) {

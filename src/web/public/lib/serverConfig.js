@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 
-/** 讀取 serverconfig.xml 的所有 <property name="*" value="*"/> 值 */
 function readValues(xmlPath) {
   const xml = fs.readFileSync(xmlPath, "utf-8").replace(/^\uFEFF/, "");
   const items = [];
@@ -14,7 +13,6 @@ function readValues(xmlPath) {
   return { xml, items };
 }
 
-/** 僅更新指定 name 的 value，保留其餘內容與格式 */
 function writeValues(xmlPath, updates = {}) {
   let xml = fs.readFileSync(xmlPath, "utf-8").replace(/^\uFEFF/, "");
   const changed = [];
@@ -23,14 +21,12 @@ function writeValues(xmlPath, updates = {}) {
     const name = String(rawName);
     const val = xmlEncode(String(rawVal));
 
-    // name 在前
     const re1 = new RegExp(
       `(<property\\b[^>]*\\bname\\s*=\\s*"${escapeReg(
         name
       )}"[^>]*\\bvalue\\s*=\\s*")([^"]*)(")`,
       "i"
     );
-    // value 在前
     const re2 = new RegExp(
       `(<property\\b[^>]*\\bvalue\\s*=\\s*")[^"]*("(?=[^>]*\\bname\\s*=\\s*"${escapeReg(
         name

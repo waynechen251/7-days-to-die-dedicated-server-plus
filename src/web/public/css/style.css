@@ -29,11 +29,10 @@
   --console-dock-max: 80vh;
   --console-dock-collapsed: 32px;
   --topbar-h: 48px;
-  /* 新增: 上下分割預設主區高度(百分比) */
   --split-main-size: 50%;
   --split-bar-size: 6px;
-  --split-main-min: 15%; /* 主區最小 15% */
-  --split-main-max: 85%; /* 主區最大 85% */
+  --split-main-min: 15%;
+  --split-main-max: 85%;
 }
 
 * {
@@ -52,7 +51,7 @@ body {
   background: var(--c-bg);
   color: var(--c-text);
   -webkit-font-smoothing: antialiased;
-  overflow: hidden; /* 由兩 pane 自行滾動 */
+  overflow: hidden;
 }
 
 h1,
@@ -68,7 +67,6 @@ p {
   margin: 0 0 var(--space-3);
 }
 
-/* ========== Top Bar ========== */
 .topbar {
   display: flex;
   align-items: center;
@@ -104,7 +102,6 @@ p {
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* 新增: 頂列內的即時狀態徽章容器 */
 .topbar .status-inline {
   display: flex;
   flex-wrap: wrap;
@@ -141,7 +138,6 @@ p {
   color: #fff;
 }
 
-/* 窄螢幕時讓徽章換行並縮小間距 */
 @media (max-width: 720px) {
   .topbar {
     flex-wrap: wrap;
@@ -162,7 +158,6 @@ p {
   }
 }
 
-/* 可選: 深色模式徽章在頂列顏色微調 */
 @media (prefers-color-scheme: dark) {
   .topbar .status-inline .badge {
     background: var(--c-surface-alt);
@@ -170,14 +165,12 @@ p {
   }
 }
 
-/* ========== Layout Grid ========== */
 main.grid {
   width: min(1600px, 100%);
   margin: 0 auto;
   padding: var(--space-4) clamp(var(--space-3), 2vw, var(--space-5));
   display: grid;
   gap: var(--space-5);
-  /* 自動填滿，每張卡最小寬度 28rem (縮小時自動落下一列) */
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 28rem), 1fr));
 }
 
@@ -193,12 +186,10 @@ main.grid {
   min-width: 0;
 }
 
-/* 讓 console 卡寬度填滿所有欄 */
 .card-console.span2 {
   grid-column: 1 / -1;
 }
 
-/* ========== Generic Flex Helpers ========== */
 .row {
   display: flex;
   flex-wrap: wrap;
@@ -213,7 +204,6 @@ main.grid {
   flex-wrap: wrap;
 }
 
-/* ========== Badges ========== */
 .status-row {
   display: flex;
   flex-wrap: wrap;
@@ -250,7 +240,6 @@ main.grid {
   color: #991b1b;
 }
 
-/* ========== Buttons ========== */
 button {
   font: 500 0.8rem/1 var(--font-stack);
   cursor: pointer;
@@ -314,6 +303,22 @@ button:disabled {
   background: var(--c-surface-alt);
 }
 
+.btn--attention {
+  animation: pulse 1.2s ease-in-out infinite;
+  outline: 2px solid #ff9800;
+}
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.6);
+  }
+  70% {
+    box-shadow: 0 0 0 8px rgba(255, 152, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 152, 0, 0);
+  }
+}
+
 .btn-bar,
 .btn-row {
   display: flex;
@@ -321,7 +326,6 @@ button:disabled {
   gap: var(--space-2);
 }
 
-/* ========== Saves Card (存檔管理) ========== */
 .card-saves {
   gap: var(--space-4);
 }
@@ -403,7 +407,6 @@ select:focus {
   grid-column: span 2;
 }
 
-/* SR only */
 .sr-only {
   position: absolute;
   width: 1px;
@@ -416,12 +419,10 @@ select:focus {
   border: 0;
 }
 
-/* 通用隱藏(供 cfgLockBanner 使用) */
 .hidden {
   display: none !important;
 }
 
-/* ========== Console ========== */
 .console-tabs {
   display: flex;
   gap: var(--space-2);
@@ -440,7 +441,6 @@ select:focus {
   box-shadow: 0 0 0 2px #f59e0b inset;
 }
 
-/* 原本的 .console 規則會限制高度，改為只套用在卡片情境 */
 .card .console {
   font: 400 0.72rem/1.25 var(--mono);
   background: #111;
@@ -459,7 +459,6 @@ select:focus {
   display: block;
 }
 
-/* 分割模式下的 Console(覆蓋卡片設定，允許隨拖曳伸縮) */
 .pane-console .console-shell {
   flex: 1;
   display: flex;
@@ -492,7 +491,6 @@ select:focus {
   display: block;
 }
 
-/* 針對分割模式的滾動條 */
 .pane-console .console::-webkit-scrollbar {
   width: 0.7rem;
 }
@@ -525,7 +523,6 @@ select:focus {
   display: block;
 }
 
-/* 滾動條淡化 */
 .console::-webkit-scrollbar {
   width: 0.65rem;
 }
@@ -540,7 +537,6 @@ select:focus {
   background: #475569;
 }
 
-/* ========== Console Dock ========== */
 .console-dock {
   position: fixed;
   left: 0;
@@ -572,7 +568,6 @@ select:focus {
 }
 
 .console-dock .resize-grip {
-  /* 增加可點擊高度以利拖曳 */
   height: 10px;
 }
 
@@ -680,7 +675,6 @@ select:focus {
 }
 
 body {
-  /* 使主內容不被 dock 遮住 (只在展開時留空間，不影響固定高度計算) */
   padding-bottom: calc(var(--console-dock-collapsed) + 4px);
 }
 
@@ -735,18 +729,15 @@ body.has-dock-open {
   }
 }
 
-/* 新增: 上下分割布局與獨立滾動，移除舊 console-dock 固定樣式相關 */
-
 html,
 body {
   height: 100%;
 }
 
 body {
-  overflow: hidden; /* 由兩 pane 自行滾動 */
+  overflow: hidden;
 }
 
-/* 兩大區塊容器 (扣掉頂列高度) */
 :root {
   --topbar-h: 48px;
 }
@@ -756,7 +747,6 @@ body {
   box-sizing: border-box;
 }
 
-/* Split */
 .app-split {
   height: calc(100vh - var(--topbar-h));
   display: flex;
@@ -787,7 +777,6 @@ body {
   min-height: 0;
 }
 
-/* 新增: 拖曳分隔條 */
 .split-resizer {
   flex: 0 0 var(--split-bar-size);
   cursor: row-resize;
@@ -810,20 +799,17 @@ body {
   pointer-events: none;
 }
 
-/* 拖曳中即時反應(移除 transition 以免卡頓，如有) */
 .app-split.resizing .pane-main,
 .app-split.resizing .pane-console {
   transition: none !important;
 }
 
-/* 行動裝置仍允許拖曳；調整握把尺寸 */
 @media (max-width: 900px) {
   .split-resizer {
     --split-bar-size: 8px;
   }
 }
 
-/* ================== serverconfig.xml Modal ================== */
 .modal.hidden {
   display: none !important;
 }
@@ -881,7 +867,6 @@ body {
   border-top: 1px solid var(--c-border-soft);
 }
 
-/* 編輯表單 */
 .cfg-grid {
   display: grid;
   grid-template-columns: 240px 1fr;
@@ -922,7 +907,6 @@ body {
   }
 }
 
-/* ===== cfg hints ===== */
 .cfg-label {
   display: flex;
   align-items: center;
@@ -946,7 +930,6 @@ body {
   filter: brightness(0.95);
 }
 
-/* ===== checks panel ===== */
 .cfg-checks.hidden {
   display: none !important;
 }

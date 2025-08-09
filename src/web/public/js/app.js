@@ -1,4 +1,3 @@
-// ========== DOM ==========
 const installServerBtn = document.getElementById("installServerBtn");
 const viewConfigBtn = document.getElementById("viewConfigBtn");
 const startServerBtn = document.getElementById("startServerBtn");
@@ -12,7 +11,6 @@ const telnetBtns = Array.from(
   document.querySelectorAll('button[data-role="telnet"]')
 );
 
-// 存檔管理 DOM
 const gwSelect = document.getElementById("gwSelect");
 const gnSelect = document.getElementById("gnSelect");
 const exportOneBtn = document.getElementById("exportOneBtn");
@@ -28,7 +26,6 @@ const stGame = document.getElementById("st-game");
 const stTelnet = document.getElementById("st-telnet");
 const backupFullBtn = document.getElementById("backupFullBtn");
 
-// serverconfig.xml 浮窗 DOM
 const editConfigBtn = document.getElementById("editConfigBtn");
 const cfgModal = document.getElementById("cfgModal");
 const cfgBody = document.getElementById("cfgBody");
@@ -39,7 +36,6 @@ const cfgSaveBtn = document.getElementById("cfgSaveBtn");
 const cfgSaveStartBtn = document.getElementById("cfgSaveStartBtn");
 const cfgLockBanner = document.getElementById("cfgLockBanner");
 
-// Console panes & tabs
 const panes = {
   system: document.getElementById("console-system"),
   steamcmd: document.getElementById("console-steamcmd"),
@@ -55,7 +51,6 @@ document.querySelectorAll(".console-tabs button").forEach((btn) => {
   btn.addEventListener("click", () => switchTab(tab));
 });
 
-// ========== 小工具 ==========
 function switchTab(tab) {
   if (!panes[tab]) return;
   activeTab = tab;
@@ -122,7 +117,6 @@ function debounce(fn, wait = 250) {
   };
 }
 
-// ========== 未讀時間紀錄(持久化) ==========
 const LS_KEY_READ = "console.lastRead";
 const LS_KEY_SEEN = "console.lastSeen";
 
@@ -175,7 +169,6 @@ function restoreUnreadBadges() {
   });
 }
 
-// ========== 互斥規則與狀態展示 ==========
 let backupInProgress = false;
 
 function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
@@ -261,14 +254,12 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
     !canManageSaves
   );
 
-  // 動態更新設定浮窗鎖定狀態
   syncConfigLockFromStatus();
 }
 
-// 於前面宣告區之後加入(若已存在同名函式請替換)
 function refreshConfigLockState() {
   if (cfgModal?.classList.contains("hidden")) return;
-  const shouldLock = !!currentState.gameRunning; // 只依據目前前端狀態
+  const shouldLock = !!currentState.gameRunning;
   if (shouldLock === cfgLocked) return;
   cfgLocked = shouldLock;
   cfgLockBanner?.classList.toggle("hidden", !cfgLocked);
@@ -276,7 +267,6 @@ function refreshConfigLockState() {
   disableCfgInputs(cfgLocked);
 }
 
-// ========== API ==========
 async function fetchText(url, options = {}, timeoutMs = 30000) {
   const ctrl = new AbortController();
   const id = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -305,7 +295,6 @@ async function fetchJSON(url, options = {}, timeoutMs = 10000) {
   }
 }
 
-// ========== 存檔管理(前端) ==========
 let worldMap = new Map();
 
 function fillWorldAndName() {
@@ -390,23 +379,33 @@ async function loadSaves() {
   }
 }
 
-// ========== 初始化 ==========
 (async function initUI() {
   try {
     const cfg = await fetchJSON("/api/get-config");
-    const last = cfg?.data?.web?.lastInstallVersion || "";
-    if (last) {
-      const opt = Array.from(versionSelect.options).find(
-        (o) => o.value === last
-      );
-      if (opt) versionSelect.value = last;
+    if (
+      cfg?.data?.web &&
+      Object.prototype.hasOwnProperty.call(cfg.data.web, "lastInstallVersion")
+    ) {
+      const last = cfg.data.web.lastInstallVersion;
+      if (last && last !== "public") {
+        const opt = Array.from(versionSelect.options).find(
+          (o) => o.value === last
+        );
+        if (opt) versionSelect.value = last;
+      } else {
+        versionSelect.value = "";
+      }
+      setInstalledVersion(last);
+    } else {
+      setInstalledVersion(null);
     }
-  } catch (_) {}
+  } catch (_) {
+    setInstalledVersion(null);
+  }
   restoreUnreadBadges();
   loadSaves();
 })();
 
-// ========== SSE ==========
 let es;
 function connectSSE() {
   if (es) es.close();
@@ -422,7 +421,6 @@ function connectSSE() {
 }
 connectSSE();
 
-// ========== 狀態快取 ==========
 let currentState = {
   backendUp: false,
   steamRunning: false,
@@ -434,7 +432,6 @@ function setState(s) {
   applyUIState(s);
 }
 
-// ========== 狀態輪詢 ==========
 async function refreshStatus() {
   try {
     const s = await fetchJSON("/api/process-status", { method: "GET" });
@@ -459,7 +456,6 @@ async function refreshStatus() {
 }
 refreshStatus();
 
-// ========== 操作 ==========
 installServerBtn.addEventListener("click", () => {
   switchTab("steamcmd");
   const version = versionSelect?.value || "";
@@ -482,6 +478,9 @@ installServerBtn.addEventListener("click", () => {
       const pump = () =>
         reader.read().then(({ done, value }) => {
           if (done) {
+            const finishedRaw = versionSelect?.value || "";
+            const finished = canonicalVersion(finishedRaw);
+            setInstalledVersion(finished);
             setTimeout(refreshStatus, 500);
             return;
           }
@@ -519,9 +518,7 @@ viewConfigBtn.addEventListener("click", async () => {
   }
 });
 
-// 啟動伺服器: 先開啟設定浮窗確認
 startServerBtn.addEventListener("click", () => openConfigModal(true));
-// 只檢視/編輯設定
 editConfigBtn?.addEventListener("click", () => openConfigModal(false));
 
 stopServerBtn.addEventListener("click", async () => {
@@ -569,7 +566,6 @@ telnetSendBtn.addEventListener("click", () => {
 });
 window.sendTelnet = sendTelnet;
 
-// 存檔管理: 事件
 refreshSavesBtn.addEventListener("click", () => loadSaves());
 
 viewBackupsBtn.addEventListener("click", async () => {
@@ -672,25 +668,22 @@ function scrollToEnd(el) {
   el.scrollTop = el.scrollHeight;
 }
 
-// 調整 switchTab: 不再呼叫 dock
 const _origSwitchTab = switchTab;
 switchTab = function (tab) {
   _origSwitchTab(tab);
   scrollToEnd(panes[activeTab]);
 };
 
-// 調整 appendLog: 取消 dock 判斷，直接對 active pane 捲底
 const _origAppendLog = appendLog;
 appendLog = function (topic, line, ts) {
   _origAppendLog(topic, line, ts);
   if (topic === activeTab) scrollToEnd(panes[topic]);
 };
 
-// ==== 上下分割拖曳(主卡片區 / Console 各半，可調整) ====
 const splitResizer = document.getElementById("splitResizer");
 const appSplit = document.querySelector(".app-split");
 const paneMainEl = document.querySelector(".pane-main");
-const SPLIT_KEY = "ui.split.ratio"; // 儲存主區百分比 (0-100)
+const SPLIT_KEY = "ui.split.ratio";
 (function restoreSplit() {
   const saved = localStorage.getItem(SPLIT_KEY);
   if (saved) {
@@ -757,13 +750,11 @@ window.addEventListener("mouseup", endSplitDrag);
 window.addEventListener("touchend", endSplitDrag);
 window.addEventListener("touchcancel", endSplitDrag);
 
-// 雙擊分隔條: 重置 50/50
 splitResizer?.addEventListener("dblclick", () => {
   document.documentElement.style.setProperty("--split-main-size", "50%");
   localStorage.setItem(SPLIT_KEY, "50");
 });
 
-// 視窗縮放時確保目前百分比仍在範圍內(避免極端高度造成 UI 崩壞)
 window.addEventListener("resize", () => {
   const curVar = getComputedStyle(document.documentElement)
     .getPropertyValue("--split-main-size")
@@ -781,11 +772,10 @@ window.addEventListener("resize", () => {
   }
 });
 
-/* ===================== serverconfig.xml 浮窗編輯器 ===================== */
-let cfgOriginal = null; // Map<name, value>
+let cfgOriginal = null;
 let cfgLocked = false;
 let cfgStartIntent = false;
-let cfgWorldList = []; // 由 /api/saves/list 提供
+let cfgWorldList = [];
 let lastCheck = { passAll: false, results: [] };
 
 cfgCloseBtn?.addEventListener("click", closeCfgModal);
@@ -793,18 +783,19 @@ cfgCancelBtn?.addEventListener("click", closeCfgModal);
 cfgSaveBtn?.addEventListener("click", () => saveConfigValues(false));
 cfgSaveStartBtn?.addEventListener("click", () => saveConfigValues(true));
 
-// 取代原本 block 內的 closeCfgModal: 直接全域定義，避免在 if 區塊內造成作用域問題
 function closeCfgModal() {
   cfgModal?.classList.add("hidden");
   cfgModal?.setAttribute("aria-hidden", "true");
   cfgStartIntent = false;
 }
 
-// ====== 修改 openConfigModal: 修正 locked 判斷與浮窗鎖定顯示 ======
 async function openConfigModal(startIntent) {
+  if (startIntent && versionNeedsInstall) {
+    appendLog("system", "❌ 目前選擇的版本尚未安裝，請先安裝。", Date.now());
+    return;
+  }
   cfgStartIntent = !!startIntent;
   try {
-    // 追加即時狀態請求
     const [procRes, cfgRes, savesRes] = await Promise.all([
       fetchJSON("/api/process-status").catch(() => null),
       fetchJSON("/api/serverconfig"),
@@ -812,7 +803,6 @@ async function openConfigModal(startIntent) {
     ]);
     if (!cfgRes.ok) throw new Error(cfgRes.message || "讀取設定失敗");
 
-    // 立即刷新 currentState(避免 5 秒輪詢延遲)
     if (procRes?.data?.gameServer) {
       const game = procRes.data.gameServer;
       const steam = procRes.data.steamCmd || {};
@@ -832,7 +822,6 @@ async function openConfigModal(startIntent) {
     cfgOriginal = new Map(items.map((x) => [x.name, x.value]));
     renderCfgEditor(items);
 
-    // 依最新狀態決定鎖定
     cfgLocked = computeGameRunning();
     updateCfgLockUI();
 
@@ -843,7 +832,6 @@ async function openConfigModal(startIntent) {
     cfgModal?.classList.remove("hidden");
     cfgModal?.setAttribute("aria-hidden", "false");
 
-    // 初次執行檢查
     await runCfgChecks();
   } catch (e) {
     appendLog(
@@ -885,7 +873,6 @@ function renderCfgEditor(items) {
     lab.className = "cfg-label";
     lab.textContent = name;
 
-    // [?] hint
     const hint = document.createElement("span");
     hint.textContent = " [?]";
     hint.title = (metaMap.get(name) || "無說明").toString();
@@ -999,13 +986,11 @@ function renderCfgEditor(items) {
 
   cfgBody.innerHTML = "";
   cfgBody.appendChild(grid);
-  // 若已知鎖定，在此立即禁用
   if (cfgLocked) disableCfgInputs(true);
 }
 
 const rerunChecks = debounce(() => runCfgChecks(), 250);
 
-// 讀取目前 UI 值(含未保存)
 function readCfgValuesFromUI() {
   const q = (n) => cfgBody.querySelector(`[data-name="${n}"]`);
   const val = (n) => (q(n) ? String(q(n).value || "").trim() : "");
@@ -1032,7 +1017,6 @@ async function runCfgChecks() {
   const v = readCfgValuesFromUI();
   const results = [];
 
-  // ServerPort
   let serverPortOk = false;
   const sp = num(v.ServerPort);
   if (!Number.isFinite(sp) || sp <= 0 || sp > 65535) {
@@ -1055,14 +1039,12 @@ async function runCfgChecks() {
     }
   }
 
-  // TelnetEnabled 必須為 true
   if (!isTrue(v.TelnetEnabled)) {
     results.push({ ok: false, text: "TelnetEnabled 必須為 true" });
   } else {
     results.push({ ok: true, text: "TelnetEnabled 已啟用" });
   }
 
-  // TelnetPort
   let telnetPortOk = false;
   const tp = num(v.TelnetPort);
   if (!Number.isFinite(tp) || tp <= 0 || tp > 65535) {
@@ -1085,14 +1067,12 @@ async function runCfgChecks() {
     }
   }
 
-  // TelnetPassword 不可空
   if (!String(v.TelnetPassword || "").trim()) {
     results.push({ ok: false, text: "TelnetPassword 不可為空" });
   } else {
     results.push({ ok: true, text: "TelnetPassword 已設定" });
   }
 
-  // EACEnabled 警告但可通過
   if (isTrue(v.EACEnabled)) {
     results.push({
       ok: "warn",
@@ -1104,7 +1084,6 @@ async function runCfgChecks() {
 
   const passAll = results.every((x) => x.ok === true || x.ok === "warn");
 
-  // render
   const icon = (ok) => (ok === true ? "✅" : ok === "warn" ? "⚠️" : "❌");
   cfgChecks.innerHTML =
     `<div style="margin-bottom:8px;font-weight:600">啟動前檢查</div>` +
@@ -1118,14 +1097,12 @@ async function runCfgChecks() {
   return lastCheck;
 }
 
-// 改善型別/格式保留: 維持原值是 0/1 就不轉成 true/false
 function normalizeValueForWrite(name, newVal) {
   const oldVal = cfgOriginal?.get(name);
   if (oldVal == null) return newVal;
   const oldTrim = String(oldVal).trim();
   const vTrim = String(newVal).trim();
 
-  // 布林格式保持
   const oldIsDigitBool = /^(0|1)$/.test(oldTrim);
   const oldIsWordBool = /^(true|false)$/i.test(oldTrim);
   const newIsBoolWord = /^(true|false)$/i.test(vTrim);
@@ -1146,7 +1123,11 @@ async function saveConfigValues(startAfter) {
     return;
   }
 
-  // 若要啟動，先確保檢查通過(用目前 UI 值)
+  if ((startAfter || cfgStartIntent) && versionNeedsInstall) {
+    appendLog("system", "❌ 目前選擇的版本尚未安裝，請先安裝。", Date.now());
+    return;
+  }
+
   if (startAfter || cfgStartIntent) {
     const checkNow = await runCfgChecks();
     if (!checkNow.passAll) {
@@ -1170,7 +1151,6 @@ async function saveConfigValues(startAfter) {
     if (!name) return;
     let val = el.value;
     if (el.dataset.type === "boolean") {
-      // 內部標準化 (只做邏輯判斷), 送出時再依舊格式還原
       val = /^(true|1)$/i.test(val) ? "true" : "false";
     }
     val = normalizeValueForWrite(name, val);
@@ -1213,7 +1193,6 @@ async function saveConfigValues(startAfter) {
 function decideType(raw) {
   const v = String(raw).trim();
   if (/^(true|false|0|1)$/i.test(v)) return "boolean";
-  // 判斷純數字 (允許負號 / 小數)，避免像 "0123" 或 "1e5" 被不預期轉型可再調整
   if (/^-?\d+(\.\d+)?$/.test(v)) return "number";
   return "text";
 }
@@ -1227,22 +1206,18 @@ function escapeHTML(str) {
     .replace(/'/g, "&#39;");
 }
 
-// === 取代舊 refreshConfigLockState，改成統一同步機制 ===
 function updateCfgLockUI() {
   cfgLockBanner?.classList.toggle("hidden", !cfgLocked);
   setDisabled([cfgSaveBtn, cfgSaveStartBtn], cfgLocked || !lastCheck.passAll);
   disableCfgInputs(cfgLocked);
 }
 
-// 從前端 state 與頂列 badge 推導是否運行
 function computeGameRunning() {
-  // 以 currentState 為主；若尚未初始化再讀 badge
   if (typeof currentState?.gameRunning === "boolean")
     return !!currentState.gameRunning;
   return stGame.classList.contains("ok") || stGame.classList.contains("warn");
 }
 
-// 若浮窗開啟時狀態變化，自動同步鎖定
 function syncConfigLockFromStatus() {
   if (cfgModal?.classList.contains("hidden")) return;
   const running = computeGameRunning();
@@ -1252,9 +1227,56 @@ function syncConfigLockFromStatus() {
   }
 }
 
-// 監聽頂列 badge class 變化(備援: poll 更新或 applyUIState 之外的變化)
 const stGameObserver = new MutationObserver(syncConfigLockFromStatus);
 stGameObserver.observe(stGame, {
   attributes: true,
   attributeFilter: ["class"],
+});
+
+let installedVersion = "";
+let hasInstalled = false;
+let versionNeedsInstall = false;
+
+function canonicalVersion(v) {
+  const t = String(v || "").trim();
+  return t === "" ? "public" : t.toLowerCase();
+}
+
+function setInstalledVersion(v) {
+  if (v == null) {
+    installedVersion = "";
+    hasInstalled = false;
+  } else {
+    installedVersion = canonicalVersion(v);
+    hasInstalled = true;
+  }
+  updateVersionLockUI();
+}
+
+function updateVersionLockUI() {
+  if (!versionSelect || !startServerBtn) return;
+
+  const selectedRaw = versionSelect.value || "";
+  const selected = canonicalVersion(selectedRaw);
+
+  if (!hasInstalled) {
+    versionNeedsInstall = true;
+  } else {
+    versionNeedsInstall = selected !== installedVersion;
+  }
+
+  if (!currentState.steamRunning && !backupInProgress) {
+    if (versionNeedsInstall) {
+      startServerBtn.disabled = true;
+      startServerBtn.title = "此版本尚未安裝，請先按『安裝/更新』";
+      installServerBtn?.classList.add("btn--attention");
+    } else {
+      startServerBtn.title = "";
+      installServerBtn?.classList.remove("btn--attention");
+    }
+  }
+}
+
+versionSelect?.addEventListener("change", () => {
+  updateVersionLockUI();
 });
