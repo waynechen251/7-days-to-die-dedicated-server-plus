@@ -12,7 +12,7 @@ const TelnetCtor = getTelnetCtor(TelnetPkg);
 async function sendTelnetCommand(config, command) {
   const connection = new TelnetCtor();
   const params = {
-    host: config.ip,
+    host: "localhost",
     port: config.telnetPort,
     shellPrompt: ">",
     timeout: 2000,

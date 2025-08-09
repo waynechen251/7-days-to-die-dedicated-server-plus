@@ -2,6 +2,7 @@ const express = require("express");
 const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
+const net = require("net");
 const { promisify } = require("util");
 const { format, ts } = require("./public/lib/time");
 const { log, error } = require("./public/lib/logger");
@@ -12,6 +13,7 @@ const processManager = require("./public/lib/processManager");
 const archive = require("./public/lib/archive");
 const eventBus = require("./public/lib/eventBus");
 const { tailFile } = require("./public/lib/tailer");
+const serverConfigLib = require("./public/lib/serverConfig"); // 讀寫 serverconfig.xml
 
 const execAsync = promisify(exec);
 
@@ -164,6 +166,65 @@ app.get("/api/process-status", async (req, res) => {
   }
 });
 
+/* ===== 本機 TCP 連接埠檢查(多介面) =====
+   能監聽 => 未被佔用；EADDRINUSE / EACCES => 視為佔用。
+   嘗試介面: 0.0.0.0、127.0.0.1、::、::1(任一介面占用就算占用) */
+function tryBindOnce(port, host) {
+  return new Promise((resolve) => {
+    const srv = net.createServer();
+    let finished = false;
+    const done = (inUse) => {
+      if (finished) return;
+      finished = true;
+      try {
+        srv.close();
+      } catch (_) {}
+      resolve({ host, inUse });
+    };
+    srv.once("error", (err) => {
+      if (err && (err.code === "EADDRINUSE" || err.code === "EACCES")) {
+        done(true);
+      } else {
+        // 其他錯誤(如地址不可用)，不視為佔用
+        done(false);
+      }
+    });
+    srv.once("listening", () => {
+      srv.close(() => done(false));
+    });
+    try {
+      srv.listen({ port, host });
+    } catch (_) {
+      // 同步例外，多半為權限或占用，保守視為佔用
+      done(true);
+    }
+  });
+}
+
+async function checkPortInUse(port) {
+  const hosts = ["0.0.0.0", "127.0.0.1", "::", "::1"];
+  const results = await Promise.all(hosts.map((h) => tryBindOnce(port, h)));
+  return results.some((r) => r.inUse);
+}
+
+/* 供前端檢查連接埠佔用情況(本機 TCP，不是 HTTP) */
+app.get("/api/check-port", async (req, res) => {
+  const p = parseInt(req.query?.port, 10);
+  if (!Number.isFinite(p) || p <= 0 || p > 65535) {
+    return http.respondJson(res, { ok: false, message: "port 無效" }, 400);
+  }
+  try {
+    const inUse = await checkPortInUse(p);
+    return http.respondJson(res, { ok: true, data: { inUse } }, 200);
+  } catch (err) {
+    return http.respondJson(
+      res,
+      { ok: false, message: err?.message || "檢查失敗" },
+      500
+    );
+  }
+});
+
 /* 存檔清單 */
 app.get("/api/saves/list", (req, res) => {
   try {
@@ -194,7 +255,8 @@ app.post("/api/view-saves", (req, res) => {
   fs.readdir(BACKUP_SAVES_DIR, (err, files) => {
     if (err) return http.sendErr(req, res, `❌ 讀取存檔失敗:\n${err}`);
     const saves = files.filter((file) => file.endsWith(".zip"));
-    if (saves.length === 0) return http.sendOk(req, res, "❌ 沒有找到任何存檔");
+    if (saves.length === 0)
+      return http.sendErr(req, res, "❌ 沒有找到任何存檔");
 
     const details = saves.map((file) => {
       const filePath = path.join(BACKUP_SAVES_DIR, file);
@@ -206,7 +268,7 @@ app.post("/api/view-saves", (req, res) => {
   });
 });
 
-/* 匯出：指定 GameWorld/GameName 的單一世界存檔為 zip */
+/* 匯出: 指定 GameWorld/GameName 的單一世界存檔為 zip */
 app.post("/api/saves/export-one", async (req, res) => {
   try {
     const savesRoot = CONFIG?.game_server?.saves;
@@ -214,7 +276,7 @@ app.post("/api/saves/export-one", async (req, res) => {
       return http.sendErr(
         req,
         res,
-        "❌ 找不到遊戲存檔根目錄（CONFIG.game_server.saves）"
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
       );
     }
     const world = sanitizeName(req.body?.world);
@@ -244,7 +306,7 @@ app.post("/api/saves/export-one", async (req, res) => {
   }
 });
 
-/* 匯入：從後台備份清單選擇 zip 還原至 Saves 根目錄 */
+/* 匯入: 從後台備份清單選擇 zip 還原至 Saves 根目錄 */
 app.post("/api/saves/import-backup", async (req, res) => {
   try {
     const file = req.body?.file;
@@ -258,7 +320,7 @@ app.post("/api/saves/import-backup", async (req, res) => {
       return http.sendErr(
         req,
         res,
-        "❌ 找不到遊戲存檔根目錄（CONFIG.game_server.saves）"
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
       );
     }
 
@@ -275,7 +337,7 @@ app.post("/api/saves/import-backup", async (req, res) => {
   }
 });
 
-/* 匯入：直接上傳 zip 還原至 Saves 根目錄（Content-Type: application/octet-stream） */
+/* 匯入: 直接上傳 zip 還原至 Saves 根目錄(Content-Type: application/octet-stream) */
 app.post("/api/saves/import-upload", rawUpload, async (req, res) => {
   try {
     const buf = req.body;
@@ -285,7 +347,7 @@ app.post("/api/saves/import-upload", rawUpload, async (req, res) => {
       return http.sendErr(
         req,
         res,
-        "❌ 找不到遊戲存檔根目錄（CONFIG.game_server.saves）"
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
       );
     }
 
@@ -310,7 +372,7 @@ app.post("/api/saves/import-upload", rawUpload, async (req, res) => {
   }
 });
 
-/* 全量備份（沿用舊路由）：壓縮整個 Saves 根目錄內容 */
+/* 全量備份(沿用舊路由): 壓縮整個 Saves 根目錄內容 */
 app.post("/api/backup", async (req, res) => {
   try {
     const src = CONFIG?.game_server?.saves;
@@ -469,6 +531,41 @@ app.post("/api/start", async (req, res) => {
       });
     }
 
+    // 讀取 serverconfig.xml 的 Telnet / Ports 設定，覆寫到運行時 CONFIG 供 Telnet 控制使用
+    try {
+      if (!CONFIG.game_server) CONFIG.game_server = {};
+      if (configArg) {
+        const { items } = serverConfigLib.readValues(configArg);
+        const get = (n) =>
+          String(items.find((x) => x.name === n)?.value ?? "").trim();
+        const asBool = (s) => /^(true|1)$/i.test(String(s || ""));
+        const asInt = (s) => {
+          const n = parseInt(String(s || ""), 10);
+          return Number.isFinite(n) ? n : undefined;
+        };
+
+        const tEnabled = asBool(get("TelnetEnabled"));
+        const tPort = asInt(get("TelnetPort"));
+        const tPwd = get("TelnetPassword");
+        const sPort = asInt(get("ServerPort"));
+
+        if (typeof tEnabled === "boolean")
+          CONFIG.game_server.telnetEnabled = tEnabled;
+        if (tPort) CONFIG.game_server.telnetPort = tPort;
+        if (tPwd) CONFIG.game_server.telnetPassword = tPwd;
+        if (sPort) CONFIG.game_server.serverPort = sPort;
+
+        eventBus.push("system", {
+          text: `已讀取 telnet/port 設定: TelnetEnabled=${tEnabled}, TelnetPort=${tPort}, ServerPort=${sPort}`,
+        });
+      }
+    } catch (e) {
+      eventBus.push("system", {
+        level: "warn",
+        text: `讀取 telnet/port 設定失敗: ${e?.message || e}`,
+      });
+    }
+
     const nographics = req.body?.nographics ?? true;
     const args = [
       "-logfile",
@@ -550,7 +647,7 @@ app.post("/api/stop", async (req, res) => {
   }
 });
 
-/* 強制關閉（以 PID 為準） */
+/* 強制關閉(以 PID 為準) */
 app.post("/api/kill", async (req, res) => {
   try {
     const pidFromBody = req.body?.pid;
@@ -578,7 +675,7 @@ app.post("/api/kill", async (req, res) => {
       eventBus.push("system", { text: line });
       return http.sendOk(req, res, `✅ ${line}`);
     } else {
-      const line = `❌ 強制結束失敗 pid=${targetPid}（可能為權限不足或進程不存在）`;
+      const line = `❌ 強制結束失敗 pid=${targetPid}(可能為權限不足或進程不存在)`;
       error(line);
       eventBus.push("system", { level: "error", text: line });
       return http.sendErr(req, res, line);
@@ -635,6 +732,111 @@ app.post("/api/server-status", async (req, res) => {
       res,
       { ok: false, status: "telnet-fail", message: err.message },
       200
+    );
+  }
+});
+
+// 取得 serverconfig.xml 實際路徑 (沿用 /api/start 的搜尋邏輯)
+function resolveServerConfigPath() {
+  const stripQuotes = (s) =>
+    typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
+
+  const cfgRaw = stripQuotes(CONFIG?.game_server?.serverConfig);
+  const candidates = [];
+
+  if (cfgRaw) {
+    if (path.isAbsolute(cfgRaw)) candidates.push(cfgRaw);
+    else {
+      candidates.push(path.join(GAME_DIR, cfgRaw));
+      candidates.push(path.join(baseDir, cfgRaw));
+    }
+  }
+  candidates.push(resolveFileCaseInsensitive(GAME_DIR, "serverconfig.xml"));
+  candidates.push(resolveFileCaseInsensitive(baseDir, "serverconfig.xml"));
+
+  for (const c of candidates) {
+    if (c && fs.existsSync(c)) return c;
+  }
+  return null;
+}
+
+// 讀取 serverconfig.xml
+app.get("/api/serverconfig", (req, res) => {
+  try {
+    const cfgPath = resolveServerConfigPath();
+    if (!cfgPath) {
+      return http.respondJson(
+        res,
+        { ok: false, message: "找不到 serverconfig.xml" },
+        404
+      );
+    }
+    const { items } = serverConfigLib.readValues(cfgPath);
+    return http.respondJson(
+      res,
+      {
+        ok: true,
+        data: {
+          locked: processManager.gameServer.isRunning,
+          path: cfgPath,
+          items,
+        },
+      },
+      200
+    );
+  } catch (err) {
+    return http.respondJson(
+      res,
+      { ok: false, message: err.message || "讀取失敗" },
+      500
+    );
+  }
+});
+
+// 寫入 serverconfig.xml (僅更新傳入的 key)
+app.post("/api/serverconfig", (req, res) => {
+  try {
+    if (processManager.gameServer.isRunning) {
+      return http.respondJson(
+        res,
+        { ok: false, message: "伺服器運行中，禁止修改" },
+        409
+      );
+    }
+    const cfgPath = resolveServerConfigPath();
+    if (!cfgPath) {
+      return http.respondJson(
+        res,
+        { ok: false, message: "找不到 serverconfig.xml" },
+        404
+      );
+    }
+    const updates = req.body?.updates || {};
+    if (
+      !updates ||
+      typeof updates !== "object" ||
+      Array.isArray(updates) ||
+      Object.keys(updates).length === 0
+    ) {
+      return http.respondJson(res, { ok: false, message: "缺少 updates" }, 400);
+    }
+    const { changed } = serverConfigLib.writeValues(cfgPath, updates);
+    if (changed.length) {
+      eventBus.push("system", {
+        text: `serverconfig.xml 已更新: ${changed.join(", ")}`,
+      });
+    }
+    const { items } = serverConfigLib.readValues(cfgPath);
+    return http.respondJson(
+      res,
+      { ok: true, data: { path: cfgPath, changed, items } },
+      200
+    );
+  } catch (err) {
+    return http.respondJson(
+      res,
+      { ok: false, message: err.message || "寫入失敗" },
+      500
     );
   }
 });

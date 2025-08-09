@@ -6,7 +6,7 @@ const gameServer = require("./gameServer");
 async function checkTelnet(config, target = gameServer) {
   const connection = new TelnetCtor();
   const params = {
-    host: config.ip,
+    host: "localhost",
     port: config.telnetPort,
     shellPrompt: ">",
     timeout: 2000,
@@ -58,7 +58,7 @@ const processManager = {
     killTree() {
       gameServer.killTree();
     },
-    /** 以 PID 強制關閉（若未傳入則使用內部記錄的 PID） */
+    /** 以 PID 強制關閉(若未傳入則使用內部記錄的 PID) */
     async killByPid(pid) {
       return await gameServer.killByPid(pid);
     },

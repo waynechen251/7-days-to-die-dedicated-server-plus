@@ -47,6 +47,9 @@
               <button id="startServerBtn">▶️ 啟動伺服器</button>
               <button id="stopServerBtn">⏹️ 關閉伺服器</button>
               <button id="killServerBtn">⚠️ 強制結束</button>
+              <button id="editConfigBtn" class="btn--ghost">
+                📝 檢視 / 編輯 serverconfig.xml
+              </button>
             </div>
             <div class="row">
               <input id="telnetInput" placeholder="輸入 Telnet 指令…" />
@@ -185,6 +188,30 @@
             <pre id="console-telnet" class="console"></pre>
             <pre id="console-backup" class="console"></pre>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="cfgModal" class="modal hidden" aria-hidden="true">
+      <div class="modal__backdrop"></div>
+      <div class="modal__panel" role="dialog" aria-modal="true">
+        <div class="modal__header">
+          <h3>serverconfig.xml</h3>
+          <button id="cfgCloseBtn" class="modal__close">✖</button>
+        </div>
+        <div id="cfgLockBanner" class="modal__banner hidden">
+          伺服器運行中，禁止修改。
+        </div>
+        <div class="modal__body">
+          <div id="cfgChecks"></div>
+          <div id="cfgBody"></div>
+        </div>
+        <div class="modal__footer">
+          <button id="cfgCancelBtn" class="btn">取消</button>
+          <button id="cfgSaveBtn" class="btn">保存</button>
+          <button id="cfgSaveStartBtn" class="btn btn--primary">
+            保存後啟動
+          </button>
         </div>
       </div>
     </div>

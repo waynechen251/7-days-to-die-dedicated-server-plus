@@ -122,7 +122,7 @@ const gameServer = {
         });
       });
 
-      // 無論成功與否，都重置內部狀態（避免卡死狀態）
+      // 無論成功與否，都重置內部狀態(避免卡死狀態)
       this.child = null;
       this.isRunning = false;
       this.isTelnetConnected = false;
@@ -131,7 +131,7 @@ const gameServer = {
       return ok;
     }
 
-    // 非 Windows：使用 process.kill
+    // 非 Windows: 使用 process.kill
     try {
       process.kill(targetPid, "SIGKILL");
       log(`✅ process.kill 成功 pid=${targetPid}`);
@@ -148,7 +148,7 @@ const gameServer = {
   },
 
   /**
-   * 舊的樹狀結束（保留）
+   * 舊的樹狀結束(保留)
    */
   killTree() {
     if (this.child && !this.child.killed) {

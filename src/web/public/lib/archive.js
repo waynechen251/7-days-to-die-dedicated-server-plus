@@ -13,7 +13,7 @@ function ensureDir(p) {
 }
 
 /**
- * 以 PowerShell 壓縮資料夾內容（等同於 Compress-Archive -Path "<src>\*"）
+ * 以 PowerShell 壓縮資料夾內容(等同於 Compress-Archive -Path "<src>\*")
  * 不包含最外層資料夾本身，只收其中內容。
  */
 function zipDirectory(srcDir, outZip) {

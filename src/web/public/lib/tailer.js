@@ -3,20 +3,20 @@ const fs = require("fs");
 const path = require("path");
 
 /**
- * 追蹤檔案新增的內容（預設從結尾開始，類似 tail -f）
+ * 追蹤檔案新增的內容(預設從結尾開始，類似 tail -f)
  * @param {string} filePath
  * @param {(line:string)=>void} onLine
  * @param {{ fromBeginning?: boolean, pollIntervalMs?: number }} [options]
  * @returns {() => void} 停止追蹤的函式
  */
 function tailFile(filePath, onLine, options = {}) {
-  const fromBeginning = !!options.fromBeginning; // 預設 false：從結尾開始
+  const fromBeginning = !!options.fromBeginning; // 預設 false: 從結尾開始
   const pollIntervalMs = options.pollIntervalMs || 500;
 
   let stopped = false;
   let stopFn = null;
 
-  // 以外部工具優先（較穩定）：Windows 用 PowerShell，其它平台用 tail -F
+  // 以外部工具優先(較穩定): Windows 用 PowerShell，其它平台用 tail -F
   const tryExternal = () => {
     if (process.platform === "win32") {
       const psCmd = buildPowershellTailCommand(filePath, fromBeginning);
@@ -149,7 +149,7 @@ function buildPowershellTailCommand(filePath, fromBeginning) {
 }
 
 /**
- * 純 Node 輪詢 tail（任何平台皆可用）
+ * 純 Node 輪詢 tail(任何平台皆可用)
  * 透過 stat 檢查大小變化，讀取增量區塊
  */
 function startPollingTail(filePath, onLine, { fromBeginning, pollIntervalMs }) {

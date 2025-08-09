@@ -28,6 +28,17 @@ const stGame = document.getElementById("st-game");
 const stTelnet = document.getElementById("st-telnet");
 const backupFullBtn = document.getElementById("backupFullBtn");
 
+// serverconfig.xml 浮窗 DOM
+const editConfigBtn = document.getElementById("editConfigBtn");
+const cfgModal = document.getElementById("cfgModal");
+const cfgBody = document.getElementById("cfgBody");
+const cfgChecks = document.getElementById("cfgChecks");
+const cfgCloseBtn = document.getElementById("cfgCloseBtn");
+const cfgCancelBtn = document.getElementById("cfgCancelBtn");
+const cfgSaveBtn = document.getElementById("cfgSaveBtn");
+const cfgSaveStartBtn = document.getElementById("cfgSaveStartBtn");
+const cfgLockBanner = document.getElementById("cfgLockBanner");
+
 // Console panes & tabs
 const panes = {
   system: document.getElementById("console-system"),
@@ -103,7 +114,15 @@ function setDisabled(nodes, disabled) {
   );
 }
 
-// ========== 未讀時間紀錄（持久化） ==========
+function debounce(fn, wait = 250) {
+  let t = null;
+  return (...args) => {
+    clearTimeout(t);
+    t = setTimeout(() => fn(...args), wait);
+  };
+}
+
+// ========== 未讀時間紀錄(持久化) ==========
 const LS_KEY_READ = "console.lastRead";
 const LS_KEY_SEEN = "console.lastSeen";
 
@@ -181,6 +200,7 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
     importBackupBtn,
     importUploadFile,
     importUploadBtn,
+    editConfigBtn,
   ];
 
   const backendStatus = backendUp ? "ok" : "err";
@@ -240,6 +260,20 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
     ],
     !canManageSaves
   );
+
+  // 動態更新設定浮窗鎖定狀態
+  syncConfigLockFromStatus();
+}
+
+// 於前面宣告區之後加入(若已存在同名函式請替換)
+function refreshConfigLockState() {
+  if (cfgModal?.classList.contains("hidden")) return;
+  const shouldLock = !!currentState.gameRunning; // 只依據目前前端狀態
+  if (shouldLock === cfgLocked) return;
+  cfgLocked = shouldLock;
+  cfgLockBanner?.classList.toggle("hidden", !cfgLocked);
+  setDisabled([cfgSaveBtn, cfgSaveStartBtn], cfgLocked);
+  disableCfgInputs(cfgLocked);
 }
 
 // ========== API ==========
@@ -271,7 +305,7 @@ async function fetchJSON(url, options = {}, timeoutMs = 10000) {
   }
 }
 
-// ========== 存檔管理（前端） ==========
+// ========== 存檔管理(前端) ==========
 let worldMap = new Map();
 
 function fillWorldAndName() {
@@ -352,7 +386,7 @@ async function loadSaves() {
       });
     }
   } catch (e) {
-    appendLog("backup", `❌ 讀取存檔清單失敗：${e.message}`, Date.now());
+    appendLog("backup", `❌ 讀取存檔清單失敗: ${e.message}`, Date.now());
   }
 }
 
@@ -485,22 +519,10 @@ viewConfigBtn.addEventListener("click", async () => {
   }
 });
 
-startServerBtn.addEventListener("click", async () => {
-  switchTab("system");
-  try {
-    appendLog(
-      "system",
-      await fetchText("/api/start", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nographics: false }),
-      }),
-      Date.now()
-    );
-  } catch (e) {
-    appendLog("system", `❌ ${e.message}`, Date.now());
-  }
-});
+// 啟動伺服器: 先開啟設定浮窗確認
+startServerBtn.addEventListener("click", () => openConfigModal(true));
+// 只檢視/編輯設定
+editConfigBtn?.addEventListener("click", () => openConfigModal(false));
 
 stopServerBtn.addEventListener("click", async () => {
   switchTab("system");
@@ -547,7 +569,7 @@ telnetSendBtn.addEventListener("click", () => {
 });
 window.sendTelnet = sendTelnet;
 
-// 存檔管理：事件
+// 存檔管理: 事件
 refreshSavesBtn.addEventListener("click", () => loadSaves());
 
 viewBackupsBtn.addEventListener("click", async () => {
@@ -650,21 +672,21 @@ function scrollToEnd(el) {
   el.scrollTop = el.scrollHeight;
 }
 
-// 調整 switchTab：不再呼叫 dock
+// 調整 switchTab: 不再呼叫 dock
 const _origSwitchTab = switchTab;
 switchTab = function (tab) {
   _origSwitchTab(tab);
   scrollToEnd(panes[activeTab]);
 };
 
-// 調整 appendLog：取消 dock 判斷，直接對 active pane 捲底
+// 調整 appendLog: 取消 dock 判斷，直接對 active pane 捲底
 const _origAppendLog = appendLog;
 appendLog = function (topic, line, ts) {
   _origAppendLog(topic, line, ts);
   if (topic === activeTab) scrollToEnd(panes[topic]);
 };
 
-// ==== 上下分割拖曳（主卡片區 / Console 各半，可調整） ====
+// ==== 上下分割拖曳(主卡片區 / Console 各半，可調整) ====
 const splitResizer = document.getElementById("splitResizer");
 const appSplit = document.querySelector(".app-split");
 const paneMainEl = document.querySelector(".pane-main");
@@ -735,13 +757,13 @@ window.addEventListener("mouseup", endSplitDrag);
 window.addEventListener("touchend", endSplitDrag);
 window.addEventListener("touchcancel", endSplitDrag);
 
-// 雙擊分隔條：重置 50/50
+// 雙擊分隔條: 重置 50/50
 splitResizer?.addEventListener("dblclick", () => {
   document.documentElement.style.setProperty("--split-main-size", "50%");
   localStorage.setItem(SPLIT_KEY, "50");
 });
 
-// 視窗縮放時確保目前百分比仍在範圍內（避免極端高度造成 UI 崩壞）
+// 視窗縮放時確保目前百分比仍在範圍內(避免極端高度造成 UI 崩壞)
 window.addEventListener("resize", () => {
   const curVar = getComputedStyle(document.documentElement)
     .getPropertyValue("--split-main-size")
@@ -757,4 +779,482 @@ window.addEventListener("resize", () => {
       localStorage.setItem(SPLIT_KEY, clamped.toFixed(2));
     }
   }
+});
+
+/* ===================== serverconfig.xml 浮窗編輯器 ===================== */
+let cfgOriginal = null; // Map<name, value>
+let cfgLocked = false;
+let cfgStartIntent = false;
+let cfgWorldList = []; // 由 /api/saves/list 提供
+let lastCheck = { passAll: false, results: [] };
+
+cfgCloseBtn?.addEventListener("click", closeCfgModal);
+cfgCancelBtn?.addEventListener("click", closeCfgModal);
+cfgSaveBtn?.addEventListener("click", () => saveConfigValues(false));
+cfgSaveStartBtn?.addEventListener("click", () => saveConfigValues(true));
+
+// 取代原本 block 內的 closeCfgModal: 直接全域定義，避免在 if 區塊內造成作用域問題
+function closeCfgModal() {
+  cfgModal?.classList.add("hidden");
+  cfgModal?.setAttribute("aria-hidden", "true");
+  cfgStartIntent = false;
+}
+
+// ====== 修改 openConfigModal: 修正 locked 判斷與浮窗鎖定顯示 ======
+async function openConfigModal(startIntent) {
+  cfgStartIntent = !!startIntent;
+  try {
+    // 追加即時狀態請求
+    const [procRes, cfgRes, savesRes] = await Promise.all([
+      fetchJSON("/api/process-status").catch(() => null),
+      fetchJSON("/api/serverconfig"),
+      fetchJSON("/api/saves/list"),
+    ]);
+    if (!cfgRes.ok) throw new Error(cfgRes.message || "讀取設定失敗");
+
+    // 立即刷新 currentState(避免 5 秒輪詢延遲)
+    if (procRes?.data?.gameServer) {
+      const game = procRes.data.gameServer;
+      const steam = procRes.data.steamCmd || {};
+      setState({
+        backendUp: true,
+        steamRunning: !!steam.isRunning,
+        gameRunning: !!game.isRunning,
+        telnetOk: !!game.isTelnetConnected,
+      });
+    }
+
+    const items = cfgRes.data?.items || [];
+    cfgWorldList = (savesRes?.data?.saves || []).map((s) => ({
+      world: s.world,
+      name: s.name,
+    }));
+    cfgOriginal = new Map(items.map((x) => [x.name, x.value]));
+    renderCfgEditor(items);
+
+    // 依最新狀態決定鎖定
+    cfgLocked = computeGameRunning();
+    updateCfgLockUI();
+
+    if (!cfgLocked && cfgStartIntent)
+      cfgSaveStartBtn?.classList.add("btn--primary");
+    else cfgSaveStartBtn?.classList.remove("btn--primary");
+
+    cfgModal?.classList.remove("hidden");
+    cfgModal?.setAttribute("aria-hidden", "false");
+
+    // 初次執行檢查
+    await runCfgChecks();
+  } catch (e) {
+    appendLog(
+      "system",
+      `❌ 讀取 serverconfig.xml 失敗: ${e.message}`,
+      Date.now()
+    );
+  }
+}
+
+function disableCfgInputs(lock) {
+  if (!cfgBody) return;
+  const ctrls = cfgBody.querySelectorAll(
+    "input, select, textarea, .cfg-combo select, .cfg-combo input"
+  );
+  ctrls.forEach((el) => {
+    el.disabled = !!lock;
+  });
+}
+
+function renderCfgEditor(items) {
+  const grid = document.createElement("div");
+  grid.className = "cfg-grid";
+
+  const worldValues = [...new Set(cfgWorldList.map((x) => x.world))];
+  const nameMap = new Map();
+  cfgWorldList.forEach((x) => {
+    const arr = nameMap.get(x.world) || [];
+    if (!arr.includes(x.name)) arr.push(x.name);
+    nameMap.set(x.world, arr);
+  });
+
+  const byName = new Map(items.map((i) => [i.name, i.value]));
+  const metaMap = new Map(items.map((i) => [i.name, i.comment || i.doc || ""]));
+
+  items.forEach((item) => {
+    const { name, value } = item;
+    const lab = document.createElement("label");
+    lab.className = "cfg-label";
+    lab.textContent = name;
+
+    // [?] hint
+    const hint = document.createElement("span");
+    hint.textContent = " [?]";
+    hint.title = (metaMap.get(name) || "無說明").toString();
+    hint.style.cursor = "help";
+    hint.style.userSelect = "none";
+    hint.setAttribute("aria-label", "說明");
+    lab.appendChild(hint);
+
+    let inputEl;
+
+    if (name === "GameWorld") {
+      const wrap = document.createElement("div");
+      wrap.className = "cfg-combo";
+      const sel = document.createElement("select");
+      sel.innerHTML =
+        `<option value="">(選擇現有)</option>` +
+        worldValues
+          .map(
+            (w) =>
+              `<option value="${escapeHTML(w)}"${
+                w === value ? " selected" : ""
+              }>${escapeHTML(w)}</option>`
+          )
+          .join("");
+      const txt = document.createElement("input");
+      txt.type = "text";
+      txt.value = value || "";
+      txt.dataset.name = name;
+      txt.dataset.type = "text";
+      sel.addEventListener("change", () => {
+        if (sel.value) txt.value = sel.value;
+        rerunChecks();
+      });
+      txt.addEventListener("input", rerunChecks);
+      wrap.appendChild(sel);
+      wrap.appendChild(txt);
+      inputEl = wrap;
+    } else if (name === "GameName") {
+      const wrap = document.createElement("div");
+      wrap.className = "cfg-combo";
+      const currentWorld =
+        byName.get("GameWorld") ||
+        (cfgOriginal && cfgOriginal.get("GameWorld")) ||
+        "";
+      const candidates = (currentWorld && nameMap.get(currentWorld)) || [
+        ...new Set(cfgWorldList.map((x) => x.name)),
+      ];
+      const sel = document.createElement("select");
+      sel.innerHTML =
+        `<option value="">(選擇現有)</option>` +
+        candidates
+          .map(
+            (n) =>
+              `<option value="${escapeHTML(n)}"${
+                n === value ? " selected" : ""
+              }>${escapeHTML(n)}</option>`
+          )
+          .join("");
+      const txt = document.createElement("input");
+      txt.type = "text";
+      txt.value = value || "";
+      txt.dataset.name = name;
+      txt.dataset.type = "text";
+      sel.addEventListener("change", () => {
+        if (sel.value) txt.value = sel.value;
+        rerunChecks();
+      });
+      txt.addEventListener("input", rerunChecks);
+      wrap.appendChild(sel);
+      wrap.appendChild(txt);
+      inputEl = wrap;
+    } else {
+      const type = decideType(value);
+      if (type === "boolean") {
+        const sel = document.createElement("select");
+        sel.dataset.name = name;
+        sel.dataset.type = "boolean";
+        sel.innerHTML = `
+          <option value="true"${
+            /^(true|1)$/i.test(value) ? " selected" : ""
+          }>true</option>
+          <option value="false"${
+            /^(false|0)$/i.test(value) ? " selected" : ""
+          }>false</option>
+        `;
+        sel.addEventListener("change", rerunChecks);
+        inputEl = sel;
+      } else if (type === "number") {
+        const n = document.createElement("input");
+        n.type = "number";
+        n.step = "1";
+        n.value = value;
+        n.dataset.name = name;
+        n.dataset.type = "number";
+        n.addEventListener("input", rerunChecks);
+        inputEl = n;
+      } else {
+        const t = document.createElement("input");
+        t.type = "text";
+        t.value = value;
+        t.dataset.name = name;
+        t.dataset.type = "text";
+        t.addEventListener("input", rerunChecks);
+        inputEl = t;
+      }
+    }
+
+    grid.appendChild(lab);
+    grid.appendChild(inputEl);
+  });
+
+  cfgBody.innerHTML = "";
+  cfgBody.appendChild(grid);
+  // 若已知鎖定，在此立即禁用
+  if (cfgLocked) disableCfgInputs(true);
+}
+
+const rerunChecks = debounce(() => runCfgChecks(), 250);
+
+// 讀取目前 UI 值(含未保存)
+function readCfgValuesFromUI() {
+  const q = (n) => cfgBody.querySelector(`[data-name="${n}"]`);
+  const val = (n) => (q(n) ? String(q(n).value || "").trim() : "");
+  return {
+    ServerPort: val("ServerPort"),
+    TelnetEnabled: val("TelnetEnabled"),
+    TelnetPort: val("TelnetPort"),
+    TelnetPassword: val("TelnetPassword"),
+    EACEnabled: val("EACEnabled"),
+  };
+}
+
+function isTrue(v) {
+  return /^(true|1)$/i.test(String(v || "").trim());
+}
+
+function num(v) {
+  const n = parseInt(String(v || "").trim(), 10);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+async function runCfgChecks() {
+  if (!cfgChecks) return { passAll: true, results: [] };
+  const v = readCfgValuesFromUI();
+  const results = [];
+
+  // ServerPort
+  let serverPortOk = false;
+  const sp = num(v.ServerPort);
+  if (!Number.isFinite(sp) || sp <= 0 || sp > 65535) {
+    results.push({ ok: false, text: "ServerPort 未設定或格式錯誤" });
+  } else {
+    try {
+      const r = await fetchJSON(`/api/check-port?port=${sp}`);
+      const inUse = !!r?.data?.inUse;
+      if (inUse) {
+        results.push({
+          ok: false,
+          text: `ServerPort ${sp} 已被佔用`,
+        });
+      } else {
+        results.push({ ok: true, text: `ServerPort ${sp} 可用` });
+        serverPortOk = true;
+      }
+    } catch {
+      results.push({ ok: false, text: "ServerPort 檢查失敗" });
+    }
+  }
+
+  // TelnetEnabled 必須為 true
+  if (!isTrue(v.TelnetEnabled)) {
+    results.push({ ok: false, text: "TelnetEnabled 必須為 true" });
+  } else {
+    results.push({ ok: true, text: "TelnetEnabled 已啟用" });
+  }
+
+  // TelnetPort
+  let telnetPortOk = false;
+  const tp = num(v.TelnetPort);
+  if (!Number.isFinite(tp) || tp <= 0 || tp > 65535) {
+    results.push({ ok: false, text: "TelnetPort 未設定或格式錯誤" });
+  } else {
+    try {
+      const r = await fetchJSON(`/api/check-port?port=${tp}`);
+      const inUse = !!r?.data?.inUse;
+      if (inUse) {
+        results.push({
+          ok: false,
+          text: `TelnetPort ${tp} 已被佔用`,
+        });
+      } else {
+        results.push({ ok: true, text: `TelnetPort ${tp} 可用` });
+        telnetPortOk = true;
+      }
+    } catch {
+      results.push({ ok: false, text: "TelnetPort 檢查失敗" });
+    }
+  }
+
+  // TelnetPassword 不可空
+  if (!String(v.TelnetPassword || "").trim()) {
+    results.push({ ok: false, text: "TelnetPassword 不可為空" });
+  } else {
+    results.push({ ok: true, text: "TelnetPassword 已設定" });
+  }
+
+  // EACEnabled 警告但可通過
+  if (isTrue(v.EACEnabled)) {
+    results.push({
+      ok: "warn",
+      text: "EACEnabled=true: 啟用 EAC 時無法使用模組",
+    });
+  } else {
+    results.push({ ok: true, text: "EACEnabled 已停用" });
+  }
+
+  const passAll = results.every((x) => x.ok === true || x.ok === "warn");
+
+  // render
+  const icon = (ok) => (ok === true ? "✅" : ok === "warn" ? "⚠️" : "❌");
+  cfgChecks.innerHTML =
+    `<div style="margin-bottom:8px;font-weight:600">啟動前檢查</div>` +
+    `<ul style="margin:0;padding-left:18px">${results
+      .map((r) => `<li>${icon(r.ok)} ${r.text}</li>`)
+      .join("")}</ul>`;
+
+  setDisabled([cfgSaveStartBtn], cfgLocked || !passAll);
+
+  lastCheck = { passAll, results };
+  return lastCheck;
+}
+
+// 改善型別/格式保留: 維持原值是 0/1 就不轉成 true/false
+function normalizeValueForWrite(name, newVal) {
+  const oldVal = cfgOriginal?.get(name);
+  if (oldVal == null) return newVal;
+  const oldTrim = String(oldVal).trim();
+  const vTrim = String(newVal).trim();
+
+  // 布林格式保持
+  const oldIsDigitBool = /^(0|1)$/.test(oldTrim);
+  const oldIsWordBool = /^(true|false)$/i.test(oldTrim);
+  const newIsBoolWord = /^(true|false)$/i.test(vTrim);
+  const newIsBoolDigit = /^(0|1)$/.test(vTrim);
+
+  if (oldIsDigitBool && newIsBoolWord) {
+    return vTrim.toLowerCase() === "true" ? "1" : "0";
+  }
+  if (oldIsWordBool && newIsBoolDigit) {
+    return vTrim === "1" ? "true" : "false";
+  }
+  return vTrim;
+}
+
+async function saveConfigValues(startAfter) {
+  if (cfgLocked) {
+    closeCfgModal();
+    return;
+  }
+
+  // 若要啟動，先確保檢查通過(用目前 UI 值)
+  if (startAfter || cfgStartIntent) {
+    const checkNow = await runCfgChecks();
+    if (!checkNow.passAll) {
+      appendLog(
+        "system",
+        "❌ 無法啟動: 請先修正啟動前檢查未通過項目。",
+        Date.now()
+      );
+      return;
+    }
+  }
+
+  const controls = Array.from(
+    cfgBody.querySelectorAll("[data-name], .cfg-combo input[type='text']")
+  );
+  const updates = {};
+  let changed = 0;
+
+  controls.forEach((el) => {
+    const name = el.dataset.name || el.getAttribute("data-name");
+    if (!name) return;
+    let val = el.value;
+    if (el.dataset.type === "boolean") {
+      // 內部標準化 (只做邏輯判斷), 送出時再依舊格式還原
+      val = /^(true|1)$/i.test(val) ? "true" : "false";
+    }
+    val = normalizeValueForWrite(name, val);
+    const oldVal = cfgOriginal.get(name) ?? "";
+    if (String(val) !== String(oldVal)) {
+      updates[name] = val;
+      changed++;
+    }
+  });
+
+  try {
+    if (changed > 0) {
+      const res = await fetchJSON("/api/serverconfig", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ updates }),
+      });
+      if (!res.ok) throw new Error(res.message || "寫入失敗");
+    }
+    closeCfgModal();
+
+    if (startAfter || cfgStartIntent) {
+      switchTab("system");
+      const msg = await fetchText("/api/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nographics: false }),
+      });
+      appendLog("system", msg, Date.now());
+    }
+  } catch (e) {
+    appendLog(
+      "system",
+      `❌ 寫入 serverconfig.xml 失敗: ${e.message}`,
+      Date.now()
+    );
+  }
+}
+
+function decideType(raw) {
+  const v = String(raw).trim();
+  if (/^(true|false|0|1)$/i.test(v)) return "boolean";
+  // 判斷純數字 (允許負號 / 小數)，避免像 "0123" 或 "1e5" 被不預期轉型可再調整
+  if (/^-?\d+(\.\d+)?$/.test(v)) return "number";
+  return "text";
+}
+
+function escapeHTML(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+// === 取代舊 refreshConfigLockState，改成統一同步機制 ===
+function updateCfgLockUI() {
+  cfgLockBanner?.classList.toggle("hidden", !cfgLocked);
+  setDisabled([cfgSaveBtn, cfgSaveStartBtn], cfgLocked || !lastCheck.passAll);
+  disableCfgInputs(cfgLocked);
+}
+
+// 從前端 state 與頂列 badge 推導是否運行
+function computeGameRunning() {
+  // 以 currentState 為主；若尚未初始化再讀 badge
+  if (typeof currentState?.gameRunning === "boolean")
+    return !!currentState.gameRunning;
+  return stGame.classList.contains("ok") || stGame.classList.contains("warn");
+}
+
+// 若浮窗開啟時狀態變化，自動同步鎖定
+function syncConfigLockFromStatus() {
+  if (cfgModal?.classList.contains("hidden")) return;
+  const running = computeGameRunning();
+  if (cfgLocked !== running) {
+    cfgLocked = running;
+    updateCfgLockUI();
+  }
+}
+
+// 監聽頂列 badge class 變化(備援: poll 更新或 applyUIState 之外的變化)
+const stGameObserver = new MutationObserver(syncConfigLockFromStatus);
+stGameObserver.observe(stGame, {
+  attributes: true,
+  attributeFilter: ["class"],
 });

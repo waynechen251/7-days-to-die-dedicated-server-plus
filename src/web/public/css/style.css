@@ -29,7 +29,7 @@
   --console-dock-max: 80vh;
   --console-dock-collapsed: 32px;
   --topbar-h: 48px;
-  /* 新增：上下分割預設主區高度（百分比） */
+  /* 新增: 上下分割預設主區高度(百分比) */
   --split-main-size: 50%;
   --split-bar-size: 6px;
   --split-main-min: 15%; /* 主區最小 15% */
@@ -104,7 +104,7 @@ p {
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* 新增：頂列內的即時狀態徽章容器 */
+/* 新增: 頂列內的即時狀態徽章容器 */
 .topbar .status-inline {
   display: flex;
   flex-wrap: wrap;
@@ -162,7 +162,7 @@ p {
   }
 }
 
-/* 可選：深色模式徽章在頂列顏色微調 */
+/* 可選: 深色模式徽章在頂列顏色微調 */
 @media (prefers-color-scheme: dark) {
   .topbar .status-inline .badge {
     background: var(--c-surface-alt);
@@ -416,6 +416,11 @@ select:focus {
   border: 0;
 }
 
+/* 通用隱藏(供 cfgLockBanner 使用) */
+.hidden {
+  display: none !important;
+}
+
 /* ========== Console ========== */
 .console-tabs {
   display: flex;
@@ -454,7 +459,7 @@ select:focus {
   display: block;
 }
 
-/* 分割模式下的 Console（覆蓋卡片設定，允許隨拖曳伸縮） */
+/* 分割模式下的 Console(覆蓋卡片設定，允許隨拖曳伸縮) */
 .pane-console .console-shell {
   flex: 1;
   display: flex;
@@ -730,7 +735,7 @@ body.has-dock-open {
   }
 }
 
-/* 新增：上下分割布局與獨立滾動，移除舊 console-dock 固定樣式相關 */
+/* 新增: 上下分割布局與獨立滾動，移除舊 console-dock 固定樣式相關 */
 
 html,
 body {
@@ -782,7 +787,7 @@ body {
   min-height: 0;
 }
 
-/* 新增：拖曳分隔條 */
+/* 新增: 拖曳分隔條 */
 .split-resizer {
   flex: 0 0 var(--split-bar-size);
   cursor: row-resize;
@@ -805,7 +810,7 @@ body {
   pointer-events: none;
 }
 
-/* 拖曳中即時反應（移除 transition 以免卡頓，如有） */
+/* 拖曳中即時反應(移除 transition 以免卡頓，如有) */
 .app-split.resizing .pane-main,
 .app-split.resizing .pane-console {
   transition: none !important;
@@ -816,4 +821,177 @@ body {
   .split-resizer {
     --split-bar-size: 8px;
   }
+}
+
+/* ================== serverconfig.xml Modal ================== */
+.modal.hidden {
+  display: none !important;
+}
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+}
+.modal__panel {
+  position: relative;
+  width: min(960px, calc(100% - 24px));
+  margin: 40px auto;
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 80px);
+}
+.modal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--c-border-soft);
+}
+.modal__close {
+  background: transparent;
+  border: 1px solid var(--c-border);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-s);
+}
+.modal__banner {
+  padding: var(--space-3) var(--space-4);
+  background: #fff3c4;
+  color: #7a5200;
+  border-bottom: 1px solid #f2d48a;
+}
+.modal__body {
+  padding: var(--space-4);
+  overflow: auto;
+}
+.modal__footer {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: flex-end;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--c-border-soft);
+}
+
+/* 編輯表單 */
+.cfg-grid {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 10px 12px;
+  align-items: center;
+}
+.cfg-grid .cfg-label {
+  color: var(--c-text-sec);
+  font-weight: 600;
+  word-break: break-all;
+}
+.cfg-grid input[type="text"],
+.cfg-grid input[type="number"],
+.cfg-grid select {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-s);
+  color: var(--c-text);
+}
+.cfg-combo {
+  display: flex;
+  gap: var(--space-2);
+}
+@media (prefers-color-scheme: dark) {
+  .cfg-grid input[type="text"],
+  .cfg-grid input[type="number"],
+  .cfg-grid select {
+    background: #0f172a;
+    border-color: var(--c-border);
+    color: var(--c-text);
+  }
+}
+@media (max-width: 900px) {
+  .cfg-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== cfg hints ===== */
+.cfg-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cfg-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 11px;
+  line-height: 1;
+  cursor: help;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface-alt);
+  color: var(--c-text-sec);
+}
+.cfg-hint:hover {
+  filter: brightness(0.95);
+}
+
+/* ===== checks panel ===== */
+.cfg-checks.hidden {
+  display: none !important;
+}
+.cfg-checks {
+  border-top: 1px solid var(--c-border-soft);
+  padding: 10px 16px 0;
+}
+.cfg-checks__title {
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+.cfg-checks__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  padding: 6px 8px;
+  border: 1px solid var(--c-border-soft);
+  border-radius: 8px;
+  background: var(--c-surface);
+}
+.check-item.ok {
+  border-color: #bbf7d0;
+  background: #dcfce7;
+  color: #166534;
+}
+.check-item.err {
+  border-color: #fecaca;
+  background: #fee2e2;
+  color: #991b1b;
+}
+.check-item.warn {
+  border-color: #fde68a;
+  background: #fef9c3;
+  color: #92400e;
+}
+.check-item .badge {
+  text-transform: none;
+  font-size: 0.7rem;
 }
