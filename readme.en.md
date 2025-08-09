@@ -56,7 +56,7 @@ The installer will:
 After installation, your browser will automatically open:
 
 ```
-http://localhost:26902/
+http://localhost:26901/
 ```
 
 ![DEMO](demo.png)
@@ -107,7 +107,7 @@ npm start
 5. Access the admin panel
 
 ```bat
-http://localhost:26902/
+http://localhost:26901/
 ```
 
 ## Common API Endpoints

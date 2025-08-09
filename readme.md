@@ -56,7 +56,7 @@
 安裝完成後，瀏覽器將自動開啟: 
 
 ```
-http://localhost:26902/
+http://localhost:26901/
 ```
 
 #### 3. Web 介面功能
@@ -104,7 +104,7 @@ npm start
 結束安裝後，瀏覽器將自動開啟: 
 
 ```
-http://localhost:26902/
+http://localhost:26901/
 ```
 
 ![DEMO](demo.png)

@@ -33,14 +33,10 @@ const processManager = {
     get waitingForInput() {
       return steamcmd.waitingForInput;
     },
-    start(args, onData, onError, onClose, options) {
-      steamcmd.start(
-        args,
-        onData,
-        onError,
-        onClose,
-        options || { autoQuitOnPrompt: true }
-      );
+    start(args, onData, onError, onClose) {
+      steamcmd.start(args, onData, onError, onClose, {
+        autoQuitOnPrompt: true,
+      });
     },
     abort() {
       steamcmd.abort();
@@ -61,6 +57,14 @@ const processManager = {
     },
     killTree() {
       gameServer.killTree();
+    },
+    /** 以 PID 強制關閉（若未傳入則使用內部記錄的 PID） */
+    async killByPid(pid) {
+      return await gameServer.killByPid(pid);
+    },
+    /** 取得目前或最後已知 PID */
+    getPid() {
+      return gameServer.getPid();
     },
     async checkTelnet(config) {
       await checkTelnet(config, gameServer);

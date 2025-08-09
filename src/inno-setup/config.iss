@@ -28,7 +28,7 @@ begin
   _Top := _Top + 20;
 
   RegQueryStringValue(HKLM, 'Software\7DTD-DS-P', 'WebPort', REG_WebPort);
-  if REG_WebPort = '' then REG_WebPort := '26902';
+  if REG_WebPort = '' then REG_WebPort := '26901';
   WebPortInput := CreateInputNumber(ConfigPage.Surface, REG_WebPort, _Top, _Left);
 
   _Top := _Top + 30;

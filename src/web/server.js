@@ -111,6 +111,7 @@ app.get("/api/process-status", async (req, res) => {
       gameServer: {
         isRunning: processManager.gameServer.isRunning,
         isTelnetConnected: processManager.gameServer.isTelnetConnected,
+        pid: processManager.gameServer.getPid(),
       },
     };
     return http.respondJson(res, { ok: true, data: status }, 200);
@@ -174,7 +175,6 @@ app.post("/api/backup", async (req, res) => {
 app.post("/api/install", (req, res) => {
   try {
     const version = req.body?.version ?? "";
-    // 記錄最後選擇的版本
     CONFIG.web.lastInstallVersion = version;
     saveConfig();
 
@@ -274,7 +274,6 @@ app.post("/api/start", async (req, res) => {
     const stripQuotes = (s) =>
       typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
 
-    // serverConfig 解析(絕對路徑→相對 GAME_DIR → 相對 baseDir)
     const cfgRaw = stripQuotes(CONFIG?.game_server?.serverConfig);
     const cfgCandidates = [];
     if (cfgRaw) {
@@ -309,7 +308,7 @@ app.post("/api/start", async (req, res) => {
       logFilePath,
       "-batchmode",
       ...(nographics ? ["-nographics"] : []),
-      ...(configArg ? [`-configfile=${configArg}`] : []), // 以等號形式傳遞
+      ...(configArg ? [`-configfile=${configArg}`] : []),
       "-dedicated",
     ];
 
@@ -334,6 +333,21 @@ app.post("/api/start", async (req, res) => {
       } catch (_) {}
     stopGameTail = tailFile(logFilePath, (line) => {
       eventBus.push("game", { level: "stdout", text: line });
+
+      const m = line.match(/UserDataFolder:\s*(.+)$/i);
+      if (m && m[1]) {
+        const detected = m[1].trim().replace(/\//g, "\\");
+        try {
+          if (!CONFIG.game_server) CONFIG.game_server = {};
+          if (CONFIG.game_server.saves !== detected) {
+            CONFIG.game_server.saves = `${detected}\\Saves`;
+            saveConfig();
+            eventBus.push("system", {
+              text: `CONFIG.game_server.saves: ${detected}`,
+            });
+          }
+        } catch (_) {}
+      }
     });
 
     const line = `✅ 伺服器已啟動，日誌: ${logFileName}`;
@@ -369,19 +383,39 @@ app.post("/api/stop", async (req, res) => {
   }
 });
 
-/* 強制關閉(kill tree) */
+/* 強制關閉（以 PID 為準） */
 app.post("/api/kill", async (req, res) => {
   try {
-    processManager.gameServer.killTree();
+    const pidFromBody = req.body?.pid;
+    const targetPid = pidFromBody ?? processManager.gameServer.getPid();
+
+    if (!targetPid) {
+      const warn = "⚠️ 無可用 PID，可用狀態已重置";
+      log(warn);
+      eventBus.push("system", { text: warn });
+      return http.sendOk(req, res, `✅ ${warn}`);
+    }
+
+    eventBus.push("system", { text: `🗡️ 送出強制結束請求 pid=${targetPid}` });
+    const ok = await processManager.gameServer.killByPid(targetPid);
+
     if (stopGameTail)
       try {
         stopGameTail();
       } catch (_) {}
     stopGameTail = null;
-    const line = "⚠️ 已強制結束遊戲進程";
-    log(line);
-    eventBus.push("system", { text: line });
-    http.sendOk(req, res, `✅ ${line}`);
+
+    if (ok) {
+      const line = `⚠️ 已強制結束遊戲進程 pid=${targetPid}`;
+      log(line);
+      eventBus.push("system", { text: line });
+      return http.sendOk(req, res, `✅ ${line}`);
+    } else {
+      const line = `❌ 強制結束失敗 pid=${targetPid}（可能為權限不足或進程不存在）`;
+      error(line);
+      eventBus.push("system", { level: "error", text: line });
+      return http.sendErr(req, res, line);
+    }
   } catch (err) {
     const msg = `❌ 強制結束失敗: ${err?.message || err}`;
     error(msg);

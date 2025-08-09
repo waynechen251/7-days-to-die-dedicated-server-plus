@@ -26,7 +26,7 @@ if (-not $json.game_server) { $json.game_server = @{} }
 
 if ($webPort) { $json.web.port = $webPort }
 
-$json.game_server.saves = $savePath
+$json.web.installUser = $userName
 
 $json | ConvertTo-Json -Depth 5 | Out-File -FilePath $jsonPath -Encoding utf8 -NoNewline
 
