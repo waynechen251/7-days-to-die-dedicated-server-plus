@@ -6,13 +6,11 @@ const viewSavesBtn = document.getElementById("viewSavesBtn");
 const startServerGUIBtn = document.getElementById("startServerGUIBtn");
 const startServerNOGUIBtn = document.getElementById("startServerNOGUIBtn");
 const stopServerBtn = document.getElementById("stopServerBtn");
+const killServerBtn = document.getElementById("killServerBtn");
 const versionSelect = document.getElementById("versionSelect");
 const abortInstallBtn = document.getElementById("abortInstallBtn");
 const telnetInput = document.getElementById("telnetInput");
 const telnetSendBtn = document.getElementById("telnetSendBtn");
-const telnetQuickBtns = Array.from(
-  document.querySelectorAll('button[data-role="telnet"]')
-);
 
 const stBackend = document.getElementById("st-backend");
 const stSteam = document.getElementById("st-steam");
@@ -27,13 +25,27 @@ const panes = {
   telnet: document.getElementById("console-telnet"),
   backup: document.getElementById("console-backup"),
 };
+
+Object.values(panes).forEach((p) => p && p.setAttribute("tabindex", "-1"));
+
+
 const tabBtns = {};
 let activeTab = "system";
+
 document.querySelectorAll(".console-tabs button").forEach((btn) => {
   const tab = btn.dataset.tab;
   tabBtns[tab] = btn;
   btn.addEventListener("click", () => switchTab(tab));
 });
+
+switchTab("system");
+
+function scrollToEnd(el) {
+  if (!el) return;
+  requestAnimationFrame(() => {
+    el.scrollTop = el.scrollHeight;
+  });
+}
 
 function switchTab(tab) {
   if (!panes[tab]) return;
@@ -47,13 +59,18 @@ function switchTab(tab) {
     .querySelectorAll(".console")
     .forEach((p) => p.classList.remove("active"));
   panes[tab].classList.add("active");
+  scrollToEnd(panes[tab]);
 }
 
 function appendLog(topic, line) {
   const p = panes[topic] || panes.system;
   p.textContent += line.endsWith("\n") ? line : line + "\n";
   p.scrollTop = p.scrollHeight;
-  if (topic !== activeTab) tabBtns[topic]?.classList.add("unread");
+  if (topic === activeTab) {
+    scrollToEnd(p);
+  } else {
+    tabBtns[topic]?.classList.add("unread");
+  }
 }
 function stamp(ts, text) {
   return `[${new Date(ts).toLocaleString()}] ${text}`;
@@ -72,31 +89,24 @@ function setDisabled(nodes, disabled) {
   );
 }
 
-let isBackingUp = false;
-let lastStatusState = {
-  backendUp: false,
-  steamRunning: false,
-  gameRunning: false,
-  telnetOk: false,
-};
+// 互斥規則（加嚴）
 function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
-  lastStatusState = { backendUp, steamRunning, gameRunning, telnetOk };
   const all = [
     installServerBtn,
     abortInstallBtn,
     backupBtn,
+    viewConfigBtn,
     viewSavesBtn,
     startServerGUIBtn,
     startServerNOGUIBtn,
     stopServerBtn,
+    killServerBtn,
     versionSelect,
     telnetInput,
     telnetSendBtn,
-    ...telnetQuickBtns,
   ];
+
   setDisabled(all, false);
-  setDisabled(viewConfigBtn, !backendUp);
-  setDisabled(viewSavesBtn, !backendUp);
 
   if (!backendUp) {
     setBadge(stBackend, "err");
@@ -104,21 +114,16 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
     setBadge(stGame, "err");
     setBadge(stTelnet, "err");
     setDisabled(all, true);
-    setDisabled(viewConfigBtn, true);
-    setDisabled(viewSavesBtn, true);
     return;
   }
   setBadge(stBackend, "ok");
 
-  // SteamCMD 與 Game 互斥: SteamCMD 執行時僅允許「中斷安裝」
   if (steamRunning) {
     setBadge(stSteam, "ok");
     setBadge(stGame, gameRunning ? "warn" : "warn");
     setBadge(stTelnet, "warn");
     setDisabled(all, true);
     setDisabled(abortInstallBtn, false);
-    setDisabled(viewConfigBtn, false);
-    setDisabled(viewSavesBtn, false);
     return;
   } else {
     setBadge(stSteam, "warn");
@@ -139,20 +144,10 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
 
   // 停止、Telnet: 僅在運行且 Telnet 正常時允許
   const canManage = gameRunning && telnetOk;
-  setDisabled(
-    [stopServerBtn, telnetInput, telnetSendBtn, ...telnetQuickBtns],
-    !canManage
-  );
+  setDisabled([stopServerBtn, telnetInput, telnetSendBtn], !canManage);
 
-  // 進行備份時鎖定全部互動直到完成或逾時
-  if (isBackingUp) {
-    setDisabled(all, true);
-    setDisabled(viewConfigBtn, false);
-    setDisabled(viewSavesBtn, false);
-  } else {
-    setDisabled(viewConfigBtn, false);
-    setDisabled(viewSavesBtn, false);
-  }
+  // 強制關閉：只要偵測到遊戲在跑即可使用
+  setDisabled(killServerBtn, !gameRunning);
 }
 
 // API helpers
@@ -220,7 +215,7 @@ async function refreshStatus() {
       telnetOk: false,
     });
   } finally {
-    setTimeout(refreshStatus, 5000);
+    setTimeout(refreshStatus, 3000);
   }
 }
 refreshStatus();
@@ -281,34 +276,11 @@ viewSavesBtn.addEventListener("click", async () => {
 });
 
 backupBtn.addEventListener("click", async () => {
-  if (isBackingUp) return;
   switchTab("backup");
-  isBackingUp = true;
-  applyUIState(lastStatusState);
-  appendLog("backup", stamp(Date.now(), "⏳ 開始建立備份..."));
-  const TIMEOUT_MS = 120000;
-  const controller = new AbortController();
-  const tId = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    const res = await fetch("/api/backup", {
-      method: "POST",
-      signal: controller.signal,
-    });
-    const text = await res.text();
-    appendLog("backup", text);
+    appendLog("backup", await fetchText("/api/backup", { method: "POST" }));
   } catch (e) {
-    if (e.name === "AbortError") {
-      appendLog(
-        "backup",
-        stamp(Date.now(), "❌ 備份逾時 (已超過 120 秒) - 已解除鎖定")
-      );
-    } else {
-      appendLog("backup", `❌ ${e.message}`);
-    }
-  } finally {
-    clearTimeout(tId);
-    isBackingUp = false;
-    applyUIState(lastStatusState);
+    appendLog("backup", `❌ ${e.message}`);
   }
 });
 
@@ -365,6 +337,15 @@ stopServerBtn.addEventListener("click", async () => {
   }
 });
 
+killServerBtn.addEventListener("click", async () => {
+  switchTab("system");
+  try {
+    appendLog("system", await fetchText("/api/kill", { method: "POST" }));
+  } catch (e) {
+    appendLog("system", `❌ ${e.message}`);
+  }
+});
+
 function sendTelnet(cmd) {
   switchTab("telnet");
   fetch("/api/telnet", {
@@ -383,7 +364,3 @@ telnetSendBtn.addEventListener("click", () => {
   sendTelnet(cmd);
 });
 window.sendTelnet = sendTelnet;
-telnetQuickBtns.forEach((btn) => {
-  const cmd = btn.dataset.command;
-  btn.addEventListener("click", () => sendTelnet(cmd));
-});

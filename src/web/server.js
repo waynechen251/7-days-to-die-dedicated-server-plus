@@ -40,6 +40,20 @@ function resolveDirCaseInsensitive(root, want) {
     return path.join(root, want);
   }
 }
+
+/** 在 dir 內以不分大小寫尋找檔案 */
+function resolveFileCaseInsensitive(dir, file) {
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    const hit = entries.find(
+      (e) => e.isFile() && e.name.toLowerCase() === file.toLowerCase()
+    );
+    return hit ? path.join(dir, hit.name) : path.join(dir, file);
+  } catch (_) {
+    return path.join(dir, file);
+  }
+}
+
 const GAME_DIR = resolveDirCaseInsensitive(baseDir, "7DaysToDieServer");
 
 let stopGameTail = null;
@@ -222,21 +236,41 @@ app.post("/api/start", async (req, res) => {
       new Date(),
       "YYYY-MM-DD__HH-mm-ss"
     )}.txt`;
-    const logFilePath = path.join(GAME_DIR, "logs", logFileName);
+    const logsDir = path.join(GAME_DIR, "logs");
+    const logFilePath = path.join(logsDir, logFileName);
 
-    ensureDir(path.dirname(logFilePath));
+    ensureDir(logsDir);
+    try {
+      if (!fs.existsSync(logFilePath)) fs.writeFileSync(logFilePath, "");
+    } catch (_) {}
+
     fs.writeFileSync(path.join(GAME_DIR, "steam_appid.txt"), "251570");
     process.env.SteamAppId = "251570";
     process.env.SteamGameId = "251570";
 
     const stripQuotes = (s) =>
       typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
+
     const configured = stripQuotes(CONFIG?.game_server?.serverConfig);
-    const candidate =
-      configured && fs.existsSync(configured)
-        ? configured
-        : path.join(GAME_DIR, "serverconfig.xml");
-    const configPath = candidate.includes(" ") ? `"${candidate}"` : candidate;
+    const candidates = [
+      configured,
+      resolveFileCaseInsensitive(GAME_DIR, "serverconfig.xml"),
+      resolveFileCaseInsensitive(baseDir, "serverconfig.xml"),
+    ].filter(Boolean);
+
+    let configArg = null;
+    for (const c of candidates) {
+      if (c && fs.existsSync(c)) {
+        const v = c.includes(" ") ? `"${c}"` : c;
+        configArg = `-configfile=${v}`;
+        break;
+      }
+    }
+    if (!configArg) {
+      eventBus.push("system", {
+        text: "未找到 serverconfig.xml，將以預設設定啟動",
+      });
+    }
 
     const nographics = req.body?.nographics ?? true;
     const args = [
@@ -245,11 +279,24 @@ app.post("/api/start", async (req, res) => {
       "-quit",
       "-batchmode",
       ...(nographics ? ["-nographics"] : []),
-      `-configfile=${configPath}`,
+      ...(configArg ? [configArg] : []),
       "-dedicated",
     ];
 
-    processManager.gameServer.start(args, GAME_DIR, { exeName });
+    processManager.gameServer.start(args, GAME_DIR, {
+      exeName,
+      onExit: (code, signal) => {
+        eventBus.push("system", {
+          text: `遊戲進程結束 (code=${code}, signal=${signal || "-"})`,
+        });
+      },
+      onError: (err) => {
+        eventBus.push("system", {
+          level: "error",
+          text: `遊戲進程錯誤: ${err?.message || err}`,
+        });
+      },
+    });
 
     if (stopGameTail)
       try {
@@ -291,6 +338,28 @@ app.post("/api/stop", async (req, res) => {
   }
 });
 
+/* 強制關閉（kill tree） */
+app.post("/api/kill", async (req, res) => {
+  try {
+    processManager.gameServer.killTree();
+    if (stopGameTail)
+      try {
+        stopGameTail();
+      } catch (_) {}
+    stopGameTail = null;
+    const line = "⚠️ 已強制結束遊戲進程";
+    log(line);
+    eventBus.push("system", { text: line });
+    http.sendOk(req, res, `✅ ${line}`);
+  } catch (err) {
+    const msg = `❌ 強制結束失敗: ${err?.message || err}`;
+    error(msg);
+    eventBus.push("system", { level: "error", text: msg });
+    http.sendErr(req, res, msg);
+  }
+});
+
+/* Telnet */
 app.post("/api/telnet", async (req, res) => {
   const command = req.body?.command ?? "";
   if (!command)

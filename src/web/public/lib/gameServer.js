@@ -15,7 +15,7 @@ const gameServer = {
    */
   start(args, gameServerPath, options = {}) {
     if (this.isRunning) throw new Error("遊戲伺服器已經在運行中");
-    const { exeName = "7DaysToDieServer.exe" } = options;
+    const { exeName = "7DaysToDieServer.exe", onExit, onError } = options;
 
     const exePath = path.join(gameServerPath, exeName);
     this.child = spawn(exePath, args, {
@@ -23,8 +23,28 @@ const gameServer = {
       detached: true,
       stdio: "ignore",
     });
-    this.child.unref();
+
     this.isRunning = true;
+
+    this.child.on("error", (err) => {
+      this.isRunning = false;
+      try {
+        this.child.unref?.();
+      } catch (_) {}
+      this.child = null;
+      onError && onError(err);
+    });
+
+    this.child.on("exit", (code, signal) => {
+      this.isRunning = false;
+      try {
+        this.child.unref?.();
+      } catch (_) {}
+      this.child = null;
+      onExit && onExit(code, signal);
+    });
+
+    this.child.unref();
   },
 
   /**
