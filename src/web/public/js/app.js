@@ -952,10 +952,10 @@ function renderCfgEditor(items) {
         sel.dataset.type = "boolean";
         sel.innerHTML = `
           <option value="true"${
-            /^(true|1)$/i.test(value) ? " selected" : ""
+            /^true$/i.test(value) ? " selected" : ""
           }>true</option>
           <option value="false"${
-            /^(false|0)$/i.test(value) ? " selected" : ""
+            /^false$/i.test(value) ? " selected" : ""
           }>false</option>
         `;
         sel.addEventListener("change", rerunChecks);
@@ -1004,7 +1004,7 @@ function readCfgValuesFromUI() {
 }
 
 function isTrue(v) {
-  return /^(true|1)$/i.test(String(v || "").trim());
+  return /^(true)$/i.test(String(v || "").trim());
 }
 
 function num(v) {
@@ -1100,20 +1100,8 @@ async function runCfgChecks() {
 function normalizeValueForWrite(name, newVal) {
   const oldVal = cfgOriginal?.get(name);
   if (oldVal == null) return newVal;
-  const oldTrim = String(oldVal).trim();
   const vTrim = String(newVal).trim();
-
-  const oldIsDigitBool = /^(0|1)$/.test(oldTrim);
-  const oldIsWordBool = /^(true|false)$/i.test(oldTrim);
-  const newIsBoolWord = /^(true|false)$/i.test(vTrim);
-  const newIsBoolDigit = /^(0|1)$/.test(vTrim);
-
-  if (oldIsDigitBool && newIsBoolWord) {
-    return vTrim.toLowerCase() === "true" ? "1" : "0";
-  }
-  if (oldIsWordBool && newIsBoolDigit) {
-    return vTrim === "1" ? "true" : "false";
-  }
+  if (/^(true|false)$/i.test(vTrim)) return vTrim.toLowerCase();
   return vTrim;
 }
 
@@ -1151,7 +1139,7 @@ async function saveConfigValues(startAfter) {
     if (!name) return;
     let val = el.value;
     if (el.dataset.type === "boolean") {
-      val = /^(true|1)$/i.test(val) ? "true" : "false";
+      val = /^(true)$/i.test(val) ? "true" : "false";
     }
     val = normalizeValueForWrite(name, val);
     const oldVal = cfgOriginal.get(name) ?? "";
@@ -1192,7 +1180,7 @@ async function saveConfigValues(startAfter) {
 
 function decideType(raw) {
   const v = String(raw).trim();
-  if (/^(true|false|0|1)$/i.test(v)) return "boolean";
+  if (/^(true|false)$/i.test(v)) return "boolean";
   if (/^-?\d+(\.\d+)?$/.test(v)) return "number";
   return "text";
 }
