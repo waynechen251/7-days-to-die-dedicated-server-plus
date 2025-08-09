@@ -4,7 +4,7 @@ const TOPICS = ["system", "steamcmd", "game", "telnet", "backup"];
 const MAX_PER_TOPIC = 1000;
 
 const bus = new EventEmitter();
-bus.setMaxListeners(50);
+bus.setMaxListeners(64);
 
 const buffers = Object.fromEntries(TOPICS.map((t) => [t, []]));
 
@@ -56,7 +56,6 @@ function sseHandler(req, res) {
   };
 
   bus.on("evt", onEvt);
-
   req.on("close", () => {
     clearInterval(ping);
     bus.off("evt", onEvt);

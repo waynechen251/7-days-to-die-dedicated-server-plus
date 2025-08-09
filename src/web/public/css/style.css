@@ -82,6 +82,17 @@ button {
   font-weight: bold;
   text-decoration: underline;
 }
+/* 未讀提醒 */
+.console-tabs button.unread {
+  position: relative;
+  box-shadow: 0 0 0 2px #f59e0b inset;
+}
+.console-tabs button.unread::after {
+  content: "•";
+  color: #f59e0b;
+  margin-left: 4px;
+  font-weight: bold;
+}
 
 .console {
   height: 360px;

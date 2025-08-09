@@ -26,14 +26,27 @@ const serverJsonPath = fs.existsSync(path.join(baseDir, "server.json"))
 
 const CONFIG = loadConfig();
 const PUBLIC_DIR = path.join(baseDir, "public");
-const GAME_DIR = path.join(baseDir, "7DaysToDieServer");
 const BACKUP_SAVES_DIR = path.join(PUBLIC_DIR, "saves");
+
+/** 在 baseDir 內以不分大小寫尋找子目錄名 */
+function resolveDirCaseInsensitive(root, want) {
+  try {
+    const entries = fs.readdirSync(root, { withFileTypes: true });
+    const hit = entries.find(
+      (e) => e.isDirectory() && e.name.toLowerCase() === want.toLowerCase()
+    );
+    return path.join(root, hit ? hit.name : want);
+  } catch (_) {
+    return path.join(root, want);
+  }
+}
+const GAME_DIR = resolveDirCaseInsensitive(baseDir, "7DaysToDieServer");
+
+let stopGameTail = null;
 
 const app = express();
 app.use(express.json());
 app.use(express.static(PUBLIC_DIR));
-
-let stopGameTail = null;
 
 function loadConfig() {
   try {
@@ -55,6 +68,7 @@ function ensureDir(p) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 }
 
+/* SSE: 回放最近訊息，維持活連線 */
 app.get("/api/stream", eventBus.sseHandler);
 
 app.get("/api/process-status", async (req, res) => {
@@ -104,7 +118,7 @@ app.post("/api/backup", async (req, res) => {
       return http.sendErr(
         req,
         res,
-        `❌ 備份失敗：找不到存檔資料夾（${src || "未設定"}）`
+        `❌ 備份失敗: 找不到存檔資料夾(${src || "未設定"})`
       );
     }
     const timestamp = format(new Date(), "YYYYMMDDHHmmss");
@@ -194,6 +208,13 @@ app.post("/api/start", async (req, res) => {
     const exeName = fs.existsSync(path.join(GAME_DIR, "7DaysToDieServer.exe"))
       ? "7DaysToDieServer.exe"
       : "7DaysToDie.exe";
+
+    const exePath = path.join(GAME_DIR, exeName);
+    if (!fs.existsSync(exePath)) {
+      const msg = `❌ 找不到執行檔: ${exePath}\n請先執行安裝 / 更新，或確認路徑為 {app}\\7daystodieserver\\7DaysToDieServer.exe`;
+      error(msg);
+      return http.sendErr(req, res, msg);
+    }
 
     const logPrefix =
       exeName === "7DaysToDieServer.exe" ? "output_log_dedi" : "output_log";
