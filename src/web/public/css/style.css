@@ -918,3 +918,49 @@ body.has-dock-open {
   text-transform: none;
   font-size: 0.7rem;
 }
+.app-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(15, 17, 20, 0.6);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+.app-mask__panel {
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow);
+  max-width: 90%;
+}
+.app-mask__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--c-border);
+  border-top-color: var(--c-primary);
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.app-mask.hidden {
+  display: none !important;
+}
+@media (prefers-color-scheme: dark) {
+  .app-mask__panel {
+    background: var(--c-surface);
+    border-color: var(--c-border);
+    color: var(--c-text);
+  }
+}

@@ -36,6 +36,8 @@ const cfgSaveBtn = document.getElementById("cfgSaveBtn");
 const cfgSaveStartBtn = document.getElementById("cfgSaveStartBtn");
 const cfgLockBanner = document.getElementById("cfgLockBanner");
 
+const appMask = document.getElementById("appMask");
+
 const panes = {
   system: document.getElementById("console-system"),
   steamcmd: document.getElementById("console-steamcmd"),
@@ -379,31 +381,33 @@ async function loadSaves() {
   }
 }
 
-(async function initUI() {
-  try {
-    const cfg = await fetchJSON("/api/get-config");
-    if (
-      cfg?.data?.web &&
-      Object.prototype.hasOwnProperty.call(cfg.data.web, "lastInstallVersion")
-    ) {
-      const last = cfg.data.web.lastInstallVersion;
-      if (last && last !== "public") {
-        const opt = Array.from(versionSelect.options).find(
-          (o) => o.value === last
-        );
-        if (opt) versionSelect.value = last;
+(function initUIIIFE() {
+  (async function initUI() {
+    try {
+      const cfg = await fetchJSON("/api/get-config");
+      if (
+        cfg?.data?.web &&
+        Object.prototype.hasOwnProperty.call(cfg.data.web, "lastInstallVersion")
+      ) {
+        const last = cfg.data.web.lastInstallVersion;
+        if (last && last !== "public") {
+          const opt = Array.from(versionSelect.options).find(
+            (o) => o.value === last
+          );
+          if (opt) versionSelect.value = last;
+        } else {
+          versionSelect.value = "";
+        }
+        setInstalledVersion(last);
       } else {
-        versionSelect.value = "";
+        setInstalledVersion(null);
       }
-      setInstalledVersion(last);
-    } else {
+    } catch (_) {
       setInstalledVersion(null);
     }
-  } catch (_) {
-    setInstalledVersion(null);
-  }
-  restoreUnreadBadges();
-  loadSaves();
+    restoreUnreadBadges();
+    loadSaves();
+  })();
 })();
 
 let es;
@@ -427,9 +431,17 @@ let currentState = {
   gameRunning: false,
   telnetOk: false,
 };
+let hasEverConnected = false;
+
 function setState(s) {
   currentState = s;
   applyUIState(s);
+  updateMask();
+}
+
+function updateMask() {
+  const show = !hasEverConnected || !currentState.backendUp;
+  appMask?.classList.toggle("hidden", !show);
 }
 
 async function refreshStatus() {
@@ -437,6 +449,7 @@ async function refreshStatus() {
     const s = await fetchJSON("/api/process-status", { method: "GET" });
     const game = s.data?.gameServer || {};
     const steam = s.data?.steamCmd || {};
+    hasEverConnected = true;
     setState({
       backendUp: true,
       steamRunning: !!steam.isRunning,
@@ -454,6 +467,7 @@ async function refreshStatus() {
     setTimeout(refreshStatus, 5000);
   }
 }
+updateMask();
 refreshStatus();
 
 installServerBtn.addEventListener("click", () => {
