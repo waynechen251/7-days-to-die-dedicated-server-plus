@@ -6,61 +6,92 @@
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <div class="toolbar">
+    <header class="topbar">
+      <div class="brand">7DTD-DS-P 控制面板</div>
       <a
         href="https://github.com/waynechen251/7-days-to-die-dedicated-server-plus.git"
         target="_blank"
         rel="noopener noreferrer"
         class="github-link"
       >
-        🌐 GitHub Repository
+        🌐 GitHub
       </a>
-    </div>
+    </header>
 
-    <h1>7 Days To Die Dedicated Server Plus 控制面板</h1>
+    <main class="grid">
+      <section class="card">
+        <h2>狀態總覽</h2>
+        <div id="statusRow" class="status-row">
+          <span id="st-backend" class="badge">管理後台</span>
+          <span id="st-steam" class="badge">SteamCMD</span>
+          <span id="st-game" class="badge">GameServer</span>
+          <span id="st-telnet" class="badge">Telnet</span>
+        </div>
+      </section>
 
-    <h2>🗂️ 管理後台</h2>
-    <div>
-      <button id="viewConfigBtn">⚙️ 查看管理後台設定</button>
-      <button id="viewSavesBtn">📂 查看伺服器備份存檔清單</button>
-      <button id="backupBtn">💾 備份伺服器存檔</button>
-    </div>
+      <section class="card">
+        <h2>安裝 / 更新 Dedicated Server</h2>
+        <div class="row">
+          <button id="installServerBtn">📥 安裝 / 更新</button>
+          <button id="abortInstallBtn" disabled>❌ 中斷安裝</button>
+          <select id="versionSelect">
+            <option value="">Stable (public)</option>
+            <option value="v2.1">v2.1 Stable</option>
+            <option value="v2.0">v2.0 Stable</option>
+            <option value="v1.4">v1.4 Stable</option>
+            <option value="v1.3">v1.3 Stable</option>
+          </select>
+        </div>
+      </section>
 
-    <h2>⚙️ 安裝或更新 Dedicated Server</h2>
-    <button id="installServerBtn">📥 安裝 / 更新 Dedicated Server</button>
-    <button id="abortInstallBtn">❌ 中斷安裝</button>
-    <select id="versionSelect">
-      <option value="">Stable (public)</option>
-      <option value="v2.0">v2.0 Stable</option>
-      <option value="v2.1">v2.1 Stable</option>
-      <option value="v1.4">v1.4 Stable</option>
-      <option value="v1.3">v1.3 Stable</option>
-    </select>
+      <section class="card">
+        <h2>伺服器控制</h2>
+        <div class="row">
+          <button id="startServerGUIBtn">▶️ 啟動伺服器(GUI)</button>
+          <button id="startServerNOGUIBtn">▶️ 啟動伺服器(NO GUI)</button>
+          <button id="stopServerBtn">⏹️ 關閉伺服器</button>
+        </div>
+        <div class="row">
+          <input id="telnetInput" placeholder="輸入 Telnet 指令…" />
+          <button id="telnetSendBtn" data-role="telnet">送出</button>
+          <button data-role="telnet" onclick="sendTelnet('version')">
+            🔍 版本
+          </button>
+          <button data-role="telnet" onclick="sendTelnet('listplayers')">
+            🧑‍🤝‍🧑 玩家
+          </button>
+          <button data-role="telnet" onclick="sendTelnet('getgamepref')">
+            ⚙️ 設定
+          </button>
+        </div>
+      </section>
 
-    <h2>📡 伺服器管理</h2>
-    <div>
-      <button id="startServerGUIBtn">▶️ 啟動伺服器(GUI)</button>
-      <button id="startServerNOGUIBtn">▶️ 啟動伺服器(NO GUI)</button>
-      <button id="stopServerBtn">⏹️ 關閉伺服器</button>
-    </div>
+      <section class="card">
+        <h2>備份 / 檔案</h2>
+        <div class="row">
+          <button id="viewConfigBtn">⚙️ 查看管理後台設定</button>
+          <button id="viewSavesBtn">📂 存檔清單</button>
+          <button id="backupBtn">💾 建立備份</button>
+        </div>
+      </section>
 
-    <h2>📡 伺服器資訊</h2>
-    <div id="serverStatus"></div>
-    <div>
-      <button data-role="telnet" onclick="sendTelnet('version')">
-        🔍 查看版本
-      </button>
-      <button data-role="telnet" onclick="sendTelnet('listplayers')">
-        🧑‍🤝‍🧑 玩家清單
-      </button>
-      <button data-role="telnet" onclick="sendTelnet('getgamepref')">
-        ⚙️ 查看伺服器設定
-      </button>
-    </div>
-
-    <textarea id="output" readonly></textarea>
+      <section class="card card-console span2">
+        <h2>Web Console</h2>
+        <div class="console-tabs">
+          <button data-tab="system" class="active">system</button>
+          <button data-tab="steamcmd">steamcmd</button>
+          <button data-tab="game">game</button>
+          <button data-tab="telnet">telnet</button>
+          <button data-tab="backup">backup</button>
+        </div>
+        <pre id="console-system" class="console active"></pre>
+        <pre id="console-steamcmd" class="console"></pre>
+        <pre id="console-game" class="console"></pre>
+        <pre id="console-telnet" class="console"></pre>
+        <pre id="console-backup" class="console"></pre>
+      </section>
+    </main>
 
     <script src="js/app.js"></script>
-    <script src="js/scx.js"></script>
   </body>
 </html>

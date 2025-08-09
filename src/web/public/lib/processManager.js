@@ -1,4 +1,3 @@
-const path = require("path");
 const { TelnetCtor } = require("./telnet");
 const steamcmd = require("./steamcmd");
 const gameServer = require("./gameServer");
@@ -18,7 +17,7 @@ async function checkTelnet(config, target = gameServer) {
     await connection.connect(params);
     await connection.send(config.telnetPassword, { waitfor: ">" });
     target.isTelnetConnected = true;
-  } catch (err) {
+  } catch (_) {
     target.isTelnetConnected = false;
   } finally {
     await connection.end().catch(() => {});
@@ -33,9 +32,10 @@ const processManager = {
     get waitingForInput() {
       return steamcmd.waitingForInput;
     },
-    start(args, onData, onError, onClose) {
+    start(args, onData, onError, onClose, options) {
       steamcmd.start(args, onData, onError, onClose, {
         autoQuitOnPrompt: true,
+        ...options,
       });
     },
     abort() {
@@ -52,8 +52,8 @@ const processManager = {
     get isTelnetConnected() {
       return gameServer.isTelnetConnected;
     },
-    start(args, baseDir) {
-      gameServer.start(args, baseDir);
+    start(args, baseDir, options) {
+      gameServer.start(args, baseDir, options);
     },
     killTree() {
       gameServer.killTree();

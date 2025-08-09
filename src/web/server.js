@@ -1,9 +1,8 @@
 const express = require("express");
-const { exec, execFile } = require("child_process");
+const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const { promisify } = require("util");
-const { spawn } = require("child_process");
 const { format, ts } = require("./public/lib/time");
 const { log, error } = require("./public/lib/logger");
 const http = require("./public/lib/http");
@@ -11,12 +10,12 @@ const { formatBytes } = require("./public/lib/bytes");
 const { sendTelnetCommand } = require("./public/lib/telnet");
 const processManager = require("./public/lib/processManager");
 const zip = require("./public/lib/zip");
+const eventBus = require("./public/lib/eventBus");
+const { tailFile } = require("./public/lib/tailer");
 
 const execAsync = promisify(exec);
 
-if (process.platform === "win32") {
-  exec("chcp 65001 >NUL");
-}
+if (process.platform === "win32") exec("chcp 65001 >NUL");
 
 const isPkg = typeof process.pkg !== "undefined";
 const baseDir = isPkg ? path.dirname(process.execPath) : process.cwd();
@@ -27,12 +26,14 @@ const serverJsonPath = fs.existsSync(path.join(baseDir, "server.json"))
 
 const CONFIG = loadConfig();
 const PUBLIC_DIR = path.join(baseDir, "public");
-const GAME_DIR = path.join(baseDir, "gameserver");
-const GAME_SAVES_BACKUP_DIR = path.join(PUBLIC_DIR, "Saves");
+const GAME_DIR = path.join(baseDir, "7DaysToDieServer");
+const BACKUP_SAVES_DIR = path.join(PUBLIC_DIR, "saves");
 
 const app = express();
 app.use(express.json());
 app.use(express.static(PUBLIC_DIR));
+
+let stopGameTail = null;
 
 function loadConfig() {
   try {
@@ -50,60 +51,11 @@ function loadConfig() {
   }
 }
 
-function getConfig() {
-  return CONFIG;
-}
-
 function ensureDir(p) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 }
 
-app.post("/api/view-saves", (req, res) => {
-  if (!fs.existsSync(GAME_SAVES_BACKUP_DIR))
-    fs.mkdirSync(GAME_SAVES_BACKUP_DIR, { recursive: true });
-
-  fs.readdir(GAME_SAVES_BACKUP_DIR, (err, files) => {
-    if (err) return http.sendErr(req, res, `❌ 讀取存檔失敗:\n${err}`);
-    const saves = files.filter((file) => file.endsWith(".zip"));
-    if (saves.length === 0) return http.sendOk(req, res, "❌ 沒有找到任何存檔");
-
-    const details = saves.map((file) => {
-      const filePath = path.join(GAME_SAVES_BACKUP_DIR, file);
-      const stats = fs.statSync(filePath);
-      const sizeStr = formatBytes(stats.size);
-      const date = ts(stats.mtime);
-      return `${file} (${sizeStr}, ${date})`;
-    });
-
-    http.sendOk(req, res, `✅ 找到以下存檔:\n${details.join("\n")}`);
-  });
-});
-
-app.post("/api/backup", async (req, res) => {
-  try {
-    const src = CONFIG?.game_server?.saves
-    if (!src || !fs.existsSync(src)) {
-      error(`❌ 找不到存檔資料夾: ${src || "未設定"}`);
-      return http.sendErr(
-        req,
-        res,
-        `❌ 備份失敗: 找不到存檔資料夾(${src || "未設定"})`
-      );
-    }
-    const timestamp = format(new Date(), "YYYYMMDDHHmmss");
-    const zipName = `Saves-${timestamp}.zip`;
-    const outPath = path.join(GAME_SAVES_BACKUP_DIR, zipName);
-
-    ensureDir(GAME_SAVES_BACKUP_DIR);
-    await zip.zipDirectory(src, outPath);
-
-    log(`✅ 成功備份存檔到: ${outPath}`);
-    http.sendOk(req, res, `✅ 備份完成: ${zipName}`);
-  } catch (err) {
-    error(`❌ 備份失敗: ${err?.message || err}`);
-    http.sendErr(req, res, `❌ 備份失敗:\n${err?.message || err}`);
-  }
-});
+app.get("/api/stream", eventBus.sseHandler);
 
 app.get("/api/process-status", async (req, res) => {
   try {
@@ -126,15 +78,56 @@ app.get("/api/process-status", async (req, res) => {
   }
 });
 
-app.post("/api/install", (req, res) => {
+app.post("/api/view-saves", (req, res) => {
+  ensureDir(BACKUP_SAVES_DIR);
+
+  fs.readdir(BACKUP_SAVES_DIR, (err, files) => {
+    if (err) return http.sendErr(req, res, `❌ 讀取存檔失敗:\n${err}`);
+    const saves = files.filter((file) => file.endsWith(".zip"));
+    if (saves.length === 0) return http.sendOk(req, res, "❌ 沒有找到任何存檔");
+
+    const details = saves.map((file) => {
+      const filePath = path.join(BACKUP_SAVES_DIR, file);
+      const stats = fs.statSync(filePath);
+      return `${file} (${formatBytes(stats.size)}, ${ts(stats.mtime)})`;
+    });
+
+    http.sendOk(req, res, `✅ 找到以下存檔:\n${details.join("\n")}`);
+  });
+});
+
+app.post("/api/backup", async (req, res) => {
   try {
-    if (processManager.gameServer.isRunning) {
+    const src = CONFIG?.game_server?.saves;
+    if (!src || !fs.existsSync(src)) {
+      error(`❌ 找不到存檔資料夾: ${src || "未設定"}`);
       return http.sendErr(
         req,
         res,
-        "❌ 伺服器運行中，請先停止後再執行安裝/更新"
+        `❌ 備份失敗：找不到存檔資料夾（${src || "未設定"}）`
       );
     }
+    const timestamp = format(new Date(), "YYYYMMDDHHmmss");
+    const zipName = `Saves-${timestamp}.zip`;
+    const outPath = path.join(BACKUP_SAVES_DIR, zipName);
+
+    ensureDir(BACKUP_SAVES_DIR);
+    await zip.zipDirectory(src, outPath);
+
+    const line = `✅ 備份完成: ${zipName}`;
+    log(line);
+    eventBus.push("backup", { text: line });
+    http.sendOk(req, res, line);
+  } catch (err) {
+    const msg = `❌ 備份失敗: ${err?.message || err}`;
+    error(msg);
+    eventBus.push("backup", { level: "error", text: msg });
+    http.sendErr(req, res, `${msg}`);
+  }
+});
+
+app.post("/api/install", (req, res) => {
+  try {
     const version = req.body?.version ?? "";
     const args = [
       "+login",
@@ -149,36 +142,46 @@ app.post("/api/install", (req, res) => {
     ];
 
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    eventBus.push("steamcmd", {
+      text: `start install/update (${version || "public"})`,
+    });
 
-    log(`🚀 啟動 steamcmd: ${args.join(" ")}`);
     processManager.steamCmd.start(
       args,
-      (data) => http.writeStamped(res, `[stdout] ${data}`),
-      (err) => http.writeStamped(res, `[stderr] ${err}`),
+      (data) => {
+        http.writeStamped(res, `[stdout] ${data}`);
+        eventBus.push("steamcmd", { level: "stdout", text: data });
+      },
+      (err) => {
+        http.writeStamped(res, `[stderr] ${err}`);
+        eventBus.push("steamcmd", { level: "stderr", text: err });
+      },
       (code) => {
-        log(`✅ 安裝 / 更新結束，Exit Code: ${code}`);
-        http.writeStamped(res, `✅ 安裝 / 更新結束，Exit Code: ${code}`);
+        const line = `✅ 安裝 / 更新結束，Exit Code: ${code}`;
+        http.writeStamped(res, line);
         res.end();
-      }
+        eventBus.push("steamcmd", { text: line });
+      },
+      { autoQuitOnPrompt: true, cwd: baseDir }
     );
   } catch (err) {
-    error(`❌ 無法啟動 steamcmd: ${err.message}`);
-    http.writeStamped(res, `❌ 無法啟動 steamcmd: ${err.message}`);
+    const msg = `❌ 無法啟動 steamcmd: ${err.message}`;
+    error(msg);
+    http.writeStamped(res, msg);
     res.end();
+    eventBus.push("steamcmd", { level: "error", text: msg });
   }
 });
 
 app.post("/api/install-abort", (req, res) => {
   try {
-    if (processManager.steamCmd.isRunning) {
+    if (processManager?.steamCmd?.abort && processManager.steamCmd.isRunning) {
       processManager.steamCmd.abort();
-      log(`🚀 已請求中止安裝`);
+      eventBus.push("steamcmd", { text: "中止安裝請求" });
       return http.sendOk(req, res, "✅ 已請求中止安裝");
     }
-    log(`⚠️ 沒有正在執行的安裝任務`);
     return http.sendOk(req, res, "⚠️ 沒有正在執行的安裝任務");
   } catch (err) {
-    error(`❌ 中止安裝失敗: ${err.message}`);
     return http.sendErr(req, res, `❌ 中止安裝失敗: ${err.message}`);
   }
 });
@@ -192,16 +195,6 @@ app.post("/api/start", async (req, res) => {
       ? "7DaysToDieServer.exe"
       : "7DaysToDie.exe";
 
-    const exePath = path.join(GAME_DIR, exeName);
-    if (!fs.existsSync(exePath)) {
-      error(`❌ 找不到遊戲伺服器執行檔: ${exePath}`);
-      return http.sendErr(
-        req,
-        res,
-        `❌ 找不到執行檔: ${exePath}\n請先執行「安裝 / 更新」，或確認路徑為 {app}\\gameserver\\7DaysToDieServer.exe`
-      );
-    }
-
     const logPrefix =
       exeName === "7DaysToDieServer.exe" ? "output_log_dedi" : "output_log";
     const logFileName = `${logPrefix}__${format(
@@ -210,8 +203,6 @@ app.post("/api/start", async (req, res) => {
     )}.txt`;
     const logFilePath = path.join(GAME_DIR, "logs", logFileName);
 
-    log(`📝 日誌將寫入: ${logFilePath}`);
-
     ensureDir(path.dirname(logFilePath));
     fs.writeFileSync(path.join(GAME_DIR, "steam_appid.txt"), "251570");
     process.env.SteamAppId = "251570";
@@ -219,7 +210,6 @@ app.post("/api/start", async (req, res) => {
 
     const stripQuotes = (s) =>
       typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
-
     const configured = stripQuotes(CONFIG?.game_server?.serverConfig);
     const candidate =
       configured && fs.existsSync(configured)
@@ -238,12 +228,24 @@ app.post("/api/start", async (req, res) => {
       "-dedicated",
     ];
 
-    log(`🚀 啟動伺服器: ${exePath} ${args.join(" ")}`);
     processManager.gameServer.start(args, GAME_DIR, { exeName });
 
-    return http.sendOk(req, res, `✅ 伺服器已啟動，日誌: ${logFileName}`);
+    if (stopGameTail)
+      try {
+        stopGameTail();
+      } catch (_) {}
+    stopGameTail = tailFile(logFilePath, (line) => {
+      eventBus.push("game", { level: "stdout", text: line });
+    });
+
+    const line = `✅ 伺服器已啟動，日誌: ${logFileName}`;
+    log(line);
+    eventBus.push("system", { text: line });
+    return http.sendOk(req, res, line);
   } catch (err) {
-    error(`❌ 伺服器啟動失敗: ${err?.message || err}`);
+    const msg = `❌ 伺服器啟動失敗: ${err?.message || err}`;
+    error(msg);
+    eventBus.push("system", { level: "error", text: msg });
     return http.sendErr(req, res, `❌ 啟動伺服器失敗:\n${err.message}`);
   }
 });
@@ -251,11 +253,20 @@ app.post("/api/start", async (req, res) => {
 app.post("/api/stop", async (req, res) => {
   try {
     const result = await sendTelnetCommand(CONFIG.game_server, "shutdown");
-    log(`✅ 成功發送關閉伺服器指令: ${result}`);
-    http.sendOk(req, res, `✅ 關閉伺服器指令已發送:\n${result}`);
+    if (stopGameTail)
+      try {
+        stopGameTail();
+      } catch (_) {}
+    stopGameTail = null;
+    const line = `✅ 關閉伺服器指令已發送`;
+    log(`${line}: ${result}`);
+    eventBus.push("system", { text: line });
+    http.sendOk(req, res, `${line}:\n${result}`);
   } catch (err) {
-    error(`❌ 關閉伺服器失敗: ${err.message}`);
-    http.sendErr(req, res, `❌ 關閉伺服器失敗:\n${err.message}`);
+    const msg = `❌ 關閉伺服器失敗: ${err.message}`;
+    error(msg);
+    eventBus.push("system", { level: "error", text: msg });
+    http.sendErr(req, res, `${msg}`);
   }
 });
 
@@ -266,25 +277,27 @@ app.post("/api/telnet", async (req, res) => {
 
   try {
     const result = await sendTelnetCommand(CONFIG.game_server, command);
-    log(`✅ Telnet 指令執行成功: ${command}`);
+    eventBus.push("telnet", {
+      level: "stdout",
+      text: `> ${command}\n${result}`,
+    });
     http.sendOk(req, res, `✅ 結果:\n${result}`);
   } catch (err) {
-    error(`❌ Telnet 連線失敗:\n${err.message}`);
-    http.sendErr(req, res, `❌ Telnet 連線失敗:\n${err.message}`);
+    const msg = `❌ Telnet 連線失敗: ${err.message}`;
+    eventBus.push("telnet", { level: "stderr", text: msg });
+    http.sendErr(req, res, `${msg}`);
   }
 });
 
 app.post("/api/view-config", (req, res) => {
   try {
-    const config = getConfig();
-    log(`✅ 讀取管理後台設定:`, config);
+    const config = CONFIG;
     http.sendOk(
       req,
       res,
       `✅ 讀取管理後台設定成功:\n${JSON.stringify(config, null, 2)}`
     );
   } catch (err) {
-    error(`❌ 讀取管理後台設定失敗:\n${err.message}`);
     http.sendErr(req, res, `❌ 讀取管理後台設定失敗:\n${err.message}`);
   }
 });
@@ -304,4 +317,7 @@ app.post("/api/server-status", async (req, res) => {
 
 app.listen(CONFIG.web.port, () => {
   log(`✅ 控制面板已啟動於 http://localhost:${CONFIG.web.port}`);
+  eventBus.push("system", {
+    text: `控制面板啟動於 http://localhost:${CONFIG.web.port}`,
+  });
 });
