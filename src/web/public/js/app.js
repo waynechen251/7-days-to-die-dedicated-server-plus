@@ -1,4 +1,4 @@
-// DOM
+// ========== DOM ==========
 const installServerBtn = document.getElementById("installServerBtn");
 const backupBtn = document.getElementById("backupBtn");
 const viewConfigBtn = document.getElementById("viewConfigBtn");
@@ -11,6 +11,9 @@ const versionSelect = document.getElementById("versionSelect");
 const abortInstallBtn = document.getElementById("abortInstallBtn");
 const telnetInput = document.getElementById("telnetInput");
 const telnetSendBtn = document.getElementById("telnetSendBtn");
+const telnetBtns = Array.from(
+  document.querySelectorAll('button[data-role="telnet"]')
+);
 
 const stBackend = document.getElementById("st-backend");
 const stSteam = document.getElementById("st-steam");
@@ -25,28 +28,15 @@ const panes = {
   telnet: document.getElementById("console-telnet"),
   backup: document.getElementById("console-backup"),
 };
-
-Object.values(panes).forEach((p) => p && p.setAttribute("tabindex", "-1"));
-
-
 const tabBtns = {};
 let activeTab = "system";
-
 document.querySelectorAll(".console-tabs button").forEach((btn) => {
   const tab = btn.dataset.tab;
   tabBtns[tab] = btn;
   btn.addEventListener("click", () => switchTab(tab));
 });
 
-switchTab("system");
-
-function scrollToEnd(el) {
-  if (!el) return;
-  requestAnimationFrame(() => {
-    el.scrollTop = el.scrollHeight;
-  });
-}
-
+// ========== 小工具 ==========
 function switchTab(tab) {
   if (!panes[tab]) return;
   activeTab = tab;
@@ -59,19 +49,32 @@ function switchTab(tab) {
     .querySelectorAll(".console")
     .forEach((p) => p.classList.remove("active"));
   panes[tab].classList.add("active");
-  scrollToEnd(panes[tab]);
+  // 標記已讀時間
+  lastRead[tab] = Date.now();
+  persistLastRead();
+  // 既然切到該頻道，也同步把 lastSeen 補上（避免 race condition）
+  if (lastSeen[tab] && lastSeen[tab] > lastRead[tab]) {
+    lastRead[tab] = lastSeen[tab];
+    persistLastRead();
+  }
 }
 
-function appendLog(topic, line) {
+function appendLog(topic, line, ts) {
   const p = panes[topic] || panes.system;
   p.textContent += line.endsWith("\n") ? line : line + "\n";
   p.scrollTop = p.scrollHeight;
-  if (topic === activeTab) {
-    scrollToEnd(p);
-  } else {
+
+  // 更新最後看到的訊息時間（無論當前是否在該分頁）
+  const t = Number(ts) || Date.now();
+  lastSeen[topic] = Math.max(lastSeen[topic] || 0, t);
+  persistLastSeen();
+
+  // 未讀判斷：只在不是當前分頁，且訊息時間大於最後已讀時間時標示
+  if (topic !== activeTab && t > (lastRead[topic] || 0)) {
     tabBtns[topic]?.classList.add("unread");
   }
 }
+
 function stamp(ts, text) {
   return `[${new Date(ts).toLocaleString()}] ${text}`;
 }
@@ -89,7 +92,63 @@ function setDisabled(nodes, disabled) {
   );
 }
 
-// 互斥規則（加嚴）
+// ========== 未讀時間紀錄（持久化） ==========
+const LS_KEY_READ = "console.lastRead";
+const LS_KEY_SEEN = "console.lastSeen";
+
+let lastRead = loadLast(LS_KEY_READ, {
+  system: 0,
+  steamcmd: 0,
+  game: 0,
+  telnet: 0,
+  backup: 0,
+});
+let lastSeen = loadLast(LS_KEY_SEEN, {
+  system: 0,
+  steamcmd: 0,
+  game: 0,
+  telnet: 0,
+  backup: 0,
+});
+
+function loadLast(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return { ...fallback };
+    const obj = JSON.parse(raw);
+    return { ...fallback, ...obj };
+  } catch (_) {
+    return { ...fallback };
+  }
+}
+function persistLastRead() {
+  try {
+    localStorage.setItem(LS_KEY_READ, JSON.stringify(lastRead));
+  } catch (_) {}
+}
+function persistLastSeen() {
+  try {
+    localStorage.setItem(LS_KEY_SEEN, JSON.stringify(lastSeen));
+  } catch (_) {}
+}
+function restoreUnreadBadges() {
+  // 開頁就依據 lastSeen vs lastRead 恢復徽章，而不是等 SSE replay
+  Object.keys(panes).forEach((topic) => {
+    if (topic === activeTab) {
+      tabBtns[topic]?.classList.remove("unread");
+      return;
+    }
+    if ((lastSeen[topic] || 0) > (lastRead[topic] || 0)) {
+      tabBtns[topic]?.classList.add("unread");
+    } else {
+      tabBtns[topic]?.classList.remove("unread");
+    }
+  });
+}
+
+// ========== 互斥規則 ==========
+let backupInProgress = false;
+
 function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
   const all = [
     installServerBtn,
@@ -104,6 +163,7 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
     versionSelect,
     telnetInput,
     telnetSendBtn,
+    ...telnetBtns,
   ];
 
   setDisabled(all, false);
@@ -129,28 +189,29 @@ function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
     setBadge(stSteam, "warn");
   }
 
-  // Game 狀態與 Telnet
+  const lockBecauseBackup = backupInProgress;
+
   setBadge(stGame, gameRunning ? "ok" : "warn");
   setBadge(stTelnet, telnetOk ? "ok" : gameRunning ? "warn" : "err");
 
-  // 安裝/版本: 僅在伺服器未運行時允許
-  const canInstall = !gameRunning;
+  const canInstall = !gameRunning && !lockBecauseBackup;
   setDisabled([installServerBtn, versionSelect], !canInstall);
   setDisabled(abortInstallBtn, true);
 
-  // 啟動: 僅在伺服器未運行時允許
-  const canStart = !gameRunning;
+  const canStart = !gameRunning && !lockBecauseBackup;
   setDisabled([startServerGUIBtn, startServerNOGUIBtn], !canStart);
 
-  // 停止、Telnet: 僅在運行且 Telnet 正常時允許
-  const canManage = gameRunning && telnetOk;
-  setDisabled([stopServerBtn, telnetInput, telnetSendBtn], !canManage);
+  const canManage = gameRunning && telnetOk && !lockBecauseBackup;
+  setDisabled(
+    [stopServerBtn, telnetInput, telnetSendBtn, ...telnetBtns],
+    !canManage
+  );
 
-  // 強制關閉：只要偵測到遊戲在跑即可使用
   setDisabled(killServerBtn, !gameRunning);
+  setDisabled(backupBtn, gameRunning);
 }
 
-// API helpers
+// ========== API ==========
 async function fetchText(url, options = {}, timeoutMs = 30000) {
   const ctrl = new AbortController();
   const id = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -179,7 +240,23 @@ async function fetchJSON(url, options = {}, timeoutMs = 10000) {
   }
 }
 
-// SSE
+// ========== 初始化 ==========
+(async function initUI() {
+  try {
+    const cfg = await fetchJSON("/api/get-config");
+    const last = cfg?.data?.web?.lastInstallVersion || "";
+    if (last) {
+      const opt = Array.from(versionSelect.options).find(
+        (o) => o.value === last
+      );
+      if (opt) versionSelect.value = last;
+    }
+  } catch (_) {}
+  // 初始就恢復徽章（避免 F5 後未讀消失）
+  restoreUnreadBadges();
+})();
+
+// ========== SSE ==========
 let es;
 function connectSSE() {
   if (es) es.close();
@@ -188,44 +265,44 @@ function connectSSE() {
   );
   es.onmessage = (ev) => {
     const e = JSON.parse(ev.data);
-    appendLog(e.topic, stamp(e.ts, e.text));
+    appendLog(e.topic, stamp(e.ts, e.text), e.ts);
   };
   es.addEventListener("ping", () => {});
   es.onerror = () => setTimeout(connectSSE, 2000);
 }
 connectSSE();
 
-// 狀態輪詢
+// ========== 狀態輪詢 ==========
 async function refreshStatus() {
   try {
     const s = await fetchJSON("/api/process-status", { method: "GET" });
     const game = s.data?.gameServer || {};
     const steam = s.data?.steamCmd || {};
-    applyUIState({
+    setState({
       backendUp: true,
       steamRunning: !!steam.isRunning,
       gameRunning: !!game.isRunning,
       telnetOk: !!game.isTelnetConnected,
     });
   } catch {
-    applyUIState({
+    setState({
       backendUp: false,
       steamRunning: false,
       gameRunning: false,
       telnetOk: false,
     });
   } finally {
-    setTimeout(refreshStatus, 3000);
+    setTimeout(refreshStatus, 5000);
   }
 }
 refreshStatus();
 
-// 操作綁定(並切換對應頻道)
+// ========== 操作 ==========
 installServerBtn.addEventListener("click", () => {
   switchTab("steamcmd");
   const version = versionSelect?.value || "";
-  const body = version ? JSON.stringify({ version }) : undefined;
-  const headers = version ? { "Content-Type": "application/json" } : undefined;
+  const body = JSON.stringify({ version });
+  const headers = { "Content-Type": "application/json" };
 
   fetch("/api/install", { method: "POST", body, headers })
     .then((res) => {
@@ -246,12 +323,12 @@ installServerBtn.addEventListener("click", () => {
             setTimeout(refreshStatus, 500);
             return;
           }
-          appendLog("steamcmd", decoder.decode(value));
+          appendLog("steamcmd", decoder.decode(value), Date.now());
           pump();
         });
       pump();
     })
-    .catch((err) => appendLog("system", `❌ ${err.message}`));
+    .catch((err) => appendLog("system", `❌ ${err.message}`, Date.now()));
 });
 
 abortInstallBtn.addEventListener("click", async () => {
@@ -259,28 +336,39 @@ abortInstallBtn.addEventListener("click", async () => {
   try {
     appendLog(
       "steamcmd",
-      await fetchText("/api/install-abort", { method: "POST" })
+      await fetchText("/api/install-abort", { method: "POST" }),
+      Date.now()
     );
   } catch (e) {
-    appendLog("system", `❌ ${e.message}`);
+    appendLog("system", `❌ ${e.message}`, Date.now());
   }
 });
 
 viewSavesBtn.addEventListener("click", async () => {
   switchTab("backup");
   try {
-    appendLog("backup", await fetchText("/api/view-saves", { method: "POST" }));
+    appendLog(
+      "backup",
+      await fetchText("/api/view-saves", { method: "POST" }),
+      Date.now()
+    );
   } catch (e) {
-    appendLog("backup", `❌ ${e.message}`);
+    appendLog("backup", `❌ ${e.message}`, Date.now());
   }
 });
 
 backupBtn.addEventListener("click", async () => {
   switchTab("backup");
+  backupInProgress = true;
+  applyUIState(currentState);
   try {
-    appendLog("backup", await fetchText("/api/backup", { method: "POST" }));
+    const msg = await fetchText("/api/backup", { method: "POST" });
+    appendLog("backup", msg, Date.now());
   } catch (e) {
-    appendLog("backup", `❌ ${e.message}`);
+    appendLog("backup", `❌ ${e.message}`, Date.now());
+  } finally {
+    backupInProgress = false;
+    applyUIState(currentState);
   }
 });
 
@@ -289,10 +377,11 @@ viewConfigBtn.addEventListener("click", async () => {
   try {
     appendLog(
       "system",
-      await fetchText("/api/view-config", { method: "POST" })
+      await fetchText("/api/view-config", { method: "POST" }),
+      Date.now()
     );
   } catch (e) {
-    appendLog("system", `❌ ${e.message}`);
+    appendLog("system", `❌ ${e.message}`, Date.now());
   }
 });
 
@@ -305,10 +394,11 @@ startServerGUIBtn.addEventListener("click", async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nographics: false }),
-      })
+      }),
+      Date.now()
     );
   } catch (e) {
-    appendLog("system", `❌ ${e.message}`);
+    appendLog("system", `❌ ${e.message}`, Date.now());
   }
 });
 
@@ -321,28 +411,37 @@ startServerNOGUIBtn.addEventListener("click", async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nographics: true }),
-      })
+      }),
+      Date.now()
     );
   } catch (e) {
-    appendLog("system", `❌ ${e.message}`);
+    appendLog("system", `❌ ${e.message}`, Date.now());
   }
 });
 
 stopServerBtn.addEventListener("click", async () => {
   switchTab("system");
   try {
-    appendLog("system", await fetchText("/api/stop", { method: "POST" }));
+    appendLog(
+      "system",
+      await fetchText("/api/stop", { method: "POST" }),
+      Date.now()
+    );
   } catch (e) {
-    appendLog("system", `❌ ${e.message}`);
+    appendLog("system", `❌ ${e.message}`, Date.now());
   }
 });
 
 killServerBtn.addEventListener("click", async () => {
   switchTab("system");
   try {
-    appendLog("system", await fetchText("/api/kill", { method: "POST" }));
+    appendLog(
+      "system",
+      await fetchText("/api/kill", { method: "POST" }),
+      Date.now()
+    );
   } catch (e) {
-    appendLog("system", `❌ ${e.message}`);
+    appendLog("system", `❌ ${e.message}`, Date.now());
   }
 });
 
@@ -354,8 +453,8 @@ function sendTelnet(cmd) {
     body: JSON.stringify({ command: cmd }),
   })
     .then((r) => r.text())
-    .then((t) => appendLog("telnet", t))
-    .catch((e) => appendLog("telnet", `❌ ${e.message}`));
+    .then((t) => appendLog("telnet", t, Date.now()))
+    .catch((e) => appendLog("telnet", `❌ ${e.message}`, Date.now()));
 }
 telnetSendBtn.addEventListener("click", () => {
   const cmd = (telnetInput.value || "").trim();
@@ -364,3 +463,39 @@ telnetSendBtn.addEventListener("click", () => {
   sendTelnet(cmd);
 });
 window.sendTelnet = sendTelnet;
+
+// ========== 狀態快取 ==========
+let currentState = {
+  backendUp: false,
+  steamRunning: false,
+  gameRunning: false,
+  telnetOk: false,
+};
+function setState(s) {
+  currentState = s;
+  applyUIState(s);
+}
+
+// 覆寫 refreshStatus 的 apply，保持 currentState
+async function refreshStatus() {
+  try {
+    const s = await fetchJSON("/api/process-status", { method: "GET" });
+    const game = s.data?.gameServer || {};
+    const steam = s.data?.steamCmd || {};
+    setState({
+      backendUp: true,
+      steamRunning: !!steam.isRunning,
+      gameRunning: !!game.isRunning,
+      telnetOk: !!game.isTelnetConnected,
+    });
+  } catch {
+    setState({
+      backendUp: false,
+      steamRunning: false,
+      gameRunning: false,
+      telnetOk: false,
+    });
+  } finally {
+    setTimeout(refreshStatus, 5000);
+  }
+}

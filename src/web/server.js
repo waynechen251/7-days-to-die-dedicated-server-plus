@@ -24,7 +24,7 @@ const serverJsonPath = fs.existsSync(path.join(baseDir, "server.json"))
   ? path.join(baseDir, "server.json")
   : path.join(baseDir, "server.sample.json");
 
-const CONFIG = loadConfig();
+let CONFIG = loadConfig();
 const PUBLIC_DIR = path.join(baseDir, "public");
 const BACKUP_SAVES_DIR = path.join(PUBLIC_DIR, "saves");
 
@@ -54,6 +54,17 @@ function resolveFileCaseInsensitive(dir, file) {
   }
 }
 
+/** 儲存 server.json(維持現有格式) */
+function saveConfig() {
+  try {
+    fs.writeFileSync(serverJsonPath, JSON.stringify(CONFIG, null, 2), "utf-8");
+    return true;
+  } catch (e) {
+    error(`❌ 寫入設定檔失敗: ${e.message}`);
+    return false;
+  }
+}
+
 const GAME_DIR = resolveDirCaseInsensitive(baseDir, "7DaysToDieServer");
 
 let stopGameTail = null;
@@ -71,6 +82,7 @@ function loadConfig() {
     log(
       `✅ 成功讀取設定檔 ${serverJsonPath}:\n${JSON.stringify(config, null, 2)}`
     );
+    if (!config.web) config.web = {};
     return config;
   } catch (err) {
     error(`❌ 讀取設定檔失敗: ${serverJsonPath}\n${err.message}`);
@@ -82,9 +94,15 @@ function ensureDir(p) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 }
 
-/* SSE: 回放最近訊息，維持活連線 */
+/* SSE */
 app.get("/api/stream", eventBus.sseHandler);
 
+/* 讀取設定(JSON 格式，給前端初始化 UI 用) */
+app.get("/api/get-config", (req, res) => {
+  return http.respondJson(res, { ok: true, data: CONFIG }, 200);
+});
+
+/* 狀態 */
 app.get("/api/process-status", async (req, res) => {
   try {
     await processManager.gameServer.checkTelnet(CONFIG.game_server);
@@ -106,9 +124,9 @@ app.get("/api/process-status", async (req, res) => {
   }
 });
 
+/* 存檔清單 */
 app.post("/api/view-saves", (req, res) => {
   ensureDir(BACKUP_SAVES_DIR);
-
   fs.readdir(BACKUP_SAVES_DIR, (err, files) => {
     if (err) return http.sendErr(req, res, `❌ 讀取存檔失敗:\n${err}`);
     const saves = files.filter((file) => file.endsWith(".zip"));
@@ -124,16 +142,14 @@ app.post("/api/view-saves", (req, res) => {
   });
 });
 
+/* 備份 */
 app.post("/api/backup", async (req, res) => {
   try {
     const src = CONFIG?.game_server?.saves;
     if (!src || !fs.existsSync(src)) {
-      error(`❌ 找不到存檔資料夾: ${src || "未設定"}`);
-      return http.sendErr(
-        req,
-        res,
-        `❌ 備份失敗: 找不到存檔資料夾(${src || "未設定"})`
-      );
+      const msg = `❌ 備份失敗: 找不到存檔資料夾(${src || "未設定"})`;
+      error(msg);
+      return http.sendErr(req, res, msg);
     }
     const timestamp = format(new Date(), "YYYYMMDDHHmmss");
     const zipName = `Saves-${timestamp}.zip`;
@@ -154,9 +170,14 @@ app.post("/api/backup", async (req, res) => {
   }
 });
 
+/* 安裝/更新 */
 app.post("/api/install", (req, res) => {
   try {
     const version = req.body?.version ?? "";
+    // 記錄最後選擇的版本
+    CONFIG.web.lastInstallVersion = version;
+    saveConfig();
+
     const args = [
       "+login",
       "anonymous",
@@ -201,6 +222,7 @@ app.post("/api/install", (req, res) => {
   }
 });
 
+/* 中斷安裝 */
 app.post("/api/install-abort", (req, res) => {
   try {
     if (processManager?.steamCmd?.abort && processManager.steamCmd.isRunning) {
@@ -214,6 +236,7 @@ app.post("/api/install-abort", (req, res) => {
   }
 });
 
+/* 啟動伺服器 */
 app.post("/api/start", async (req, res) => {
   if (processManager.gameServer.isRunning) {
     return http.sendOk(req, res, "❌ 伺服器已經在運行中，請先關閉伺服器再試。");
@@ -251,15 +274,24 @@ app.post("/api/start", async (req, res) => {
     const stripQuotes = (s) =>
       typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
 
-    const configured = stripQuotes(CONFIG?.game_server?.serverConfig);
-    const candidates = [
-      configured,
-      resolveFileCaseInsensitive(GAME_DIR, "serverconfig.xml"),
-      resolveFileCaseInsensitive(baseDir, "serverconfig.xml"),
-    ].filter(Boolean);
+    // serverConfig 解析(絕對路徑→相對 GAME_DIR → 相對 baseDir)
+    const cfgRaw = stripQuotes(CONFIG?.game_server?.serverConfig);
+    const cfgCandidates = [];
+    if (cfgRaw) {
+      if (path.isAbsolute(cfgRaw)) {
+        cfgCandidates.push(cfgRaw);
+      } else {
+        cfgCandidates.push(path.join(GAME_DIR, cfgRaw));
+        cfgCandidates.push(path.join(baseDir, cfgRaw));
+      }
+    }
+    cfgCandidates.push(
+      resolveFileCaseInsensitive(GAME_DIR, "serverconfig.xml")
+    );
+    cfgCandidates.push(resolveFileCaseInsensitive(baseDir, "serverconfig.xml"));
 
     let configArg = null;
-    for (const c of candidates) {
+    for (const c of cfgCandidates) {
       if (c && fs.existsSync(c)) {
         const v = c.includes(" ") ? `"${c}"` : c;
         configArg = `-configfile=${v}`;
@@ -276,12 +308,11 @@ app.post("/api/start", async (req, res) => {
     const args = [
       "-logfile",
       logFilePath,
-      "-quit",
       "-batchmode",
       ...(nographics ? ["-nographics"] : []),
       ...(configArg ? [configArg] : []),
       "-dedicated",
-    ];
+    ]; // 移除 -quit，避免快速退出
 
     processManager.gameServer.start(args, GAME_DIR, {
       exeName,
@@ -318,6 +349,7 @@ app.post("/api/start", async (req, res) => {
   }
 });
 
+/* 正常關閉 */
 app.post("/api/stop", async (req, res) => {
   try {
     const result = await sendTelnetCommand(CONFIG.game_server, "shutdown");
@@ -338,7 +370,7 @@ app.post("/api/stop", async (req, res) => {
   }
 });
 
-/* 強制關閉（kill tree） */
+/* 強制關閉(kill tree) */
 app.post("/api/kill", async (req, res) => {
   try {
     processManager.gameServer.killTree();
@@ -379,6 +411,7 @@ app.post("/api/telnet", async (req, res) => {
   }
 });
 
+/* 配置檢視(文字版) */
 app.post("/api/view-config", (req, res) => {
   try {
     const config = CONFIG;
@@ -392,6 +425,7 @@ app.post("/api/view-config", (req, res) => {
   }
 });
 
+/* Telnet 探測 */
 app.post("/api/server-status", async (req, res) => {
   try {
     await sendTelnetCommand(CONFIG.game_server, "version");
