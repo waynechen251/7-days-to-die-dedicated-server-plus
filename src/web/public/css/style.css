@@ -24,6 +24,16 @@
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
   --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
     monospace;
+  --console-dock-height: 40vh;
+  --console-dock-min: 120px;
+  --console-dock-max: 80vh;
+  --console-dock-collapsed: 32px;
+  --topbar-h: 48px;
+  /* 新增：上下分割預設主區高度（百分比） */
+  --split-main-size: 50%;
+  --split-bar-size: 6px;
+  --split-main-min: 15%; /* 主區最小 15% */
+  --split-main-max: 85%; /* 主區最大 85% */
 }
 
 * {
@@ -32,6 +42,7 @@
 
 html {
   font-size: 16px;
+  height: 100%;
 }
 
 body {
@@ -41,6 +52,7 @@ body {
   background: linear-gradient(180deg, var(--c-bg), #eef2f6 60%);
   color: var(--c-text);
   -webkit-font-smoothing: antialiased;
+  overflow: hidden; /* 由兩 pane 自行滾動 */
 }
 
 h1,
@@ -68,6 +80,8 @@ p {
   position: sticky;
   top: 0;
   z-index: 10;
+  height: var(--topbar-h);
+  box-sizing: border-box;
 }
 .topbar .brand {
   font-weight: 600;
@@ -421,6 +435,73 @@ select:focus {
   box-shadow: 0 0 0 2px #f59e0b inset;
 }
 
+/* 原本的 .console 規則會限制高度，改為只套用在卡片情境 */
+.card .console {
+  font: 400 0.72rem/1.25 var(--mono);
+  background: #111;
+  color: #e2e8f0;
+  padding: var(--space-3);
+  border-radius: var(--radius-s);
+  border: 1px solid #222;
+  min-height: clamp(16rem, 40vh, 34rem);
+  max-height: 60vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  display: none;
+}
+.card .console.active {
+  display: block;
+}
+
+/* 分割模式下的 Console（覆蓋卡片設定，允許隨拖曳伸縮） */
+.pane-console .console-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.pane-console .console-panes {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.pane-console .console {
+  display: none;
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  height: auto;
+  margin: 0;
+  border: 0;
+  background: #111;
+  padding: 0.65rem 0.9rem 0.9rem;
+  overflow: auto;
+  font: 400 0.72rem/1.25 var(--mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.pane-console .console.active {
+  display: block;
+}
+
+/* 針對分割模式的滾動條 */
+.pane-console .console::-webkit-scrollbar {
+  width: 0.7rem;
+}
+.pane-console .console::-webkit-scrollbar-track {
+  background: #111;
+}
+.pane-console .console::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+.pane-console .console::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
 .console {
   font: 400 0.72rem/1.25 var(--mono);
   background: #111;
@@ -454,27 +535,160 @@ select:focus {
   background: #475569;
 }
 
-/* ========== Responsive Tweaks ========== */
+/* ========== Console Dock ========== */
+.console-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #0f1114;
+  border-top: 1px solid #2a3139;
+  font: 400 0.72rem/1.25 var(--mono);
+  display: flex;
+  flex-direction: column;
+  height: var(--console-dock-height);
+  transition: height 0.18s ease;
+  z-index: 50;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.console-dock.resizing {
+  transition: none;
+}
+
+.console-dock .console {
+  padding: 0.5rem 0.75rem;
+}
+
+.console-dock .console::after {
+  content: "";
+  display: block;
+  height: 0.6rem;
+}
+
+.console-dock .resize-grip {
+  /* 增加可點擊高度以利拖曳 */
+  height: 10px;
+}
+
+.console-dock.collapsed {
+  height: var(--console-dock-collapsed);
+  overflow: hidden;
+}
+
+.console-dock .dock-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  height: var(--console-dock-collapsed);
+  background: #1b2229;
+  border-bottom: 1px solid #2a3139;
+  user-select: none;
+}
+
+.dock-toggle {
+  font: 600 0.65rem/1 var(--font-stack);
+  padding: 0.35rem 0.6rem;
+  background: #334155;
+  color: #fff;
+  border: 1px solid #475569;
+  border-radius: 4px;
+}
+.console-dock.collapsed .dock-toggle {
+  background: #2563eb;
+  border-color: #1d4ed8;
+}
+.dock-toggle:hover {
+  background: #3e4f60;
+}
+
+.dock-bar-spacer {
+  flex: 1;
+}
+
+.console-dock .console-tabs button {
+  font-size: 0.65rem;
+  padding: 0.35rem 0.55rem;
+  background: #29323a;
+  border: 1px solid #3a4652;
+  border-radius: 4px;
+}
+.console-dock .console-tabs button.active {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #fff;
+  box-shadow: 0 0 0 1px #1d4ed8 inset;
+}
+.console-dock .console-tabs button.unread:not(.active) {
+  box-shadow: 0 0 0 2px #f59e0b inset;
+}
+
+.console-dock .resize-grip {
+  height: 6px;
+  cursor: row-resize;
+  background: linear-gradient(180deg, #1b2229, #13181d);
+  border-top: 1px solid #2a3139;
+  border-bottom: 1px solid #2a3139;
+  position: relative;
+}
+.console-dock .resize-grip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 60px;
+  height: 2px;
+  background: #3a4652;
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+}
+
+.console-dock.collapsed .resize-grip {
+  display: none;
+}
+
+.console-dock .console-panes {
+  flex: 1;
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.console-dock .console {
+  flex: 1;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  padding: 0.5rem 0.75rem 1.25rem;
+  font-size: 0.7rem;
+  line-height: 1.25;
+  overflow: auto;
+  display: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.console-dock .console.active {
+  display: block;
+}
+
+body {
+  /* 使主內容不被 dock 遮住 (只在展開時留空間，不影響固定高度計算) */
+  padding-bottom: calc(var(--console-dock-collapsed) + 4px);
+}
+
+body.has-dock-open {
+  padding-bottom: var(--console-dock-height);
+}
+
 @media (max-width: 720px) {
-  .topbar {
-    flex-wrap: wrap;
+  :root {
+    --console-dock-height: 45vh;
   }
-  .github-link {
-    order: 2;
-  }
-  .topbar .status-inline {
-    width: 100%;
-    gap: var(--space-1);
-  }
-  .topbar .status-inline .badge {
-    font-size: 0.6rem;
-    padding: 0.3rem 0.55rem;
-  }
-  .span-2 {
-    grid-column: span 1;
-  }
-  .console {
-    min-height: clamp(14rem, 50vh, 28rem);
+  .console-dock .console {
+    font-size: 0.68rem;
   }
 }
 
@@ -513,5 +727,93 @@ select:focus {
   }
   .console {
     border-color: #334155;
+  }
+}
+
+/* 新增：上下分割布局與獨立滾動，移除舊 console-dock 固定樣式相關 */
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  overflow: hidden; /* 由兩 pane 自行滾動 */
+}
+
+/* 兩大區塊容器 (扣掉頂列高度) */
+:root {
+  --topbar-h: 48px;
+}
+
+.topbar {
+  height: var(--topbar-h);
+  box-sizing: border-box;
+}
+
+/* Split */
+.app-split {
+  height: calc(100vh - var(--topbar-h));
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  position: relative;
+}
+
+.pane-main {
+  flex: 0 0 var(--split-main-size);
+  min-height: 120px;
+  overflow: auto;
+  background: linear-gradient(180deg, var(--c-bg), #eef2f6 60%);
+  scroll-behavior: smooth;
+  padding-bottom: var(--space-4);
+}
+
+.pane-console {
+  flex: 1 1 auto;
+  min-height: 120px;
+  background: #0f1114;
+  border-top: 1px solid #2a3139;
+  overflow: hidden;
+  color: #e2e8f0;
+  font: 400 0.72rem/1.25 var(--mono);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 新增：拖曳分隔條 */
+.split-resizer {
+  flex: 0 0 var(--split-bar-size);
+  cursor: row-resize;
+  background: linear-gradient(180deg, #1b2229, #13181d);
+  border-top: 1px solid #2a3139;
+  border-bottom: 1px solid #2a3139;
+  position: relative;
+  user-select: none;
+}
+.split-resizer::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 80px;
+  height: 2px;
+  background: #3a4652;
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+/* 拖曳中即時反應（移除 transition 以免卡頓，如有） */
+.app-split.resizing .pane-main,
+.app-split.resizing .pane-console {
+  transition: none !important;
+}
+
+/* 行動裝置仍允許拖曳；調整握把尺寸 */
+@media (max-width: 900px) {
+  .split-resizer {
+    --split-bar-size: 8px;
   }
 }

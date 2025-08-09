@@ -658,3 +658,117 @@ backupFullBtn.addEventListener("click", async () => {
     applyUIState(currentState);
   }
 });
+
+function scrollToEnd(el) {
+  if (!el) return;
+  el.scrollTop = el.scrollHeight;
+}
+
+// 調整 switchTab：不再呼叫 dock
+const _origSwitchTab = switchTab;
+switchTab = function (tab) {
+  _origSwitchTab(tab);
+  scrollToEnd(panes[activeTab]);
+};
+
+// 調整 appendLog：取消 dock 判斷，直接對 active pane 捲底
+const _origAppendLog = appendLog;
+appendLog = function (topic, line, ts) {
+  _origAppendLog(topic, line, ts);
+  if (topic === activeTab) scrollToEnd(panes[topic]);
+};
+
+// ==== 上下分割拖曳（主卡片區 / Console 各半，可調整） ====
+const splitResizer = document.getElementById("splitResizer");
+const appSplit = document.querySelector(".app-split");
+const paneMainEl = document.querySelector(".pane-main");
+const SPLIT_KEY = "ui.split.ratio"; // 儲存主區百分比 (0-100)
+(function restoreSplit() {
+  const saved = localStorage.getItem(SPLIT_KEY);
+  if (saved) {
+    const pct = Number(saved);
+    if (!isNaN(pct) && pct > 5 && pct < 95) {
+      document.documentElement.style.setProperty(
+        "--split-main-size",
+        pct + "%"
+      );
+    }
+  }
+})();
+
+let splitDragging = false;
+
+function clampSplit(pct) {
+  const min =
+    parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue(
+        "--split-main-min"
+      )
+    ) || 15;
+  const max =
+    parseFloat(
+      getComputedStyle(document.documentElement).getPropertyValue(
+        "--split-main-max"
+      )
+    ) || 85;
+  return Math.min(Math.max(pct, min), max);
+}
+
+function startSplitDrag(e) {
+  e.preventDefault();
+  splitDragging = true;
+  appSplit.classList.add("resizing");
+  document.body.style.userSelect = "none";
+}
+
+function onSplitDrag(e) {
+  if (!splitDragging) return;
+  const rect = appSplit.getBoundingClientRect();
+  const y = e.clientY ?? (e.touches && e.touches[0].clientY);
+  if (y == null) return;
+  const rel = y - rect.top;
+  const pct = clampSplit((rel / rect.height) * 100);
+  document.documentElement.style.setProperty("--split-main-size", pct + "%");
+  localStorage.setItem(SPLIT_KEY, pct.toFixed(2));
+}
+
+function endSplitDrag() {
+  if (!splitDragging) return;
+  splitDragging = false;
+  appSplit.classList.remove("resizing");
+  document.body.style.userSelect = "";
+}
+
+splitResizer?.addEventListener("mousedown", startSplitDrag);
+splitResizer?.addEventListener("touchstart", startSplitDrag, {
+  passive: false,
+});
+window.addEventListener("mousemove", onSplitDrag);
+window.addEventListener("touchmove", onSplitDrag, { passive: false });
+window.addEventListener("mouseup", endSplitDrag);
+window.addEventListener("touchend", endSplitDrag);
+window.addEventListener("touchcancel", endSplitDrag);
+
+// 雙擊分隔條：重置 50/50
+splitResizer?.addEventListener("dblclick", () => {
+  document.documentElement.style.setProperty("--split-main-size", "50%");
+  localStorage.setItem(SPLIT_KEY, "50");
+});
+
+// 視窗縮放時確保目前百分比仍在範圍內（避免極端高度造成 UI 崩壞）
+window.addEventListener("resize", () => {
+  const curVar = getComputedStyle(document.documentElement)
+    .getPropertyValue("--split-main-size")
+    .trim();
+  if (curVar.endsWith("%")) {
+    const pct = parseFloat(curVar);
+    const clamped = clampSplit(pct);
+    if (pct !== clamped) {
+      document.documentElement.style.setProperty(
+        "--split-main-size",
+        clamped + "%"
+      );
+      localStorage.setItem(SPLIT_KEY, clamped.toFixed(2));
+    }
+  }
+});
