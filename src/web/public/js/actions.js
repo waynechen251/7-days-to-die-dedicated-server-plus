@@ -185,6 +185,7 @@
           body: JSON.stringify({ file }),
         });
         appendLog("backup", msg, Date.now());
+        App.saves.loadSaves();
       } catch (e) {
         appendLog("backup", `❌ ${e.message}`, Date.now());
       }
@@ -207,6 +208,7 @@
           }
         );
         appendLog("backup", msg, Date.now());
+        App.saves.loadSaves();
       } catch (e) {
         appendLog("backup", `❌ ${e.message}`, Date.now());
       } finally {
