@@ -66,11 +66,21 @@
   App.bootstrap = { refreshStatus, setState };
 
   (async function boot() {
-    await initUI();
-    App.console.switchTab(S.activeTab);
-    App.mask.updateMask();
-    App.sse.connectSSE();
-    refreshStatus();
+    async function realBoot() {
+      await initUI();
+      App.console.switchTab(S.activeTab);
+      App.mask.updateMask();
+      App.sse.connectSSE();
+      refreshStatus();
+    }
+
+    if (window.__fragmentsReady) {
+      realBoot();
+    } else {
+      window.addEventListener("fragments:ready", () => realBoot(), {
+        once: true,
+      });
+    }
   })();
 
   w.setState = setState;

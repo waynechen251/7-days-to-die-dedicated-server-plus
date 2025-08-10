@@ -23,9 +23,9 @@
           "fragments/admin-config-modal.html"
         );
         const alreadyBound = !!App.adminConfig;
-        wireModal(); // 若尚未綁定則建立 App.adminConfig
+        wireModal();
         if (App.adminConfig && App.adminConfig.open) {
-          App.adminConfig.open(); // 透過公開介面開啟
+          App.adminConfig.open();
         } else if (!alreadyBound) {
           console.error("管理後台設定視窗綁定失敗：缺少 open()");
           alert("載入管理後台設定視窗失敗（缺少開啟方法）");
@@ -38,7 +38,7 @@
   }
 
   function wireModal() {
-    if (App.adminConfig) return; // 已綁定過
+    if (App.adminConfig) return;
 
     const modal = document.getElementById("adminCfgModal");
     const closeBtn = document.getElementById("adminCfgCloseBtn");
