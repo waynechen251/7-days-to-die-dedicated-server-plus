@@ -72,19 +72,6 @@
       }
     });
 
-    on(D.viewConfigBtn, "click", async () => {
-      switchTab("system");
-      try {
-        appendLog(
-          "system",
-          await fetchText("/api/view-config", { method: "POST" }),
-          Date.now()
-        );
-      } catch (e) {
-        appendLog("system", `❌ ${e.message}`, Date.now());
-      }
-    });
-
     on(D.startServerBtn, "click", () => App.configModal.openConfigModal(true));
     on(D.editConfigBtn, "click", () => App.configModal.openConfigModal(false));
 
