@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>7 Days To Die Dedicated Server Plus 管理後台 1.0.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
@@ -14,7 +15,9 @@
     </div>
 
     <header class="topbar">
-      <div class="brand">7 Days To Die Dedicated Server Plus 管理後台 1.0.0</div>
+      <div class="brand">
+        7 Days To Die Dedicated Server Plus 管理後台 1.0.0
+      </div>
       <a
         href="https://github.com/waynechen251/7-days-to-die-dedicated-server-plus.git"
         target="_blank"
@@ -223,6 +226,28 @@
       </div>
     </div>
 
-    <script src="js/app.js"></script>
+    <noscript>
+      <div class="modal" style="display: block">
+        <div class="modal__backdrop"></div>
+        <div class="modal__panel">
+          <div class="modal__header"><h3>需要 JavaScript</h3></div>
+          <div class="modal__body">請啟用瀏覽器的 JavaScript 後重新整理。</div>
+        </div>
+      </div>
+    </noscript>
+
+    <script defer src="js/utils.js"></script>
+    <script defer src="js/dom.js"></script>
+    <script defer src="js/state.js"></script>
+    <script defer src="js/api.js"></script>
+    <script defer src="js/console.js"></script>
+    <script defer src="js/mask.js"></script>
+    <script defer src="js/status.js"></script>
+    <script defer src="js/sse.js"></script>
+    <script defer src="js/saves.js"></script>
+    <script defer src="js/split.js"></script>
+    <script defer src="js/config-modal.js"></script>
+    <script defer src="js/actions.js"></script>
+    <script defer src="js/bootstrap.js"></script>
   </body>
 </html>
