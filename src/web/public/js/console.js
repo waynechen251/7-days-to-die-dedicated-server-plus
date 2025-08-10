@@ -4,6 +4,21 @@
   const { stamp } = App.utils;
   const S = App.state;
 
+  const lastNormLine = {
+    system: "",
+    steamcmd: "",
+    game: "",
+    telnet: "",
+    backup: "",
+  };
+
+  function normalizeForDedupe(text) {
+    let s = String(text || "");
+    s = s.replace(/^\s*\[[^\]]+\]\s*/g, "");
+    s = s.replace(/\s+/g, " ").trim();
+    return s;
+  }
+
   function switchTab(tab) {
     if (!panes[tab]) return;
     S.activeTab = tab;
@@ -29,6 +44,12 @@
   function appendLog(topic, line, ts) {
     const p = panes[topic] || panes.system;
     const nearBottom = p.scrollTop + p.clientHeight >= p.scrollHeight - 5;
+
+    const norm = normalizeForDedupe(line);
+    if (norm && lastNormLine[topic] === norm) {
+      return;
+    }
+    lastNormLine[topic] = norm;
 
     p.textContent += line.endsWith("\n") ? line : line + "\n";
     if (topic === S.activeTab && nearBottom) p.scrollTop = p.scrollHeight;
