@@ -976,3 +976,19 @@ body.has-dock-open {
     color: var(--c-text);
   }
 }
+
+.app-mask__icon {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.app-mask__message {
+  margin: 0.25rem 0 0.75rem;
+  text-align: center;
+  white-space: pre-line;
+}
+.app-mask__actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}

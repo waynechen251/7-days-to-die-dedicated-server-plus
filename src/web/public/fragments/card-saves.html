@@ -50,7 +50,13 @@
       </label>
       <div class="field">
         <span class="field__label sr-only">執行匯入</span>
-        <button id="importBackupBtn" class="btn btn--accent full">
+        <button
+          id="importBackupBtn"
+          class="btn btn--accent full"
+          data-danger="是否確定從備份匯入?"
+          data-cancel-text="取消"
+          data-continue-text="繼續"
+        >
           📥 從備份匯入
         </button>
       </div>
@@ -71,7 +77,15 @@
       </label>
       <div class="field">
         <span class="field__label sr-only">上傳並匯入</span>
-        <button id="importUploadBtn" class="btn full">📤 上傳並匯入</button>
+        <button
+          id="importUploadBtn"
+          class="btn full"
+          data-danger="是否確定上傳並匯入?"
+          data-cancel-text="取消"
+          data-continue-text="繼續"
+        >
+          📤 上傳並匯入
+        </button>
       </div>
     </div>
   </section>
