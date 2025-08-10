@@ -39,7 +39,6 @@ Name: "chinesesimplified"; MessagesFile: "Languages\ChineseSimplified.isl"
 Name: "chinesetraditional"; MessagesFile: "Languages\ChineseTraditional.isl"
 
 [Dirs]
-Name: "{app}\nssm"
 Name: "{app}\steamcmd"
 Name: "{app}\scripts"
 Name: "{app}\dependencies"
