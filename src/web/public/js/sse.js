@@ -5,7 +5,7 @@
   function connectSSE() {
     if (es) es.close();
     es = new EventSource(
-      `/api/stream?topics=system,steamcmd,game,telnet,backup&replay=200`
+      `/api/stream?topics=system,steamcmd,game,telnet,backup&replay=1000`
     );
     es.onmessage = (ev) => {
       const e = JSON.parse(ev.data);
