@@ -202,29 +202,7 @@
       </div>
     </div>
 
-    <div id="cfgModal" class="modal hidden" aria-hidden="true">
-      <div class="modal__backdrop"></div>
-      <div class="modal__panel" role="dialog" aria-modal="true">
-        <div class="modal__header">
-          <h3>serverconfig.xml</h3>
-          <button id="cfgCloseBtn" class="modal__close">✖</button>
-        </div>
-        <div id="cfgLockBanner" class="modal__banner hidden">
-          伺服器運行中，禁止修改。
-        </div>
-        <div class="modal__body">
-          <div id="cfgChecks"></div>
-          <div id="cfgBody"></div>
-        </div>
-        <div class="modal__footer">
-          <button id="cfgCancelBtn" class="btn">取消</button>
-          <button id="cfgSaveBtn" class="btn">保存</button>
-          <button id="cfgSaveStartBtn" class="btn btn--primary">
-            保存後啟動
-          </button>
-        </div>
-      </div>
-    </div>
+    <div id="adminCfgModalHost" data-fragment="admin-config-modal"></div>
 
     <noscript>
       <div class="modal" style="display: block">
@@ -247,6 +225,7 @@
     <script defer src="js/saves.js"></script>
     <script defer src="js/split.js"></script>
     <script defer src="js/config-modal.js"></script>
+    <script defer src="js/config-admin-modal.js"></script>
     <script defer src="js/actions.js"></script>
     <script defer src="js/bootstrap.js"></script>
   </body>
