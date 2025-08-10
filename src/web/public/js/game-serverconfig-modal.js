@@ -2,13 +2,26 @@
   const App = (w.App = w.App || {});
   const { fetchJSON, fetchText } = App.api;
   const { decideType, escapeHTML } = App.utils;
-  const D = App.dom;
+  let D = App.dom;
   const S = App.state;
 
-  D.cfgCloseBtn?.addEventListener("click", closeCfgModal);
-  D.cfgCancelBtn?.addEventListener("click", closeCfgModal);
-  D.cfgSaveBtn?.addEventListener("click", () => saveConfigValues(false));
-  D.cfgSaveStartBtn?.addEventListener("click", () => saveConfigValues(true));
+  function ensureDom() {
+    if (!D.cfgBody || !D.cfgModal) {
+      App.dom.refresh();
+      D = App.dom;
+    }
+  }
+
+  function bindButtons() {
+    ensureDom();
+    D.cfgCloseBtn?.addEventListener("click", closeCfgModal);
+    D.cfgCancelBtn?.addEventListener("click", closeCfgModal);
+    D.cfgSaveBtn?.addEventListener("click", () => saveConfigValues(false));
+    D.cfgSaveStartBtn?.addEventListener("click", () => saveConfigValues(true));
+  }
+
+  if (w.__fragmentsReady) bindButtons();
+  else w.addEventListener("fragments:ready", bindButtons, { once: true });
 
   function closeCfgModal() {
     D.cfgModal?.classList.add("hidden");
@@ -17,6 +30,7 @@
   }
 
   async function openConfigModal(startIntent) {
+    ensureDom();
     if (startIntent && S.versionNeedsInstall) {
       App.console.appendLog(
         "system",
@@ -26,12 +40,19 @@
       return;
     }
     S.cfg.startIntent = !!startIntent;
+    D.cfgModal?.classList.remove("hidden");
+    D.cfgModal?.setAttribute("aria-hidden", "false");
+    if (D.cfgBody)
+      D.cfgBody.innerHTML =
+        "<div style='padding:8px;font-size:0.75rem;'>讀取中...</div>";
+
     try {
       const [procRes, cfgRes, savesRes] = await Promise.all([
         fetchJSON("/api/process-status").catch(() => null),
         fetchJSON("/api/serverconfig"),
         fetchJSON("/api/saves/list"),
       ]);
+      ensureDom();
       if (!cfgRes.ok) throw new Error(cfgRes.message || "讀取設定失敗");
 
       if (procRes?.data?.gameServer) {
@@ -74,6 +95,7 @@
   }
 
   function renderCfgEditor(items) {
+    ensureDom();
     const grid = document.createElement("div");
     grid.className = "cfg-grid";
 
@@ -207,6 +229,7 @@
       grid.appendChild(inputEl);
     });
 
+    ensureDom();
     D.cfgBody.innerHTML = "";
     D.cfgBody.appendChild(grid);
     if (S.cfg.locked) App.status.disableCfgInputs(true);
@@ -215,6 +238,7 @@
   const rerunChecks = App.utils.debounce(() => runCfgChecks(), 250);
 
   function readCfgValuesFromUI() {
+    ensureDom();
     const q = (n) => D.cfgBody.querySelector(`[data-name="${n}"]`);
     const val = (n) => (q(n) ? String(q(n).value || "").trim() : "");
     return {
@@ -235,6 +259,7 @@
   }
 
   async function runCfgChecks() {
+    ensureDom();
     if (!D.cfgChecks) return { passAll: true, results: [] };
     const v = readCfgValuesFromUI();
     const results = [];
@@ -311,6 +336,7 @@
   }
 
   async function saveConfigValues(startAfter) {
+    ensureDom();
     if (S.cfg.locked) {
       closeCfgModal();
       return;
@@ -328,7 +354,7 @@
       if (!checkNow.passAll) {
         App.console.appendLog(
           "system",
-          "❌ 無法啟動: 請先修正啟動前檢查未通過項目。",
+          "❌ 無法啟動: 請先修正啟動前未通過項目。",
           Date.now()
         );
         return;
