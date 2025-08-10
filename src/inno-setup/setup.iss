@@ -14,7 +14,7 @@
 #define AppURL "https://github.com/waynechen251/7-days-to-die-dedicated-server-plus"
 
 [Setup]
-AppId={{9F8BAD29-7449-4498-896D-23716AB4C529}
+AppId={{9F8BAD29-7449-4498-896D-23716AB4C529}}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher={#AppPublisher}
