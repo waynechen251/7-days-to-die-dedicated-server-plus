@@ -21,7 +21,7 @@
 
 ### Using the Inno Setup Installer
 
-1. Go to the GitHub Releases page and download the latest installer package: **[7DTD-DS-P-Setup](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/releases)**  
+1. Go to the GitHub Releases page and download the latest installer: **[7DTD-DS-P-Setup](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/releases)**  
    ![alt text](images/image.png)
 
 2. Launch the installer  
@@ -39,7 +39,7 @@
 
 5. Select the port for the Web Management Interface  
    ![alt text](images/image-4.png)  
-   預設為 `26901`
+   Default: `26901`
 
    > Tip 1: To allow LAN access to the management panel, open port `26901` in the host machine’s firewall.  
    > Tip 2: To allow public access, configure port forwarding on your router to forward `26901` to the host machine’s IP.  

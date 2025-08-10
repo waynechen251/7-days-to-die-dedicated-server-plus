@@ -21,7 +21,7 @@
 
 ### 使用 Inno Setup 安裝包
 
-1. 前往 GitHub Releases 下載最新版本的壓縮檔: **[7DTD-DS-P-Setup](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/releases)**  
+1. 前往 GitHub Releases 下載最新版本的安裝檔: **[7DTD-DS-P-Setup](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/releases)**  
    ![alt text](images/image.png)
 
 2. 啟動安裝程式  
