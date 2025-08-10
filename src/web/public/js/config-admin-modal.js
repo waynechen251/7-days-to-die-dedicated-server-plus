@@ -20,7 +20,7 @@
       try {
         await ensureFragment(
           "adminCfgModal",
-          "fragments/admin-config-modal.html"
+          "fragments/card-admin-config-modal.html"
         );
         const alreadyBound = !!App.adminConfig;
         wireModal();
