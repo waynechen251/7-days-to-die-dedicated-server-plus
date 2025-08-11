@@ -9,7 +9,7 @@
 #define AppServiceName "7 Days To Die Dedicated Server Plus"
 #define AppName "7DTD-DS-P"
 #define AppType "Setup"
-#define AppVersion "1.0.0"
+#define AppVersion "1.0.1"
 #define AppPublisher "waynechen251"
 #define AppURL "https://github.com/waynechen251/7-days-to-die-dedicated-server-plus"
 
