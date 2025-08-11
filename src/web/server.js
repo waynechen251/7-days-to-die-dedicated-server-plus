@@ -687,16 +687,23 @@ app.post("/api/install", (req, res) => {
   }
 });
 
-app.post("/api/install-abort", (req, res) => {
+app.post("/api/install-abort", async (req, res) => {
   try {
-    if (processManager?.steamCmd?.abort && processManager.steamCmd.isRunning) {
-      processManager.steamCmd.abort();
-      eventBus.push("steamcmd", { text: "中止安裝請求" });
-      return http.sendOk(req, res, "✅ 已請求中止安裝");
+    if (!processManager.steamCmd.isRunning) {
+      return http.respondJson(
+        res,
+        { ok: true, message: "steamcmd 未在執行" },
+        200
+      );
     }
-    return http.sendOk(req, res, "⚠️ 沒有正在執行的安裝任務");
-  } catch (err) {
-    return http.sendErr(req, res, `❌ 中止安裝失敗: ${err.message}`);
+    await processManager.steamCmd.abort();
+    return http.respondJson(res, { ok: true, message: "steamcmd 已中斷" }, 200);
+  } catch (e) {
+    return http.respondJson(
+      res,
+      { ok: false, message: e.message || "中斷失敗" },
+      500
+    );
   }
 });
 

@@ -9,7 +9,15 @@
     >
       📥 安裝 / 更新
     </button>
-    <button id="abortInstallBtn" disabled>❌ 中斷安裝 / 更新</button>
+    <button
+      id="abortInstallBtn"
+      disabled
+      data-danger="是否確定中斷安裝 / 更新?\n將不會正常退出，可能導致檔案損毀，請重新執行安裝 / 更新!"
+      data-cancel-text="取消"
+      data-continue-text="繼續"
+    >
+      ❌ 中斷安裝 / 更新
+    </button>
     <select id="versionSelect">
       <option value="">Stable (public)</option>
       <option value="v2.1">v2.1 Stable</option>
