@@ -62,6 +62,9 @@
         name: s.name,
       }));
       S.cfg.original = new Map(items.map((x) => [x.name, x.value]));
+      S.cfg.commentedOriginal = new Map(
+        items.map((x) => [x.name, !!x.commented]) // 後端需提供 commented
+      );
       renderCfgEditor(items);
 
       S.cfg.locked = App.status.computeGameRunning();
@@ -96,17 +99,24 @@
     );
 
     items.forEach((item) => {
-      const { name, value } = item;
+      const { name, value, commented } = item;
       const lab = document.createElement("label");
       lab.className = "cfg-label";
-      lab.textContent = name;
+
+      // 啟用核選框
+      const enable = document.createElement("input");
+      enable.type = "checkbox";
+      enable.className = "cfg-enable";
+      enable.dataset.enableFor = name;
+      enable.checked = !commented; // 勾選 = 未註解(啟用)
+      lab.appendChild(enable);
+      lab.appendChild(document.createTextNode(" " + name));
 
       const hint = document.createElement("span");
       hint.textContent = " [?]";
-      hint.title = (metaMap.get(name) || "無說明").toString();
+      hint.title = (item.comment || item.doc || "無說明").toString();
       hint.style.cursor = "help";
       hint.style.userSelect = "none";
-      hint.setAttribute("aria-label", "說明");
       lab.appendChild(hint);
 
       let inputEl;
@@ -179,12 +189,8 @@
           sel.dataset.name = name;
           sel.dataset.type = "boolean";
           sel.innerHTML = `
-            <option value="true"${
-              /^true$/i.test(value) ? " selected" : ""
-            }>true</option>
-            <option value="false"${
-              /^false$/i.test(value) ? " selected" : ""
-            }>false</option>
+            <option value="true"${/^true$/i.test(value) ? " selected" : ""}>true</option>
+            <option value="false"${/^false$/i.test(value) ? " selected" : ""}>false</option>
           `;
           sel.addEventListener("change", rerunChecks);
           inputEl = sel;
@@ -208,11 +214,26 @@
         }
       }
 
+      // 若為註解狀態 -> 先 disable
+      if (commented) {
+        if (inputEl.classList?.contains("cfg-combo")) {
+          inputEl.querySelectorAll("input,select").forEach((e) => (e.disabled = true));
+        } else inputEl.disabled = true;
+      }
+
+      // 核選框切換
+      enable.addEventListener("change", () => {
+        const enabled = enable.checked;
+        if (inputEl.classList?.contains("cfg-combo")) {
+          inputEl.querySelectorAll("input,select").forEach((e) => (e.disabled = !enabled || S.cfg.locked));
+        } else inputEl.disabled = !enabled || S.cfg.locked;
+        rerunChecks();
+      });
+
       grid.appendChild(lab);
       grid.appendChild(inputEl);
     });
 
-    ensureDom();
     D.cfgBody.innerHTML = "";
     D.cfgBody.appendChild(grid);
     if (S.cfg.locked) App.status.disableCfgInputs(true);
@@ -222,15 +243,18 @@
 
   function readCfgValuesFromUI() {
     ensureDom();
-    const q = (n) => D.cfgBody.querySelector(`[data-name="${n}"]`);
-    const val = (n) => (q(n) ? String(q(n).value || "").trim() : "");
-    return {
-      ServerPort: val("ServerPort"),
-      TelnetEnabled: val("TelnetEnabled"),
-      TelnetPort: val("TelnetPort"),
-      TelnetPassword: val("TelnetPassword"),
-      EACEnabled: val("EACEnabled"),
-    };
+    const values = {};
+    D.cfgBody.querySelectorAll("[data-name]").forEach((el) => {
+      const name = el.dataset.name;
+      if (!name) return;
+      values[name] = String(el.value || "").trim();
+    });
+    const enables = {};
+    D.cfgBody.querySelectorAll(".cfg-enable").forEach((cb) => {
+      const name = cb.dataset.enableFor;
+      if (name) enables[name] = cb.checked;
+    });
+    return { values, enables };
   }
 
   function isTrue(v) {
@@ -245,57 +269,96 @@
     ensureDom();
     if (S.cfg.locked) return S.cfg.lastCheck;
     if (!D.cfgChecks) return { passAll: true, results: [] };
-    const v = readCfgValuesFromUI();
+    const { values, enables } = readCfgValuesFromUI();
     const results = [];
 
-    const sp = num(v.ServerPort);
-    if (!Number.isFinite(sp) || sp <= 0 || sp > 65535) {
-      results.push({ ok: false, text: "ServerPort 未設定或格式錯誤" });
-    } else {
-      try {
-        const r = await fetchJSON(`/api/check-port?port=${sp}`);
-        const inUse = !!r?.data?.inUse;
-        results.push(
-          inUse
-            ? { ok: false, text: `ServerPort ${sp} 已被佔用` }
-            : { ok: true, text: `ServerPort ${sp} 可用` }
-        );
-      } catch {
-        results.push({ ok: false, text: "ServerPort 檢查失敗" });
+    // 如果該 key 未啟用則跳過 (視為通過或提供訊息)
+    function needEnabled(name, failMsgIfDisabled, validateFn) {
+      if (!enables[name]) {
+        results.push({ ok: failMsgIfDisabled ? false : true, text: `${name} 已停用(註解)` });
+        return;
       }
+      validateFn();
     }
 
-    if (!isTrue(v.TelnetEnabled))
+    needEnabled("ServerPort", false, () => {
+      const sp = parseInt(values.ServerPort, 10);
+      if (!Number.isFinite(sp) || sp <= 0 || sp > 65535) {
+        results.push({ ok: false, text: "ServerPort 未設定或格式錯誤" });
+      } else {
+        // 非同步檢查分開處理
+      }
+    });
+
+    // TelnetEnabled / TelnetPort / TelnetPassword 強制需要啟用
+    if (!enables.TelnetEnabled)
+      results.push({ ok: false, text: "TelnetEnabled 已停用 (啟動需要 Telnet)" });
+    else if (!/^(true)$/i.test(values.TelnetEnabled))
       results.push({ ok: false, text: "TelnetEnabled 必須為 true" });
     else results.push({ ok: true, text: "TelnetEnabled 已啟用" });
 
-    const tp = num(v.TelnetPort);
-    if (!Number.isFinite(tp) || tp <= 0 || tp > 65535) {
-      results.push({ ok: false, text: "TelnetPort 未設定或格式錯誤" });
-    } else {
-      try {
-        const r = await fetchJSON(`/api/check-port?port=${tp}`);
-        const inUse = !!r?.data?.inUse;
-        results.push(
-          inUse
-            ? { ok: false, text: `TelnetPort ${tp} 已被佔用` }
-            : { ok: true, text: `TelnetPort ${tp} 可用` }
-        );
-      } catch {
-        results.push({ ok: false, text: "TelnetPort 檢查失敗" });
-      }
+    if (!enables.TelnetPort)
+      results.push({ ok: false, text: "TelnetPort 已停用" });
+    else {
+      const tp = parseInt(values.TelnetPort, 10);
+      if (!Number.isFinite(tp) || tp <= 0 || tp > 65535)
+        results.push({ ok: false, text: "TelnetPort 未設定或格式錯誤" });
     }
 
-    if (!String(v.TelnetPassword || "").trim())
+    if (!enables.TelnetPassword)
+      results.push({ ok: false, text: "TelnetPassword 已停用" });
+    else if (!String(values.TelnetPassword).trim())
       results.push({ ok: false, text: "TelnetPassword 不可為空" });
     else results.push({ ok: true, text: "TelnetPassword 已設定" });
 
-    if (isTrue(v.EACEnabled))
-      results.push({
-        ok: "warn",
-        text: "EACEnabled=true: 啟用 EAC 時無法使用模組",
-      });
-    else results.push({ ok: true, text: "EACEnabled 已停用" });
+    if (!enables.EACEnabled)
+      results.push({ ok: true, text: "EACEnabled 已停用(註解)" });
+    else if (/^true$/i.test(values.EACEnabled))
+      results.push({ ok: "warn", text: "EACEnabled=true: 啟用 EAC 時無法使用模組" });
+    else results.push({ ok: true, text: "EACEnabled=false" });
+
+    // 補上非同步 Port 檢查 (ServerPort / TelnetPort)
+    const asyncChecks = [];
+    if (enables.ServerPort) {
+      const sp = parseInt(values.ServerPort, 10);
+      if (Number.isFinite(sp) && sp > 0 && sp <= 65535) {
+        asyncChecks.push(
+          fetchJSON(`/api/check-port?port=${sp}`)
+            .then(r => {
+              const inUse = !!r?.data?.inUse;
+              results.push(
+                inUse
+                  ? { ok: false, text: `ServerPort ${sp} 已被佔用` }
+                  : { ok: true, text: `ServerPort ${sp} 可用` }
+              );
+            })
+            .catch(() =>
+              results.push({ ok: false, text: "ServerPort 檢查失敗" })
+            )
+        );
+      }
+    }
+    if (enables.TelnetPort) {
+      const tp = parseInt(values.TelnetPort, 10);
+      if (Number.isFinite(tp) && tp > 0 && tp <= 65535) {
+        asyncChecks.push(
+          fetchJSON(`/api/check-port?port=${tp}`)
+            .then(r => {
+              const inUse = !!r?.data?.inUse;
+              results.push(
+                inUse
+                  ? { ok: false, text: `TelnetPort ${tp} 已被佔用` }
+                  : { ok: true, text: `TelnetPort ${tp} 可用` }
+              );
+            })
+            .catch(() =>
+              results.push({ ok: false, text: "TelnetPort 檢查失敗" })
+            )
+        );
+      }
+    }
+
+    await Promise.all(asyncChecks);
 
     const passAll = results.every((x) => x.ok === true || x.ok === "warn");
     const icon = (ok) => (ok === true ? "✅" : ok === "warn" ? "⚠️" : "❌");
@@ -325,61 +388,57 @@
 
   async function saveConfigValues(startAfter) {
     ensureDom();
-    if (S.cfg.locked) {
-      closeCfgModal();
-      return;
-    }
+    if (S.cfg.locked) { closeCfgModal(); return; }
     if (startAfter && S.versionNeedsInstall) {
-      App.console.appendLog(
-        "system",
-        "❌ 目前選擇的版本尚未安裝，請先安裝。",
-        Date.now()
-      );
-      return;
+      App.console.appendLog("system","❌ 目前選擇的版本尚未安裝，請先安裝。",Date.now()); return;
     }
     if (startAfter) {
       const checkNow = await runCfgChecks();
       if (!checkNow.passAll) {
-        App.console.appendLog(
-          "system",
-          "❌ 無法啟動: 請先修正啟動前未通過項目。",
-          Date.now()
-        );
+        App.console.appendLog("system","❌ 無法啟動: 請先修正啟動前未通過項目。",Date.now());
         return;
       }
     }
 
-    const controls = Array.from(
-      D.cfgBody.querySelectorAll("[data-name], .cfg-combo input[type='text']")
-    );
+    const { values, enables } = readCfgValuesFromUI();
     const updates = {};
-    let changed = 0;
+    const toggles = {};
+    let changed = 0, toggleChanged = 0;
 
-    controls.forEach((el) => {
-      const name = el.dataset.name || el.getAttribute("data-name");
-      if (!name) return;
-      let val = el.value;
-      if (el.dataset.type === "boolean")
-        val = /^(true)$/i.test(val) ? "true" : "false";
-      val = normalizeValueForWrite(name, val);
-      const oldVal = S.cfg.original.get(name) ?? "";
-      if (String(val) !== String(oldVal)) {
-        updates[name] = val;
+    // 值更新 (僅針對啟用的)
+    Object.keys(values).forEach((name) => {
+      if (!enables[name]) return; // 停用不改值
+      const newVal = normalizeValueForWrite(name, values[name]);
+      const oldVal = S.cfg.original?.get(name) ?? "";
+      if (String(newVal) !== String(oldVal)) {
+        updates[name] = newVal;
         changed++;
       }
     });
 
+    // 註解狀態切換
+    if (S.cfg.commentedOriginal) {
+      Object.keys(enables).forEach((name) => {
+        const oldCommented = S.cfg.commentedOriginal.get(name);
+        const newCommented = !enables[name];
+        if (oldCommented !== newCommented) {
+          // toggles[name] = true 表示啟用(取消註解)
+            toggles[name] = enables[name];
+            toggleChanged++;
+        }
+      });
+    }
+
     try {
-      if (changed > 0) {
+      if (changed > 0 || toggleChanged > 0) {
         const res = await fetchJSON("/api/serverconfig", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ updates }),
+          body: JSON.stringify({ updates, toggles })
         });
         if (!res.ok) throw new Error(res.message || "寫入失敗");
       }
       closeCfgModal();
-
       if (startAfter) {
         App.console.switchTab("system");
         const msg = await fetchText("/api/start", {
@@ -390,11 +449,7 @@
         App.console.appendLog("system", msg, Date.now());
       }
     } catch (e) {
-      App.console.appendLog(
-        "system",
-        `❌ 寫入 serverconfig.xml 失敗: ${e.message}`,
-        Date.now()
-      );
+      App.console.appendLog("system", `❌ 寫入 serverconfig.xml 失敗: ${e.message}`, Date.now());
     }
   }
 

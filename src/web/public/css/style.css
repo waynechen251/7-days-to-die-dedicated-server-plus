@@ -901,6 +901,10 @@ body.has-dock-open {
   display: grid;
   gap: 6px;
 }
+.cfg-label > .cfg-enable {
+  margin-right: 4px;
+  vertical-align: middle;
+}
 .check-item {
   display: flex;
   align-items: center;

@@ -143,7 +143,7 @@
   function disableCfgInputs(lock) {
     if (!D.cfgBody) return;
     const ctrls = D.cfgBody.querySelectorAll(
-      "input, select, textarea, .cfg-combo select, .cfg-combo input"
+      "input, select, textarea, .cfg-combo select, .cfg-combo input, .cfg-enable"
     );
     ctrls.forEach((el) => (el.disabled = !!lock));
   }
