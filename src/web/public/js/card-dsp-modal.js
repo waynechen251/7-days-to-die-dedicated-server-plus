@@ -7,7 +7,7 @@
     if (existing && existing.classList.contains("modal")) return existing;
 
     const host =
-      document.getElementById("adminCfgModalHost") ||
+      document.getElementById("dspModalHost") ||
       document.querySelector('[data-fragment="card-dsp-modal"]');
 
     if (!host) throw new Error("找不到片段宿主節點");
