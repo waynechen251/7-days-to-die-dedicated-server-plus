@@ -8,7 +8,7 @@
 
     const host =
       document.getElementById("adminCfgModalHost") ||
-      document.querySelector('[data-fragment="card-admin-config-modal"]');
+      document.querySelector('[data-fragment="card-dsp-modal"]');
 
     if (!host) throw new Error("找不到片段宿主節點");
 
@@ -99,7 +99,7 @@
         try {
           await ensureFragment(
             "adminCfgModal",
-            "fragments/card-admin-config-modal.html"
+            "fragments/card-dsp-modal.html"
           );
           const alreadyBound = !!App.adminConfig;
           wireModal();
