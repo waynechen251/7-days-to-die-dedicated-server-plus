@@ -32,11 +32,19 @@
   <section class="saves-group">
     <h3 class="saves-group__title">匯出</h3>
     <div class="btn-row wrap">
-      <button id="exportOneBtn" class="btn" title="備份目前選擇的世界+存檔">
-        📤 僅備份所選世界
+      <button
+        id="exportOneBtn"
+        class="btn"
+        title="備份目前選擇的 GameWorld / GameName"
+      >
+        📤 僅備份所選 GameName
       </button>
-      <button id="backupFullBtn" class="btn-row wrap" title="完整壓縮全部存檔">
-        💾 備份完整存檔
+      <button
+        id="backupFullBtn"
+        class="btn-row wrap"
+        title="完整備份整個 Saves 目錄"
+      >
+        💾 備份完整 Saves
       </button>
     </div>
   </section>
@@ -64,7 +72,9 @@
   </section>
 
   <section class="saves-group">
-    <h3 class="saves-group__title">匯入 (自行上傳 ZIP)</h3>
+    <h3 class="saves-group__title">
+      匯入 (自行上傳 ZIP 結構可參考匯出之 ZIP 檔)
+    </h3>
     <div class="form-grid">
       <label class="field">
         <span class="field__label">選擇 ZIP</span>
