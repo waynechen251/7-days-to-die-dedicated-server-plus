@@ -1,0 +1,29 @@
+<section class="card">
+  <h2>SteamCMD</h2>
+  <div class="row">
+    <button
+      id="installServerBtn"
+      data-danger="是否確定安裝 / 更新伺服器?\nserverconfig.xml 將被重置"
+      data-cancel-text="取消"
+      data-continue-text="繼續"
+    >
+      📥 安裝 / 更新
+    </button>
+    <button
+      id="abortInstallBtn"
+      disabled
+      data-danger="是否確定中斷安裝 / 更新?\n將不會正常退出，可能導致檔案損毀，請重新執行安裝 / 更新!"
+      data-cancel-text="取消"
+      data-continue-text="繼續"
+    >
+      ❌ 中斷安裝 / 更新
+    </button>
+    <select id="versionSelect">
+      <option value="">Stable (public)</option>
+      <option value="v2.1">v2.1 Stable</option>
+      <option value="v2.0">v2.0 Stable</option>
+      <option value="v1.4">v1.4 Stable</option>
+      <option value="v1.3">v1.3 Stable</option>
+    </select>
+  </div>
+</section>

@@ -38,11 +38,14 @@ const processManager = {
         autoQuitOnPrompt: true,
       });
     },
-    abort() {
-      steamcmd.abort();
+    async abort() {
+      await steamcmd.abort();
     },
-    stop() {
-      steamcmd.stop();
+    async stop() {
+      await steamcmd.stop();
+    },
+    async killByPid(pid) {
+      await steamcmd.killByPid(pid);
     },
   },
   gameServer: {

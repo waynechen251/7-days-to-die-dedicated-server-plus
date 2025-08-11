@@ -2,7 +2,8 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <title>7 Days To Die Dedicated Server Plus 管理後台 1.0.0</title>
+    <title>7 Days To Die Dedicated Server Plus 管理後台 1.0.1</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
@@ -13,8 +14,12 @@
       </div>
     </div>
 
+    <div id="confirmMask" class="app-mask hidden" aria-hidden="true"></div>
+
     <header class="topbar">
-      <div class="brand">7 Days To Die Dedicated Server Plus 管理後台 1.0.0</div>
+      <div class="brand">
+        7 Days To Die Dedicated Server Plus 管理後台 1.0.1
+      </div>
       <a
         href="https://github.com/waynechen251/7-days-to-die-dedicated-server-plus.git"
         target="_blank"
@@ -33,145 +38,17 @@
     <div class="app-split">
       <div class="pane pane-main">
         <main class="grid">
-          <section class="card">
-            <h2>SteamCMD</h2>
-            <div class="row">
-              <button id="installServerBtn">📥 安裝 / 更新</button>
-              <button id="abortInstallBtn" disabled>❌ 中斷安裝 / 更新</button>
-              <select id="versionSelect">
-                <option value="">Stable (public)</option>
-                <option value="v2.1">v2.1 Stable</option>
-                <option value="v2.0">v2.0 Stable</option>
-                <option value="v1.4">v1.4 Stable</option>
-                <option value="v1.3">v1.3 Stable</option>
-              </select>
-            </div>
-          </section>
+          <!-- SteamCMD 卡片 -->
+          <div id="card-steamcmd" data-fragment="card-steamcmd"></div>
 
-          <section class="card">
-            <h2>7 Days To Die Dedicated Server</h2>
-            <div class="row">
-              <button id="startServerBtn">▶️ 啟動伺服器</button>
-              <button id="stopServerBtn">⏹️ 關閉伺服器</button>
-              <button id="killServerBtn">⚠️ 強制結束</button>
-              <button id="editConfigBtn" class="btn--ghost">
-                📝 檢視 / 編輯 serverconfig.xml
-              </button>
-            </div>
-            <div class="row">
-              <input id="telnetInput" placeholder="輸入 Telnet 指令…" />
-              <button id="telnetSendBtn" data-role="telnet">送出</button>
-              <button data-role="telnet" onclick="sendTelnet('version')">
-                🔍 版本
-              </button>
-              <button data-role="telnet" onclick="sendTelnet('listplayers')">
-                🧑‍🤝‍🧑 玩家
-              </button>
-              <button data-role="telnet" onclick="sendTelnet('getgamepref')">
-                ⚙️ 設定
-              </button>
-            </div>
-          </section>
+          <!-- 7DaysToDieServer 卡片 -->
+          <div id="card-game" data-fragment="card-game"></div>
 
-          <section class="card">
-            <h2>管理後台</h2>
-            <div class="row">
-              <button id="viewConfigBtn">⚙️ 查看管理後台設定檔</button>
-            </div>
-          </section>
+          <!-- 管理後台 卡片 -->
+          <div id="card-dsp" data-fragment="card-dsp"></div>
 
-          <section class="card card-saves">
-            <header class="saves-header">
-              <h2 class="card-title">存檔管理</h2>
-              <div class="btn-bar">
-                <button
-                  id="refreshSavesBtn"
-                  class="btn btn--ghost"
-                  title="重新整理存檔/備份清單"
-                >
-                  🔄 重新整理
-                </button>
-                <button
-                  id="viewBackupsBtn"
-                  class="btn btn--ghost"
-                  title="列出備份檔"
-                >
-                  📂 備份清單
-                </button>
-              </div>
-            </header>
-
-            <section class="saves-group">
-              <h3 class="saves-group__title">遊戲選擇</h3>
-              <div class="form-grid">
-                <label class="field">
-                  <span class="field__label">GameWorld</span>
-                  <select id="gwSelect" class="field__control"></select>
-                </label>
-                <label class="field">
-                  <span class="field__label">GameName</span>
-                  <select id="gnSelect" class="field__control"></select>
-                </label>
-              </div>
-            </section>
-
-            <section class="saves-group">
-              <h3 class="saves-group__title">匯出</h3>
-              <div class="btn-row wrap">
-                <button
-                  id="exportOneBtn"
-                  class="btn"
-                  title="備份目前選擇的世界+存檔"
-                >
-                  📤 僅備份所選世界
-                </button>
-                <button
-                  id="backupFullBtn"
-                  class="btn-row wrap"
-                  title="完整壓縮全部存檔"
-                >
-                  💾 備份完整存檔
-                </button>
-              </div>
-            </section>
-
-            <section class="saves-group">
-              <h3 class="saves-group__title">匯入 (管理後台備份)</h3>
-              <div class="form-grid">
-                <label class="field span-2">
-                  <span class="field__label">選擇備份檔</span>
-                  <select id="backupSelect" class="field__control"></select>
-                </label>
-                <div class="field">
-                  <span class="field__label sr-only">執行匯入</span>
-                  <button id="importBackupBtn" class="btn btn--accent full">
-                    📥 從備份匯入
-                  </button>
-                </div>
-              </div>
-            </section>
-
-            <section class="saves-group">
-              <h3 class="saves-group__title">匯入 (自行上傳 ZIP)</h3>
-              <div class="form-grid">
-                <label class="field">
-                  <span class="field__label">選擇 ZIP</span>
-                  <input
-                    id="importUploadFile"
-                    type="file"
-                    accept=".zip"
-                    class="field__control"
-                  />
-                </label>
-                <div class="field">
-                  <span class="field__label sr-only">上傳並匯入</span>
-                  <button id="importUploadBtn" class="btn full">
-                    📤 上傳並匯入
-                  </button>
-                </div>
-              </div>
-            </section>
-          </section>
+          <!-- 存檔管理 卡片 -->
+          <div id="card-saves" data-fragment="card-saves"></div>
         </main>
       </div>
 
@@ -181,11 +58,11 @@
         <div class="console-shell">
           <div class="console-bar">
             <div class="console-tabs">
-              <button data-tab="system" class="active">system</button>
-              <button data-tab="steamcmd">steamcmd</button>
-              <button data-tab="game">game</button>
-              <button data-tab="telnet">telnet</button>
-              <button data-tab="backup">backup</button>
+              <button data-tab="system" class="active">管理後台</button>
+              <button data-tab="steamcmd">SteamCMD</button>
+              <button data-tab="game">7DaysToDieServer</button>
+              <button data-tab="telnet">Telnet</button>
+              <button data-tab="backup">存檔管理</button>
             </div>
           </div>
           <div class="console-panes">
@@ -199,30 +76,34 @@
       </div>
     </div>
 
-    <div id="cfgModal" class="modal hidden" aria-hidden="true">
-      <div class="modal__backdrop"></div>
-      <div class="modal__panel" role="dialog" aria-modal="true">
-        <div class="modal__header">
-          <h3>serverconfig.xml</h3>
-          <button id="cfgCloseBtn" class="modal__close">✖</button>
-        </div>
-        <div id="cfgLockBanner" class="modal__banner hidden">
-          伺服器運行中，禁止修改。
-        </div>
-        <div class="modal__body">
-          <div id="cfgChecks"></div>
-          <div id="cfgBody"></div>
-        </div>
-        <div class="modal__footer">
-          <button id="cfgCancelBtn" class="btn">取消</button>
-          <button id="cfgSaveBtn" class="btn">保存</button>
-          <button id="cfgSaveStartBtn" class="btn btn--primary">
-            保存後啟動
-          </button>
+    <div id="dspModalHost" data-fragment="card-dsp-modal"></div>
+    <div id="gameServerconfigModalHost" data-fragment="card-game-serverconfig-modal"></div>
+
+    <noscript>
+      <div class="modal" style="display: block">
+        <div class="modal__backdrop"></div>
+        <div class="modal__panel">
+          <div class="modal__header"><h3>需要 JavaScript</h3></div>
+          <div class="modal__body">請啟用瀏覽器的 JavaScript 後重新整理。</div>
         </div>
       </div>
-    </div>
+    </noscript>
 
-    <script src="js/app.js"></script>
+    <script defer src="js/fragments-loader.js"></script>
+    <script defer src="js/utils.js"></script>
+    <script defer src="js/dom.js"></script>
+    <script defer src="js/state.js"></script>
+    <script defer src="js/api.js"></script>
+    <script defer src="js/console.js"></script>
+    <script defer src="js/mask.js"></script>
+    <script defer src="js/confirm.js"></script>
+    <script defer src="js/status.js"></script>
+    <script defer src="js/sse.js"></script>
+    <script defer src="js/saves.js"></script>
+    <script defer src="js/split.js"></script>
+    <script defer src="js/card-game-serverconfig-modal.js"></script>
+    <script defer src="js/card-dsp-modal.js"></script>
+    <script defer src="js/actions.js"></script>
+    <script defer src="js/bootstrap.js"></script>
   </body>
 </html>

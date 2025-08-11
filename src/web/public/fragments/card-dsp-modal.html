@@ -1,0 +1,36 @@
+<div id="adminCfgModal" class="modal hidden" aria-hidden="true">
+  <div class="modal__backdrop"></div>
+  <div
+    class="modal__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-label="管理後台設定檔"
+  >
+    <div class="modal__header">
+      <h3>管理後台設定 (server.json)</h3>
+      <button id="adminCfgCloseBtn" class="modal__close">✖</button>
+    </div>
+    <div class="modal__body">
+      <div
+        class="modal__toolbar"
+        style="margin-bottom: 8px; display: flex; gap: 8px; flex-wrap: wrap"
+      >
+        <button id="adminCfgRefreshBtn" class="btn btn--ghost" title="重新讀取">
+          🔄 重新讀取
+        </button>
+        <button id="adminCfgCopyBtn" class="btn btn--ghost" title="複製 JSON">
+          📋 複製
+        </button>
+        <span id="adminCfgStatus" style="font-size: 12px; color: #888"></span>
+      </div>
+      <pre
+        id="adminCfgContent"
+        class="code-block"
+        style="max-height: 60vh; overflow: auto; margin: 0"
+      ></pre>
+    </div>
+    <div class="modal__footer">
+      <button id="adminCfgCloseBtn2" class="btn">關閉</button>
+    </div>
+  </div>
+</div>

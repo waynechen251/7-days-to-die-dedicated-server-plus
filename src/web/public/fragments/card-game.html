@@ -1,0 +1,33 @@
+<section class="card">
+  <h2>7 Days To Die Dedicated Server</h2>
+  <div class="row">
+    <button id="configStartBtn">🛠 啟動伺服器 / 檢視 serverconfig.xml</button>
+    <button
+      id="stopServerBtn"
+      data-danger="⏹️ 是否正常停止伺服器?"
+      data-cancel-text="取消"
+      data-continue-text="繼續"
+    >
+      ⏹️ 關閉伺服器
+    </button>
+    <button
+      id="killServerBtn"
+      data-danger="是否強制結束伺服器?\n強制結束將不會正常保存，可能引發存檔異常，非必要請勿使用!"
+      data-cancel-text="取消"
+      data-continue-text="繼續"
+    >
+      ❌ 強制結束
+    </button>
+  </div>
+  <div class="row">
+    <input id="telnetInput" placeholder="輸入 Telnet 指令…" />
+    <button id="telnetSendBtn" data-role="telnet">送出</button>
+    <button data-role="telnet" onclick="sendTelnet('version')">🔍 版本</button>
+    <button data-role="telnet" onclick="sendTelnet('listplayers')">
+      🧑‍🤝‍🧑 玩家
+    </button>
+    <button data-role="telnet" onclick="sendTelnet('getgamepref')">
+      ⚙️ 設定
+    </button>
+  </div>
+</section>

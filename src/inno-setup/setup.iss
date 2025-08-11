@@ -9,12 +9,12 @@
 #define AppServiceName "7 Days To Die Dedicated Server Plus"
 #define AppName "7DTD-DS-P"
 #define AppType "Setup"
-#define AppVersion "1.0.0"
+#define AppVersion "1.0.1"
 #define AppPublisher "waynechen251"
 #define AppURL "https://github.com/waynechen251/7-days-to-die-dedicated-server-plus"
 
 [Setup]
-AppId={{9F8BAD29-7449-4498-896D-23716AB4C529}
+AppId={{9F8BAD29-7449-4498-896D-23716AB4C529}}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher={#AppPublisher}
@@ -26,7 +26,7 @@ DefaultGroupName={#AppName}
 AllowNoIcons=yes
 LicenseFile=LICENSE.txt
 PrivilegesRequired=admin
-OutputDir=..\..\
+OutputDir=..\web\
 OutputBaseFilename={#AppName}-{#AppType}({#AppVersion})
 SetupIconFile=7dtd_icon.ico
 Compression=lzma2

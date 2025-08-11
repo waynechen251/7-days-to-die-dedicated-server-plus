@@ -687,16 +687,23 @@ app.post("/api/install", (req, res) => {
   }
 });
 
-app.post("/api/install-abort", (req, res) => {
+app.post("/api/install-abort", async (req, res) => {
   try {
-    if (processManager?.steamCmd?.abort && processManager.steamCmd.isRunning) {
-      processManager.steamCmd.abort();
-      eventBus.push("steamcmd", { text: "中止安裝請求" });
-      return http.sendOk(req, res, "✅ 已請求中止安裝");
+    if (!processManager.steamCmd.isRunning) {
+      return http.respondJson(
+        res,
+        { ok: true, message: "steamcmd 未在執行" },
+        200
+      );
     }
-    return http.sendOk(req, res, "⚠️ 沒有正在執行的安裝任務");
-  } catch (err) {
-    return http.sendErr(req, res, `❌ 中止安裝失敗: ${err.message}`);
+    await processManager.steamCmd.abort();
+    return http.respondJson(res, { ok: true, message: "steamcmd 已中斷" }, 200);
+  } catch (e) {
+    return http.respondJson(
+      res,
+      { ok: false, message: e.message || "中斷失敗" },
+      500
+    );
   }
 });
 
@@ -1002,20 +1009,13 @@ app.get("/api/serverconfig", (req, res) => {
     const { items } = serverConfigLib.readValues(cfgPath);
     return http.respondJson(
       res,
-      {
-        ok: true,
-        data: {
-          locked: processManager.gameServer.isRunning,
-          path: cfgPath,
-          items,
-        },
-      },
+      { ok: true, data: { path: cfgPath, items } },
       200
     );
-  } catch (err) {
+  } catch (e) {
     return http.respondJson(
       res,
-      { ok: false, message: err.message || "讀取失敗" },
+      { ok: false, message: e.message || "讀取失敗" },
       500
     );
   }
@@ -1037,25 +1037,95 @@ app.post("/api/serverconfig", (req, res) => {
         404
       );
     }
+
     const updates = req.body?.updates || {};
-    if (
-      !updates ||
-      typeof updates !== "object" ||
-      Array.isArray(updates) ||
-      Object.keys(updates).length === 0
-    ) {
-      return http.respondJson(res, { ok: false, message: "缺少 updates" }, 400);
+    const toggles = req.body?.toggles || {};
+    const hasUpdates =
+      updates && typeof updates === "object" && !Array.isArray(updates)
+        ? Object.keys(updates).length > 0
+        : false;
+    const hasToggles =
+      toggles && typeof toggles === "object" && !Array.isArray(toggles)
+        ? Object.keys(toggles).length > 0
+        : false;
+
+    if (!hasUpdates && !hasToggles) {
+      return http.respondJson(
+        res,
+        { ok: false, message: "缺少 updates 或 toggles" },
+        400
+      );
     }
-    const { changed } = serverConfigLib.writeValues(cfgPath, updates);
-    if (changed.length) {
+
+    let txt = fs.readFileSync(cfgPath, "utf-8");
+    const toggled = [];
+
+    function escReg(s) {
+      return s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+    }
+
+    if (hasToggles) {
+      for (const [name, enable] of Object.entries(toggles)) {
+        const nameEsc = escReg(name);
+        const reCommented = new RegExp(
+          `<!--\\s*<property\\s+name="${nameEsc}"\\s+value="([^"]*)"\\s*/>\\s*-->`,
+          "i"
+        );
+        const reActive = new RegExp(
+          `<property\\s+name="${nameEsc}"\\s+value="([^"]*)"\\s*/>`,
+          "i"
+        );
+
+        if (enable) {
+          if (reCommented.test(txt)) {
+            txt = txt.replace(reCommented, (_m, val) => {
+              const newVal = Object.prototype.hasOwnProperty.call(updates, name)
+                ? updates[name]
+                : val;
+              return `<property name="${name}" value="${newVal}" />`;
+            });
+            toggled.push(`${name}:enable`);
+          }
+        } else {
+          if (reActive.test(txt)) {
+            txt = txt.replace(reActive, (_m, val) => {
+              return `<!-- <property name="${name}" value="${val}" /> -->`;
+            });
+            toggled.push(`${name}:disable`);
+          }
+        }
+      }
+
+      if (toggled.length) {
+        fs.writeFileSync(cfgPath, txt, "utf-8");
+      }
+    }
+
+    let changed = [];
+    if (hasUpdates) {
+      const result = serverConfigLib.writeValues(cfgPath, updates);
+      changed = result.changed || [];
+      txt = fs.readFileSync(cfgPath, "utf-8");
+    }
+
+    if (changed.length || toggled.length) {
       eventBus.push("system", {
-        text: `serverconfig.xml 已更新: ${changed.join(", ")}`,
+        text: `serverconfig.xml 已更新: ${[
+          changed.length ? `值(${changed.join(",")})` : null,
+          toggled.length ? `狀態(${toggled.join(",")})` : null,
+        ]
+          .filter(Boolean)
+          .join(" ")}`,
       });
     }
+
     const { items } = serverConfigLib.readValues(cfgPath);
     return http.respondJson(
       res,
-      { ok: true, data: { path: cfgPath, changed, items } },
+      {
+        ok: true,
+        data: { path: cfgPath, changed, toggled, items },
+      },
       200
     );
   } catch (err) {
