@@ -3,44 +3,33 @@
   const { fetchJSON } = App.api || {};
 
   async function ensureFragment(id, url) {
-    if (document.getElementById(id)) return;
-    const host = document.querySelector(`[data-fragment="admin-config-modal"]`);
-    if (!host) return;
+    const existing = document.getElementById(id);
+    if (existing && existing.classList.contains("modal")) return existing;
+
+    const host =
+      document.getElementById("adminCfgModalHost") ||
+      document.querySelector('[data-fragment="card-admin-config-modal"]');
+
+    if (!host) throw new Error("找不到片段宿主節點");
+
     const res = await fetch(url, { cache: "no-cache" });
     if (!res.ok) throw new Error("載入片段失敗");
     const html = await res.text();
-    host.insertAdjacentHTML("beforeend", html);
-  }
+    host.innerHTML = html;
 
-  async function init() {
-    const triggerBtn = document.getElementById("viewConfigBtn");
-    if (!triggerBtn) return;
-
-    triggerBtn.addEventListener("click", async () => {
-      try {
-        await ensureFragment(
-          "adminCfgModal",
-          "fragments/card-admin-config-modal.html"
-        );
-        const alreadyBound = !!App.adminConfig;
-        wireModal();
-        if (App.adminConfig && App.adminConfig.open) {
-          App.adminConfig.open();
-        } else if (!alreadyBound) {
-          console.error("管理後台設定視窗綁定失敗：缺少 open()");
-          alert("載入管理後台設定視窗失敗（缺少開啟方法）");
-        }
-      } catch (e) {
-        console.error(e);
-        alert("載入管理後台設定視窗失敗: " + e.message);
-      }
-    });
+    const modal = document.getElementById(id);
+    if (!modal || !modal.classList.contains("modal")) {
+      throw new Error("片段載入後仍找不到 modal 節點");
+    }
+    return modal;
   }
 
   function wireModal() {
     if (App.adminConfig) return;
 
     const modal = document.getElementById("adminCfgModal");
+    if (!modal) return;
+
     const closeBtn = document.getElementById("adminCfgCloseBtn");
     const closeBtn2 = document.getElementById("adminCfgCloseBtn2");
     const refreshBtn = document.getElementById("adminCfgRefreshBtn");
@@ -53,7 +42,7 @@
       contentEl.textContent = "";
       try {
         const res = await fetchJSON("/api/get-config");
-        if (!res.ok) throw new Error(res.message || "讀取失敗");
+        if (!res?.ok) throw new Error(res?.message || "讀取失敗");
         const json = res.data || {};
         contentEl.textContent = JSON.stringify(json, null, 2);
         statusEl.textContent = "✅ 已載入";
@@ -101,9 +90,45 @@
     App.adminConfig = { open: openModal, refresh };
   }
 
+  function bindTrigger() {
+    const triggerBtn = document.getElementById("viewConfigBtn");
+    if (!triggerBtn) return false;
+
+    if (!triggerBtn.__bound_openAdminCfg) {
+      triggerBtn.addEventListener("click", async () => {
+        try {
+          await ensureFragment(
+            "adminCfgModal",
+            "fragments/card-admin-config-modal.html"
+          );
+          const alreadyBound = !!App.adminConfig;
+          wireModal();
+          if (App.adminConfig?.open) {
+            App.adminConfig.open();
+          } else if (!alreadyBound) {
+            console.error("管理後台設定視窗綁定失敗：缺少 open()");
+            alert("載入管理後台設定視窗失敗（缺少開啟方法）");
+          }
+        } catch (e) {
+          console.error(e);
+          alert("載入管理後台設定視窗失敗: " + e.message);
+        }
+      });
+      triggerBtn.__bound_openAdminCfg = true;
+    }
+    return true;
+  }
+
+  function boot() {
+    if (bindTrigger()) return;
+    const once = () => bindTrigger();
+    if (w.__fragmentsReady) once();
+    else w.addEventListener("fragments:ready", once, { once: true });
+  }
+
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("DOMContentLoaded", boot);
   } else {
-    init();
+    boot();
   }
 })(window);
