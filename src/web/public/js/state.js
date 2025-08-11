@@ -57,7 +57,7 @@
 
     cfg: {
       original: null,
-      commentedOriginal: null, // 新增: Map(name -> commented:boolean)
+      commentedOriginal: null,
       locked: false,
       worldList: [],
       lastCheck: { passAll: false, results: [] },

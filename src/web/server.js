@@ -1002,20 +1002,13 @@ app.get("/api/serverconfig", (req, res) => {
     const { items } = serverConfigLib.readValues(cfgPath);
     return http.respondJson(
       res,
-      {
-        ok: true,
-        data: {
-          locked: processManager.gameServer.isRunning,
-          path: cfgPath,
-          items,
-        },
-      },
+      { ok: true, data: { path: cfgPath, items } },
       200
     );
-  } catch (err) {
+  } catch (e) {
     return http.respondJson(
       res,
-      { ok: false, message: err.message || "讀取失敗" },
+      { ok: false, message: e.message || "讀取失敗" },
       500
     );
   }
@@ -1057,7 +1050,6 @@ app.post("/api/serverconfig", (req, res) => {
       );
     }
 
-    // 讀取原始檔案文字
     let txt = fs.readFileSync(cfgPath, "utf-8");
     const toggled = [];
 
@@ -1065,7 +1057,6 @@ app.post("/api/serverconfig", (req, res) => {
       return s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
     }
 
-    // 先處理註解開關 (確保後續 updates 能更新到剛啟用的項目)
     if (hasToggles) {
       for (const [name, enable] of Object.entries(toggles)) {
         const nameEsc = escReg(name);
@@ -1079,54 +1070,45 @@ app.post("/api/serverconfig", (req, res) => {
         );
 
         if (enable) {
-          // 需要取消註解
-            if (reCommented.test(txt)) {
-              txt = txt.replace(reCommented, (_m, val) => {
-                // 若 updates 有新值用新值
-                const newVal =
-                  Object.prototype.hasOwnProperty.call(updates, name)
-                    ? updates[name]
-                    : val;
-                return `<property name="${name}" value="${newVal}" />`;
-              });
-              toggled.push(`${name}:enable`);
-            }
-          // 若已是啟用狀態則不動
+          if (reCommented.test(txt)) {
+            txt = txt.replace(reCommented, (_m, val) => {
+              const newVal = Object.prototype.hasOwnProperty.call(updates, name)
+                ? updates[name]
+                : val;
+              return `<property name="${name}" value="${newVal}" />`;
+            });
+            toggled.push(`${name}:enable`);
+          }
         } else {
-          // 需要註解
-            if (reActive.test(txt)) {
-              txt = txt.replace(reActive, (_m, val) => {
-                return `<!-- <property name="${name}" value="${val}" /> -->`;
-              });
-              toggled.push(`${name}:disable`);
-            }
-          // 若已是註解則不動
+          if (reActive.test(txt)) {
+            txt = txt.replace(reActive, (_m, val) => {
+              return `<!-- <property name="${name}" value="${val}" /> -->`;
+            });
+            toggled.push(`${name}:disable`);
+          }
         }
       }
 
-      // 若文字有變動就寫回（先寫回，之後再做 updates）
       if (toggled.length) {
         fs.writeFileSync(cfgPath, txt, "utf-8");
       }
     }
 
-    // 套用值更新 (只針對啟用的項目；註解中的行剛剛若被啟用已經轉為正常行)
     let changed = [];
     if (hasUpdates) {
       const result = serverConfigLib.writeValues(cfgPath, updates);
       changed = result.changed || [];
-      // 重新讀一次 (保持與既有流程一致)
       txt = fs.readFileSync(cfgPath, "utf-8");
     }
 
     if (changed.length || toggled.length) {
       eventBus.push("system", {
-        text: `serverconfig.xml 已更新: ${
-          [changed.length ? `值(${changed.join(",")})` : null,
-           toggled.length ? `狀態(${toggled.join(",")})` : null]
-            .filter(Boolean)
-            .join(" ")
-        }`,
+        text: `serverconfig.xml 已更新: ${[
+          changed.length ? `值(${changed.join(",")})` : null,
+          toggled.length ? `狀態(${toggled.join(",")})` : null,
+        ]
+          .filter(Boolean)
+          .join(" ")}`,
       });
     }
 
