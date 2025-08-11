@@ -10,9 +10,9 @@
       D.abortInstallBtn,
       D.backupFullBtn,
       D.viewConfigBtn,
-      D.startServerBtn,
       D.stopServerBtn,
       D.killServerBtn,
+      D.configStartBtn,
       D.versionSelect,
       D.telnetInput,
       D.telnetSendBtn,
@@ -26,7 +26,6 @@
       D.importBackupBtn,
       D.importUploadFile,
       D.importUploadBtn,
-      D.editConfigBtn,
     ];
 
     setBadge(D.stBackend, backendUp ? "ok" : "err");
@@ -114,7 +113,7 @@
   }
 
   function updateVersionLockUI() {
-    if (!D.versionSelect || !D.startServerBtn) return;
+    if (!D.versionSelect) return;
     const selected = canonicalVersion(D.versionSelect.value || "");
     S.versionNeedsInstall = !S.hasInstalled
       ? true
@@ -122,26 +121,21 @@
 
     if (!S.current.steamRunning && !S.backupInProgress) {
       if (S.versionNeedsInstall) {
-        D.startServerBtn.disabled = true;
-        D.startServerBtn.title = "此版本尚未安裝，請先按『安裝/更新』";
         D.installServerBtn?.classList.add("btn--attention");
       } else {
-        D.startServerBtn.title = "";
         D.installServerBtn?.classList.remove("btn--attention");
       }
     }
   }
 
   function updateCfgLockUI() {
-    const startIntent = !!S.cfg.startIntent;
-    const hideChecks = startIntent || S.cfg.locked;
+    const hideChecks = S.cfg.locked;
     if (D.cfgChecks) D.cfgChecks.classList.toggle("hidden", hideChecks);
-
     D.cfgLockBanner?.classList.toggle("hidden", !S.cfg.locked);
 
-    const disableBecause =
-      S.cfg.locked || (!startIntent && !S.cfg.lastCheck.passAll);
-    setDisabled([D.cfgSaveBtn, D.cfgSaveStartBtn], disableBecause);
+    const disableSave = S.cfg.locked || !S.cfg.lastCheck.passAll;
+    setDisabled([D.cfgSaveBtn], disableSave);
+    setDisabled([D.cfgSaveStartBtn], disableSave || S.versionNeedsInstall);
 
     disableCfgInputs(S.cfg.locked);
   }

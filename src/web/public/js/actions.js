@@ -72,8 +72,7 @@
       }
     });
 
-    on(D.startServerBtn, "click", () => App.configModal.openConfigModal(true));
-    on(D.editConfigBtn, "click", () => App.configModal.openConfigModal(false));
+    on(D.configStartBtn, "click", () => App.configModal.openConfigModal());
 
     on(D.stopServerBtn, "click", async () => {
       switchTab("system");

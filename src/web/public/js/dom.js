@@ -6,7 +6,7 @@
     return {
       installServerBtn: $("installServerBtn"),
       viewConfigBtn: $("viewConfigBtn"),
-      startServerBtn: $("startServerBtn"),
+      configStartBtn: $("configStartBtn"),
       stopServerBtn: $("stopServerBtn"),
       killServerBtn: $("killServerBtn"),
       versionSelect: $("versionSelect"),
@@ -30,8 +30,6 @@
       stGame: $("st-game"),
       stTelnet: $("st-telnet"),
       backupFullBtn: $("backupFullBtn"),
-
-      editConfigBtn: $("editConfigBtn"),
       cfgModal: $("cfgModal"),
       cfgBody: $("cfgBody"),
       cfgChecks: $("cfgChecks"),

@@ -58,7 +58,6 @@
     cfg: {
       original: null,
       locked: false,
-      startIntent: false,
       worldList: [],
       lastCheck: { passAll: false, results: [] },
     },

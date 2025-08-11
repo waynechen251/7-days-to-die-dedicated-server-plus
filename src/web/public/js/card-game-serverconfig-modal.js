@@ -26,20 +26,10 @@
   function closeCfgModal() {
     D.cfgModal?.classList.add("hidden");
     D.cfgModal?.setAttribute("aria-hidden", "true");
-    S.cfg.startIntent = false;
   }
 
-  async function openConfigModal(startIntent) {
+  async function openConfigModal() {
     ensureDom();
-    if (startIntent && S.versionNeedsInstall) {
-      App.console.appendLog(
-        "system",
-        "❌ 目前選擇的版本尚未安裝，請先安裝。",
-        Date.now()
-      );
-      return;
-    }
-    S.cfg.startIntent = !!startIntent;
     D.cfgModal?.classList.remove("hidden");
     D.cfgModal?.setAttribute("aria-hidden", "false");
     if (D.cfgBody)
@@ -77,14 +67,7 @@
       S.cfg.locked = App.status.computeGameRunning();
       App.status.updateCfgLockUI();
 
-      if (!S.cfg.locked && S.cfg.startIntent)
-        D.cfgSaveStartBtn?.classList.add("btn--primary");
-      else D.cfgSaveStartBtn?.classList.remove("btn--primary");
-
-      D.cfgModal?.classList.remove("hidden");
-      D.cfgModal?.setAttribute("aria-hidden", "false");
-
-      if (!S.cfg.startIntent && !S.cfg.locked) await runCfgChecks();
+      if (!S.cfg.locked) await runCfgChecks();
     } catch (e) {
       App.console.appendLog(
         "system",
@@ -260,7 +243,7 @@
 
   async function runCfgChecks() {
     ensureDom();
-    if (S.cfg.startIntent || S.cfg.locked) return S.cfg.lastCheck;
+    if (S.cfg.locked) return S.cfg.lastCheck;
     if (!D.cfgChecks) return { passAll: true, results: [] };
     const v = readCfgValuesFromUI();
     const results = [];
@@ -322,7 +305,11 @@
         .map((r) => `<li>${icon(r.ok)} ${r.text}</li>`)
         .join("")}</ul>`;
 
-    App.utils.setDisabled([D.cfgSaveStartBtn], S.cfg.locked || !passAll);
+    App.utils.setDisabled(
+      [D.cfgSaveStartBtn],
+      S.cfg.locked || !passAll || S.versionNeedsInstall
+    );
+    App.utils.setDisabled([D.cfgSaveBtn], S.cfg.locked || !passAll);
 
     S.cfg.lastCheck = { passAll, results };
     return S.cfg.lastCheck;
@@ -342,7 +329,7 @@
       closeCfgModal();
       return;
     }
-    if ((startAfter || S.cfg.startIntent) && S.versionNeedsInstall) {
+    if (startAfter && S.versionNeedsInstall) {
       App.console.appendLog(
         "system",
         "❌ 目前選擇的版本尚未安裝，請先安裝。",
@@ -350,7 +337,7 @@
       );
       return;
     }
-    if (startAfter || S.cfg.startIntent) {
+    if (startAfter) {
       const checkNow = await runCfgChecks();
       if (!checkNow.passAll) {
         App.console.appendLog(
@@ -393,7 +380,7 @@
       }
       closeCfgModal();
 
-      if (startAfter || S.cfg.startIntent) {
+      if (startAfter) {
         App.console.switchTab("system");
         const msg = await fetchText("/api/start", {
           method: "POST",
