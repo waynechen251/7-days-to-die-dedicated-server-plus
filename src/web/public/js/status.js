@@ -133,11 +133,16 @@
   }
 
   function updateCfgLockUI() {
+    const startIntent = !!S.cfg.startIntent;
+    const hideChecks = startIntent || S.cfg.locked;
+    if (D.cfgChecks) D.cfgChecks.classList.toggle("hidden", hideChecks);
+
     D.cfgLockBanner?.classList.toggle("hidden", !S.cfg.locked);
-    setDisabled(
-      [D.cfgSaveBtn, D.cfgSaveStartBtn],
-      S.cfg.locked || !S.cfg.lastCheck.passAll
-    );
+
+    const disableBecause =
+      S.cfg.locked || (!startIntent && !S.cfg.lastCheck.passAll);
+    setDisabled([D.cfgSaveBtn, D.cfgSaveStartBtn], disableBecause);
+
     disableCfgInputs(S.cfg.locked);
   }
 

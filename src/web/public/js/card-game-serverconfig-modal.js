@@ -84,7 +84,7 @@
       D.cfgModal?.classList.remove("hidden");
       D.cfgModal?.setAttribute("aria-hidden", "false");
 
-      await runCfgChecks();
+      if (!S.cfg.startIntent && !S.cfg.locked) await runCfgChecks();
     } catch (e) {
       App.console.appendLog(
         "system",
@@ -260,6 +260,7 @@
 
   async function runCfgChecks() {
     ensureDom();
+    if (S.cfg.startIntent || S.cfg.locked) return S.cfg.lastCheck;
     if (!D.cfgChecks) return { passAll: true, results: [] };
     const v = readCfgValuesFromUI();
     const results = [];
