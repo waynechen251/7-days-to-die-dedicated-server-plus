@@ -141,9 +141,9 @@ begin
         '', SW_HIDE, ewWaitUntilTerminated, ResultCode
       );
 
-      // 設定啟動模式為手動
+      // 設定啟動模式為自動
       Exec('sc.exe',
-        'config {#AppName} start= demand',
+        'config {#AppName} start= auto',
         '', SW_HIDE, ewWaitUntilTerminated, ResultCode
       );
 
