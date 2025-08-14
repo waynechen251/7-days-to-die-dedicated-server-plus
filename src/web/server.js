@@ -1190,6 +1190,31 @@ app.post("/api/saves/delete", async (req, res) => {
     return http.sendErr(req, res, msg);
   }
 });
+app.post("/api/saves/delete-backup", (req, res) => {
+  try {
+    const file = String(req.body?.file || "").trim();
+    if (!file) return http.sendErr(req, res, "❌ 需提供檔名");
+    if (!/^[\w.-]+\.zip$/i.test(file))
+      return http.sendErr(req, res, "❌ 檔名不合法");
+    const target = path.join(BACKUP_SAVES_DIR, file);
+    if (!target.startsWith(path.resolve(BACKUP_SAVES_DIR)))
+      return http.sendErr(req, res, "❌ 非法路徑");
+    if (!fs.existsSync(target))
+      return http.sendErr(req, res, "❌ 指定備份不存在");
+
+    fs.unlinkSync(target);
+
+    const line = `🗑️ 已刪除備份檔: ${file}`;
+    log(line);
+    eventBus.push("backup", { text: line });
+    return http.sendOk(req, res, `✅ ${line}`);
+  } catch (err) {
+    const msg = `❌ 刪除備份失敗: ${err?.message || err}`;
+    error(msg);
+    eventBus.push("backup", { level: "error", text: msg });
+    return http.sendErr(req, res, msg);
+  }
+});
 
 app.listen(CONFIG.web.port, () => {
   log(`✅ 控制面板已啟動於 http://localhost:${CONFIG.web.port}`);

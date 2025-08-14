@@ -61,6 +61,8 @@
         });
         return map;
       })(),
+
+      deleteBackupBtn: document.getElementById("deleteBackupBtn"),
     };
   }
 

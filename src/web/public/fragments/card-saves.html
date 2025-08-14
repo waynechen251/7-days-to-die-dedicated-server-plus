@@ -16,7 +16,7 @@
   </header>
 
   <section class="saves-group">
-    <h3 class="saves-group__title">遊戲選擇</h3>
+    <h3 class="saves-group__title">七日殺伺服器存檔</h3>
     <div class="form-grid">
       <label class="field">
         <span class="field__label">GameWorld</span>
@@ -60,7 +60,7 @@
   </section>
 
   <section class="saves-group">
-    <h3 class="saves-group__title">匯入 (管理後台備份)</h3>
+    <h3 class="saves-group__title">管理後台備份存檔</h3>
     <div class="form-grid">
       <label class="field span-2">
         <span class="field__label">選擇備份檔</span>
@@ -76,6 +76,19 @@
           data-continue-text="繼續"
         >
           📥 從備份匯入
+        </button>
+      </div>
+      <div class="field">
+        <span class="field__label sr-only">刪除備份</span>
+        <button
+          id="deleteBackupBtn"
+          class="btn btn--danger full"
+          title="刪除所選備份檔"
+          data-danger="是否確定刪除此備份檔?\n此動作無法復原。"
+          data-cancel-text="取消"
+          data-continue-text="繼續"
+        >
+          🗑️ 刪除備份檔
         </button>
       </div>
     </div>

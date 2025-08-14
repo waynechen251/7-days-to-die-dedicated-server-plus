@@ -239,6 +239,30 @@
       }
     });
 
+    on(D.deleteBackupBtn, "click", async () => {
+      if (!D.deleteBackupBtn) {
+        console.warn("deleteBackupBtn 元素不存在，無法綁定刪除備份事件");
+        return;
+      }
+      const file = D.backupSelect.value || "";
+      if (!file) {
+        appendLog("backup", "❌ 請選擇備份檔", Date.now());
+        return;
+      }
+      switchTab("backup");
+      try {
+        const msg = await fetchText("/api/saves/delete-backup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ file }),
+        });
+        appendLog("backup", msg, Date.now());
+        App.saves.loadSaves();
+      } catch (e) {
+        appendLog("backup", `❌ ${e.message}`, Date.now());
+      }
+    });
+
     on(D.versionSelect, "change", () => updateVersionLockUI());
 
     on(D.gwSelect, "change", () => App.saves.fillNamesFor(D.gwSelect.value));
