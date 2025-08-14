@@ -1,0 +1,206 @@
+.console-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: #0f1114;
+  border-top: 1px solid #2a3139;
+  display: flex;
+  flex-direction: column;
+  height: var(--console-dock-height);
+  transition: height 0.18s ease;
+  font: 400 0.72rem/1.25 var(--mono);
+  z-index: 50;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.35);
+}
+.console-dock.resizing {
+  transition: none;
+}
+.console-dock .resize-grip {
+  height: 6px;
+  cursor: row-resize;
+  background: linear-gradient(180deg, #1b2229, #13181d);
+  border-top: 1px solid #2a3139;
+  border-bottom: 1px solid #2a3139;
+  position: relative;
+}
+.console-dock .resize-grip::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 60px;
+  height: 2px;
+  background: #3a4652;
+  transform: translate(-50%, -50%);
+  border-radius: 2px;
+}
+.console-dock.collapsed {
+  height: var(--console-dock-collapsed);
+  overflow: hidden;
+}
+.console-dock.collapsed .resize-grip {
+  display: none;
+}
+.console-dock .dock-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.75rem;
+  height: var(--console-dock-collapsed);
+  background: #1b2229;
+  border-bottom: 1px solid #2a3139;
+  user-select: none;
+}
+.dock-bar-spacer {
+  /* 補: 使 dock 工具列左右元件可拉開 */
+  flex: 1;
+}
+.dock-toggle {
+  font: 600 0.65rem/1 var(--font-stack);
+  padding: 0.35rem 0.6rem;
+  background: #334155;
+  color: #fff;
+  border: 1px solid #475569;
+  border-radius: 4px;
+}
+.dock-toggle:hover {
+  background: #3e4f60;
+}
+.console-dock.collapsed .dock-toggle {
+  background: #2563eb;
+  border-color: #1d4ed8;
+}
+.console-tabs button {
+  font-size: 0.65rem;
+  padding: 0.35rem 0.55rem;
+  background: #29323a;
+  border: 1px solid #3a4652;
+  border-radius: 4px;
+}
+.console-tabs button.active {
+  background: #2563eb;
+  border-color: #1d4ed8;
+  color: #fff;
+  box-shadow: 0 0 0 1px #1d4ed8 inset;
+}
+.console-tabs button.unread:not(.active) {
+  box-shadow: 0 0 0 2px #f59e0b inset;
+}
+.console-tabs button.unread.active {
+  box-shadow: 0 0 0 2px #f59e0b inset, 0 0 0 1px #1d4ed8;
+}
+/* 補: 一般（非 dock 限定）未讀標籤樣式 */
+.console-tabs button.unread {
+  box-shadow: 0 0 0 2px #f59e0b inset;
+}
+.console {
+  border: 1px solid #222;
+  min-height: clamp(16rem, 40vh, 34rem);
+  max-height: 60vh;
+  word-break: break-word;
+  font: 400 0.72rem/1.25 var(--mono);
+  background: #111;
+  color: #e2e8f0;
+  padding: var(--space-3);
+  border-radius: var(--radius-s);
+  overflow: auto;
+  white-space: pre-wrap;
+  display: none;
+}
+.console.active {
+  display: block;
+}
+.console-dock .console-panes {
+  flex: 1;
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+.console-dock .console {
+  flex: 1;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  padding: 0.5rem 0.75rem 1.25rem;
+  font-size: 0.7rem;
+  line-height: 1.25;
+  overflow: auto;
+  display: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.console-dock .console.active {
+  display: block;
+}
+.console-dock .console::after {
+  content: "";
+  display: block;
+  height: 0.6rem;
+}
+.console::-webkit-scrollbar {
+  width: 0.65rem;
+}
+.console::-webkit-scrollbar-track {
+  background: #111;
+}
+.console::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+.console::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+body.has-dock-open {
+  padding-bottom: var(--console-dock-height);
+}
+.console-tabs {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-1);
+}
+.pane-console .console-shell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.pane-console .console-panes {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.pane-console .console {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  height: auto;
+  margin: 0;
+  border: 0;
+  padding: 0.65rem 0.9rem 0.9rem;
+}
+.pane-console .console::-webkit-scrollbar {
+  width: 0.7rem;
+}
+.pane-console .console::-webkit-scrollbar-track {
+  background: #111;
+}
+.pane-console .console::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 4px;
+}
+.pane-console .console::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+@media (max-width: 720px) {
+  :root {
+    --console-dock-height: 45vh;
+  }
+  .console-dock .console {
+    font-size: 0.68rem;
+  }
+}
