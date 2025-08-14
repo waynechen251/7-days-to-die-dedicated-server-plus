@@ -131,7 +131,7 @@
       }
     });
 
-    on(D.exportOneBtn, "click", async () => {
+    on(D.exportGameNameBtn, "click", async () => {
       const world = D.gwSelect.value || "";
       const name = D.gnSelect.value || "";
       if (!world || !name) {
@@ -202,7 +202,7 @@
       }
     });
 
-    on(D.backupFullBtn, "click", async () => {
+    on(D.exportSavesBtn, "click", async () => {
       switchTab("backup");
       S.backupInProgress = true;
       applyUIState(S.current);
@@ -215,6 +215,27 @@
       } finally {
         S.backupInProgress = false;
         applyUIState(S.current);
+      }
+    });
+
+    on(D.deleteGameNameBtn, "click", async () => {
+      const world = D.gwSelect.value || "";
+      const name = D.gnSelect.value || "";
+      if (!world || !name) {
+        appendLog("backup", "❌ 請選擇 GameWorld / GameName", Date.now());
+        return;
+      }
+      switchTab("backup");
+      try {
+        const msg = await fetchText("/api/saves/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ world, name }),
+        });
+        appendLog("backup", msg, Date.now());
+        App.saves.loadSaves();
+      } catch (e) {
+        appendLog("backup", `❌ ${e.message}`, Date.now());
       }
     });
 

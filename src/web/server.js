@@ -1136,6 +1136,60 @@ app.post("/api/serverconfig", (req, res) => {
     );
   }
 });
+app.post("/api/saves/delete", async (req, res) => {
+  try {
+    if (processManager.gameServer.isRunning) {
+      return http.sendErr(req, res, "❌ 伺服器運行中，禁止刪除存檔");
+    }
+    const savesRoot = CONFIG?.game_server?.saves;
+    if (!savesRoot || !fs.existsSync(savesRoot)) {
+      return http.sendErr(
+        req,
+        res,
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
+      );
+    }
+    const world = sanitizeName(req.body?.world);
+    const name = sanitizeName(req.body?.name);
+    if (!world || !name)
+      return http.sendErr(req, res, "❌ 需提供 world 與 name");
+    const targetDir = path.join(savesRoot, world, name);
+    if (!fs.existsSync(targetDir) || !fs.lstatSync(targetDir).isDirectory()) {
+      return http.sendErr(req, res, "❌ 指定存檔不存在");
+    }
+
+    ensureDir(BACKUP_SAVES_DIR);
+    const tsStr = format(new Date(), "YYYYMMDDHHmmss");
+    const backupZip = `DelSaves-${world}-${name}-${tsStr}.zip`;
+    const backupPath = path.join(BACKUP_SAVES_DIR, backupZip);
+
+    try {
+      await archive.zipSingleWorldGame(savesRoot, world, name, backupPath);
+    } catch (e) {
+      return http.sendErr(req, res, `❌ 刪除前備份失敗: ${e?.message || e}`);
+    }
+
+    try {
+      fs.rmSync(targetDir, { recursive: true, force: true });
+    } catch (e) {
+      return http.sendErr(
+        req,
+        res,
+        `❌ 刪除失敗(仍保留備份 ${backupZip}): ${e?.message || e}`
+      );
+    }
+
+    const line = `🗑️ 已刪除存檔: ${world}/${name} (已建立備份 ${backupZip})`;
+    log(line);
+    eventBus.push("backup", { text: line });
+    return http.sendOk(req, res, `✅ ${line}`);
+  } catch (err) {
+    const msg = `❌ 刪除失敗: ${err?.message || err}`;
+    error(msg);
+    eventBus.push("backup", { level: "error", text: msg });
+    return http.sendErr(req, res, msg);
+  }
+});
 
 app.listen(CONFIG.web.port, () => {
   log(`✅ 控制面板已啟動於 http://localhost:${CONFIG.web.port}`);

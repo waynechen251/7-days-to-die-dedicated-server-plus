@@ -33,18 +33,28 @@
     <h3 class="saves-group__title">匯出</h3>
     <div class="btn-row wrap">
       <button
-        id="exportOneBtn"
+        id="exportGameNameBtn"
         class="btn"
-        title="備份目前選擇的 GameWorld / GameName"
+        title="匯出目前選擇的 GameWorld / GameName"
       >
-        📤 僅備份所選 GameName
+        📤 僅匯出所選 GameName
       </button>
       <button
-        id="backupFullBtn"
+        id="exportSavesBtn"
         class="btn-row wrap"
-        title="完整備份整個 Saves 目錄"
+        title="完整匯出整個 Saves 目錄"
       >
-        💾 備份完整 Saves
+        💾 匯出完整 Saves
+      </button>
+      <button
+        id="deleteGameNameBtn"
+        class="btn-row wrap"
+        title="刪除所選 GameName"
+        data-danger="是否確定刪除所選存檔?\n刪除前會自動備份。"
+        data-cancel-text="取消"
+        data-continue-text="繼續"
+      >
+        ❌ 刪除所選 GameName
       </button>
     </div>
   </section>

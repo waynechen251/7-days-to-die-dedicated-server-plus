@@ -8,7 +8,8 @@
     const all = [
       D.installServerBtn,
       D.abortInstallBtn,
-      D.backupFullBtn,
+      D.exportSavesBtn,
+      D.deleteGameNameBtn,
       D.viewConfigBtn,
       D.stopServerBtn,
       D.killServerBtn,
@@ -19,7 +20,7 @@
       ...D.telnetBtns,
       D.gwSelect,
       D.gnSelect,
-      D.exportOneBtn,
+      D.exportGameNameBtn,
       D.refreshSavesBtn,
       D.viewBackupsBtn,
       D.backupSelect,
@@ -63,8 +64,9 @@
     );
 
     setDisabled(D.killServerBtn, !gameRunning);
-    setDisabled(D.backupFullBtn, gameRunning || lockBecauseBackup);
-    setDisabled(D.exportOneBtn, gameRunning || lockBecauseBackup);
+    setDisabled(D.exportSavesBtn, gameRunning || lockBecauseBackup);
+    setDisabled(D.deleteGameNameBtn, gameRunning || lockBecauseBackup);
+    setDisabled(D.exportGameNameBtn, gameRunning || lockBecauseBackup);
 
     const canManageSaves = !gameRunning && !lockBecauseBackup;
     setDisabled(
