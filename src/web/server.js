@@ -172,6 +172,17 @@ processManager.registerRoutes(app, {
     stopGameTail = null;
   },
 });
+serverConfigLib.registerRoutes(app, {
+  http,
+  processManager,
+  eventBus,
+  baseDir,
+  GAME_DIR,
+  getConfig: () => CONFIG,
+  saveConfig,
+  listWorldTemplates,
+  syncGameServerFromItems,
+});
 
 const rawUpload = express.raw({
   type: "application/octet-stream",
@@ -1022,168 +1033,6 @@ app.post("/api/server-status", async (req, res) => {
   }
 });
 
-function resolveServerConfigPath() {
-  const stripQuotes = (s) =>
-    typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
-
-  const cfgRaw = stripQuotes(CONFIG?.game_server?.serverConfig);
-  const candidates = [];
-
-  if (cfgRaw) {
-    if (path.isAbsolute(cfgRaw)) candidates.push(cfgRaw);
-    else {
-      candidates.push(path.join(GAME_DIR, cfgRaw));
-      candidates.push(path.join(baseDir, cfgRaw));
-    }
-  }
-  candidates.push(resolveFileCaseInsensitive(GAME_DIR, "serverconfig.xml"));
-  candidates.push(resolveFileCaseInsensitive(baseDir, "serverconfig.xml"));
-
-  for (const c of candidates) {
-    if (c && fs.existsSync(c)) return c;
-  }
-  return null;
-}
-
-app.get("/api/serverconfig", (req, res) => {
-  try {
-    const cfgPath = resolveServerConfigPath();
-    if (!cfgPath) {
-      return http.respondJson(
-        res,
-        { ok: false, message: "找不到 serverconfig.xml" },
-        404
-      );
-    }
-    const { items } = serverConfigLib.readValues(cfgPath);
-    const worlds = listWorldTemplates();
-    return http.respondJson(
-      res,
-      { ok: true, data: { path: cfgPath, items, worlds } },
-      200
-    );
-  } catch (e) {
-    return http.respondJson(
-      res,
-      { ok: false, message: e.message || "讀取失敗" },
-      500
-    );
-  }
-});
-app.post("/api/serverconfig", (req, res) => {
-  try {
-    if (processManager.gameServer.isRunning) {
-      return http.respondJson(
-        res,
-        { ok: false, message: "伺服器運行中，禁止修改" },
-        409
-      );
-    }
-    const cfgPath = resolveServerConfigPath();
-    if (!cfgPath) {
-      return http.respondJson(
-        res,
-        { ok: false, message: "找不到 serverconfig.xml" },
-        404
-      );
-    }
-
-    const updates = req.body?.updates || {};
-    const toggles = req.body?.toggles || {};
-    const hasUpdates =
-      updates && typeof updates === "object" && !Array.isArray(updates)
-        ? Object.keys(updates).length > 0
-        : false;
-    const hasToggles =
-      toggles && typeof toggles === "object" && !Array.isArray(toggles)
-        ? Object.keys(toggles).length > 0
-        : false;
-
-    if (!hasUpdates && !hasToggles) {
-      return http.respondJson(
-        res,
-        { ok: false, message: "缺少 updates 或 toggles" },
-        400
-      );
-    }
-
-    let txt = fs.readFileSync(cfgPath, "utf-8");
-    const toggled = [];
-
-    function escReg(s) {
-      return s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-    }
-
-    if (hasToggles) {
-      for (const [name, enable] of Object.entries(toggles)) {
-        const nameEsc = escReg(name);
-        const reCommented = new RegExp(
-          `<!--\\s*<property\\s+name="${nameEsc}"\\s+value="([^"]*)"\\s*/>\\s*-->`,
-          "i"
-        );
-        const reActive = new RegExp(
-          `<property\\s+name="${nameEsc}"\\s+value="([^"]*)"\\s*/>`,
-          "i"
-        );
-        if (enable) {
-          if (reCommented.test(txt)) {
-            txt = txt.replace(reCommented, (_m, val) => {
-              const newVal = Object.prototype.hasOwnProperty.call(updates, name)
-                ? updates[name]
-                : val;
-              return `<property name="${name}" value="${newVal}" />`;
-            });
-            toggled.push(`${name}:enable`);
-          }
-        } else {
-          if (reActive.test(txt)) {
-            txt = txt.replace(reActive, (_m, val) => {
-              return `<!-- <property name="${name}" value="${val}" /> -->`;
-            });
-            toggled.push(`${name}:disable`);
-          }
-        }
-      }
-      if (toggled.length) fs.writeFileSync(cfgPath, txt, "utf-8");
-    }
-
-    let changed = [];
-    if (hasUpdates) {
-      const result = serverConfigLib.writeValues(cfgPath, updates);
-      changed = result.changed || [];
-    }
-
-    const { items } = serverConfigLib.readValues(cfgPath);
-
-    try {
-      if (!CONFIG.game_server) CONFIG.game_server = {};
-      const { synced, removed } = syncGameServerFromItems(items);
-      if (synced > 0 || removed > 0) {
-        saveConfig();
-        eventBus.push("system", {
-          text: `已同步 serverconfig.xml 至 server.json (${synced}項變更, 修正大小寫${removed}項)`,
-        });
-      }
-    } catch (e) {
-      eventBus.push("system", {
-        level: "warn",
-        text: `同步 server.json 失敗: ${e?.message || e}`,
-      });
-    }
-
-    return http.respondJson(
-      res,
-      { ok: true, data: { path: cfgPath, changed, toggled, items } },
-      200
-    );
-  } catch (err) {
-    return http.respondJson(
-      res,
-      { ok: false, message: err.message || "寫入失敗" },
-      500
-    );
-  }
-});
 app.post("/api/saves/delete", async (req, res) => {
   try {
     if (processManager.gameServer.isRunning) {
