@@ -152,6 +152,85 @@ let stopGameTail = null;
 let lastGameVersion = null;
 let gameVersionFetched = false;
 
+let processStatusCache = {
+  status: {
+    steamCmd: { isRunning: false },
+    gameServer: {
+      isRunning: false,
+      isTelnetConnected: false,
+      pid: null,
+      gameVersion: null,
+      onlinePlayers: "",
+    },
+  },
+  lastUpdated: 0,
+};
+let processStatusUpdating = false;
+
+async function computeAndCacheProcessStatus() {
+  if (processStatusUpdating) return;
+  processStatusUpdating = true;
+  try {
+    await processManager.gameServer.checkTelnet(CONFIG.game_server);
+
+    if (
+      processManager.gameServer.isRunning &&
+      processManager.gameServer.isTelnetConnected
+    ) {
+      if (!gameVersionFetched) {
+        try {
+          const out = await sendTelnetCommand(CONFIG.game_server, "version");
+          const line = out
+            .split(/\r?\n/)
+            .map((l) => l.trim())
+            .find((l) => /^Game version:/i.test(l));
+          if (line) {
+            let versionText = line.replace(/^Game version:\s*/i, "").trim();
+            const m = line.match(
+              /^Game version:\s*(.+?)\s+Compatibility Version:/i
+            );
+            if (m) versionText = m[1].trim();
+            else
+              versionText = versionText
+                .replace(/\s+Compatibility Version:.*/i, "")
+                .trim();
+            lastGameVersion = versionText;
+            gameVersionFetched = true;
+          }
+        } catch (_) {}
+      }
+      try {
+        const playersOut = await sendTelnetCommand(
+          CONFIG.game_server,
+          "listplayers"
+        );
+        const playerCount =
+          playersOut.match(/Total of (\d+) in the game/)?.[1] || "0";
+        processManager.gameServer.onlinePlayers = playerCount;
+      } catch (_) {}
+    }
+
+    const status = {
+      steamCmd: { isRunning: processManager.steamCmd.isRunning },
+      gameServer: {
+        isRunning: processManager.gameServer.isRunning,
+        isTelnetConnected: processManager.gameServer.isTelnetConnected,
+        pid: processManager.gameServer.getPid(),
+        gameVersion: lastGameVersion,
+        onlinePlayers: processManager.gameServer.onlinePlayers || "",
+      },
+    };
+    processStatusCache = { status, lastUpdated: Date.now() };
+  } catch (err) {
+    error(`❌ 背景更新 process-status 失敗: ${err?.message || err}`);
+  } finally {
+    processStatusUpdating = false;
+  }
+}
+
+computeAndCacheProcessStatus();
+setInterval(computeAndCacheProcessStatus, 2000);
+
 const app = express();
 app.use(express.json());
 app.use(express.static(PUBLIC_DIR));
@@ -375,65 +454,19 @@ app.get("/api/get-config", (req, res) => {
 });
 
 app.get("/api/process-status", async (req, res) => {
-  try {
-    await processManager.gameServer.checkTelnet(CONFIG.game_server);
-
-    if (
-      processManager.gameServer.isRunning &&
-      processManager.gameServer.isTelnetConnected
-    ) {
-      if (!gameVersionFetched) {
-        try {
-          const out = await sendTelnetCommand(CONFIG.game_server, "version");
-          const line = out
-            .split(/\r?\n/)
-            .map((l) => l.trim())
-            .find((l) => /^Game version:/i.test(l));
-          if (line) {
-            let versionText = line.replace(/^Game version:\s*/i, "").trim();
-            const m = line.match(
-              /^Game version:\s*(.+?)\s+Compatibility Version:/i
-            );
-            if (m) versionText = m[1].trim();
-            else
-              versionText = versionText
-                .replace(/\s+Compatibility Version:.*/i, "")
-                .trim();
-            lastGameVersion = versionText;
-            gameVersionFetched = true;
-          }
-        } catch (_) {}
-      }
-      try {
-        const playersOut = await sendTelnetCommand(
-          CONFIG.game_server,
-          "listplayers"
-        );
-        const playerCount =
-          playersOut.match(/Total of (\d+) in the game/)?.[1] || "0";
-        processManager.gameServer.onlinePlayers = playerCount;
-      } catch (_) {}
-    }
-
-    const status = {
-      steamCmd: { isRunning: processManager.steamCmd.isRunning },
-      gameServer: {
-        isRunning: processManager.gameServer.isRunning,
-        isTelnetConnected: processManager.gameServer.isTelnetConnected,
-        pid: processManager.gameServer.getPid(),
-        gameVersion: lastGameVersion,
-        onlinePlayers: processManager.gameServer.onlinePlayers || "",
-      },
-    };
-    return http.respondJson(res, { ok: true, data: status }, 200);
-  } catch (err) {
-    error(`❌ 無法查詢進程狀態: ${err?.message || err}`);
-    return http.respondJson(
-      res,
-      { ok: false, message: "無法查詢進程狀態" },
-      500
-    );
+  if (req.query?.refresh === "1") {
+    computeAndCacheProcessStatus().catch(() => {});
   }
+  return http.respondJson(
+    res,
+    {
+      ok: true,
+      data: processStatusCache.status,
+      lastUpdated: processStatusCache.lastUpdated,
+      updating: processStatusUpdating,
+    },
+    200
+  );
 });
 
 function tryBindOnce(port, host) {
