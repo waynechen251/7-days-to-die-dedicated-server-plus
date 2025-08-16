@@ -93,7 +93,7 @@
       }
 
       const gsInit =
-        appCfgRes?.data?.web && appCfgRes.data.web.game_serverInit === true;
+        appCfgRes?.data?.web && appCfgRes.data.web.game_serverInit === "true";
       if (gsInit && !S.cfg.locked) {
         try {
           const proceed = await (window.DangerConfirm

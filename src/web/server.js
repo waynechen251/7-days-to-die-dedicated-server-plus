@@ -422,7 +422,7 @@ function tryBindOnce(port, host) {
 }
 
 async function checkPortInUse(port) {
-  const hosts = ["0.0.0.0", "127.0.0.1", "::", "::1"];
+  const hosts = ["127.0.0.1"];
   const results = await Promise.all(hosts.map((h) => tryBindOnce(port, h)));
   return results.some((r) => r.inUse);
 }
@@ -748,7 +748,7 @@ app.post("/api/install", (req, res) => {
           const line = `✅ 安裝 / 更新結束，Exit Code: ${code}`;
           try {
             if (!CONFIG.web) CONFIG.web = {};
-            CONFIG.web.game_serverInit = true;
+            CONFIG.web.game_serverInit = "true";
             saveConfig();
             eventBus.push("system", {
               text: "已設定 game_serverInit=true (首次開啟編輯器時提示載入保存設定)",
@@ -1276,7 +1276,7 @@ app.post("/api/clear-game-server-init", (req, res) => {
   try {
     if (!CONFIG.web) CONFIG.web = {};
     if (CONFIG.web.game_serverInit) {
-      CONFIG.web.game_serverInit = false;
+      CONFIG.web.game_serverInit = "false";
       saveConfig();
       eventBus.push("system", { text: "已清除 game_serverInit 旗標" });
     }
