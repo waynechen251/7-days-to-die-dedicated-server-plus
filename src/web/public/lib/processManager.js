@@ -6,7 +6,7 @@ const gameServer = require("./gameServer");
 async function checkTelnet(config, target = gameServer) {
   const connection = new TelnetCtor();
   const params = {
-    host: "localhost",
+    host: "127.0.0.1",
     port: config.telnetPort,
     shellPrompt: ">",
     timeout: 2000,

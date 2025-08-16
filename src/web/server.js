@@ -1217,9 +1217,9 @@ app.post("/api/saves/delete-backup", (req, res) => {
 });
 
 app.listen(CONFIG.web.port, () => {
-  log(`✅ 控制面板已啟動於 http://localhost:${CONFIG.web.port}`);
+  log(`✅ 控制面板已啟動於 http://127.0.0.1:${CONFIG.web.port}`);
   eventBus.push("system", {
-    text: `控制面板啟動於 http://localhost:${CONFIG.web.port}`,
+    text: `控制面板啟動於 http://127.0.0.1:${CONFIG.web.port}`,
   });
   logPathInfo("listen");
 });
