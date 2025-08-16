@@ -396,45 +396,63 @@ async function checkPortInUse(port) {
 }
 let dummyGamePortServer = null;
 let dummyGamePort = null;
-async function ensureDummyGamePort() {
+async function ensureDummyGamePort(wantedPortOverride) {
   try {
-    if (processManager.gameServer.isRunning)
+    if (processManager.gameServer.isRunning) {
+      if (dummyGamePortServer) closeDummyGamePort("game-running");
       return { listening: false, started: false };
+    }
+
+    let wantedPort = Number.isFinite(parseInt(wantedPortOverride, 10))
+      ? parseInt(wantedPortOverride, 10)
+      : NaN;
+
+    if (!Number.isFinite(wantedPort)) {
+      const pRaw =
+        CONFIG?.game_server?.ServerPort ||
+        CONFIG?.game_server?.serverPort ||
+        CONFIG?.game_server?.serverport;
+      wantedPort = parseInt(pRaw, 10);
+    }
+
+    if (!Number.isFinite(wantedPort) || wantedPort <= 0 || wantedPort > 65535) {
+      if (dummyGamePortServer) closeDummyGamePort("invalid-port");
+      return { listening: false, started: false };
+    }
+
+    if (dummyGamePortServer && dummyGamePort !== wantedPort) {
+      closeDummyGamePort(`port-changed ${dummyGamePort}→${wantedPort}`);
+    }
+
     if (dummyGamePortServer) {
-      log(`[DummyGamePort] 監聽中 (${dummyGamePort})`);
-      eventBus.push("system", {
-        text: `監聽中 (${dummyGamePort})`,
-      });
       return { listening: true, started: false };
     }
-    const pRaw =
-      CONFIG?.game_server?.ServerPort ||
-      CONFIG?.game_server?.serverPort ||
-      CONFIG?.game_server?.serverport;
-    const p = parseInt(pRaw, 10);
-    if (!Number.isFinite(p) || p <= 0 || p > 65535)
+
+    if (await checkPortInUse(wantedPort)) {
       return { listening: false, started: false };
-    if (await checkPortInUse(p)) return { listening: false, started: false };
+    }
+
     await new Promise((resolve, reject) => {
       const srv = require("net").createServer((socket) => {
         socket.destroy();
       });
       srv.once("error", (e) => reject(e));
-      srv.listen(p, "0.0.0.0", () => {
+      srv.listen(wantedPort, "0.0.0.0", () => {
         dummyGamePortServer = srv;
-        dummyGamePort = p;
+        dummyGamePort = wantedPort;
         log(
-          `ℹ️ 已啟動假的 ServerPort 監聽 (dummy) 於 ${p} (等待實際伺服器啟動)`
+          `ℹ️ 已啟動假的 ServerPort 監聽 (dummy) 於 ${wantedPort} (等待實際伺服器啟動)`
         );
         eventBus.push("system", {
-          text: `啟動暫時 ServerPort 測試監聽 (dummy) 於 ${p}`,
+          text: `啟動暫時 ServerPort 測試監聽 (dummy) 於 ${wantedPort}`,
         });
         resolve();
       });
     });
+
     return { listening: true, started: true };
   } catch (e) {
-    error(`❌ 啟動 dummy ServerPort 失敗: ${e.message}`);
+    error(`❌ 啟動/切換 dummy ServerPort 失敗: ${e.message}`);
     return { listening: false, started: false, error: e.message };
   }
 }
@@ -475,6 +493,22 @@ app.get("/api/check-port", async (req, res) => {
     );
   }
 });
+
+app.post("/api/close-dummy-port", (req, res) => {
+  try {
+    if (dummyGamePortServer) {
+      closeDummyGamePort("ui-close");
+    }
+    return http.respondJson(res, { ok: true }, 200);
+  } catch (e) {
+    return http.respondJson(
+      res,
+      { ok: false, message: e?.message || "關閉失敗" },
+      500
+    );
+  }
+});
+
 app.get("/api/saves/list", (req, res) => {
   try {
     const savesRoot = getSavesRoot();
@@ -1136,7 +1170,7 @@ app.get("/api/check-port-forward", async (req, res) => {
         400
       );
 
-    const dummyState = await ensureDummyGamePort();
+    const dummyState = await ensureDummyGamePort(port);
 
     let open = false;
     let raw = null;

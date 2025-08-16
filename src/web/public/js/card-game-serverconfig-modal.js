@@ -34,6 +34,14 @@
     D.cfgModal?.classList.add("hidden");
     D.cfgModal?.setAttribute("aria-hidden", "true");
     clearInterval(S.__cfgCheckTimer);
+
+    try {
+      fetch("/api/close-dummy-port", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        keepalive: true,
+      }).catch(() => {});
+    } catch (_) {}
   }
 
   async function openConfigModal() {
