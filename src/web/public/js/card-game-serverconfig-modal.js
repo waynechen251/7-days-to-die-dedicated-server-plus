@@ -628,6 +628,44 @@
     return vTrim;
   }
 
+  function buildChangeSummary({ updates, toggles, enables }) {
+    const lines = [];
+    const originalVals = S.cfg.original || new Map();
+    const commentedOrig = S.cfg.commentedOriginal || new Map();
+
+    Object.entries(updates).forEach(([name, newVal]) => {
+      const oldVal = originalVals.get(name);
+      if (String(oldVal) !== String(newVal)) {
+        const wasEnabled = !(commentedOrig.get(name) === true);
+        const nowEnabled = !!enables[name];
+        let tag = "";
+        if (wasEnabled !== nowEnabled) {
+          tag = nowEnabled ? " (啟用)" : " (停用)";
+        }
+        lines.push(
+          `• ${name}${tag}: "${
+            oldVal === undefined ? "(未設定)" : oldVal
+          }"  =>  "${newVal}"`
+        );
+      }
+    });
+
+    Object.entries(toggles).forEach(([name, nowEnabled]) => {
+      if (updates.hasOwnProperty(name)) return;
+      const wasEnabled = !(commentedOrig.get(name) === true);
+      if (wasEnabled !== nowEnabled) {
+        lines.push(
+          `• ${name}: ${wasEnabled ? "啟用" : "停用"}  =>  ${
+            nowEnabled ? "啟用" : "停用"
+          }`
+        );
+      }
+    });
+
+    if (!lines.length) return "無任何參數變更。";
+    return lines.join("\n");
+  }
+
   async function saveConfigValues(startAfter) {
     ensureDom();
     if (S.cfg.locked) {
@@ -681,6 +719,43 @@
       });
     }
 
+    // === 新增: 保存前差異確認 ===
+    try {
+      const needPreview = changed > 0 || toggleChanged > 0 || startAfter;
+      if (needPreview) {
+        const summary = buildChangeSummary({
+          updates,
+          toggles,
+          enables,
+        });
+        const actionLabel = startAfter ? "保存並啟動" : "保存";
+        const proceed = await (window.DangerConfirm
+          ? window.DangerConfirm.showConfirm(
+              `${summary}\n\n是否確定${actionLabel}?`,
+              {
+                title: "即將寫入的設定變更",
+                continueText: actionLabel,
+                cancelText: "取消",
+              }
+            )
+          : Promise.resolve(true)); // 若無確認元件則直接通過
+        if (!proceed) {
+          App.console.appendLog(
+            "system",
+            "ℹ️ 已取消保存 (使用者取消)",
+            Date.now()
+          );
+          return;
+        }
+      }
+    } catch (e) {
+      App.console.appendLog(
+        "system",
+        `⚠️ 生成變更摘要失敗: ${e.message} (將直接保存)`,
+        Date.now()
+      );
+    }
+
     try {
       if (changed > 0 || toggleChanged > 0) {
         const res = await fetchJSON("/api/serverconfig", {
@@ -706,6 +781,7 @@
         `❌ 寫入 serverconfig.xml 失敗: ${e.message}`,
         Date.now()
       );
+      return;
     }
   }
 
