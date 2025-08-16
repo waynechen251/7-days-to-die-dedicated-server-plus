@@ -400,7 +400,13 @@ async function ensureDummyGamePort() {
   try {
     if (processManager.gameServer.isRunning)
       return { listening: false, started: false };
-    if (dummyGamePortServer) return { listening: true, started: false };
+    if (dummyGamePortServer) {
+      log(`[DummyGamePort] 監聽中 (${dummyGamePort})`);
+      eventBus.push("system", {
+        text: `監聽中 (${dummyGamePort})`,
+      });
+      return { listening: true, started: false };
+    }
     const pRaw =
       CONFIG?.game_server?.ServerPort ||
       CONFIG?.game_server?.serverPort ||
