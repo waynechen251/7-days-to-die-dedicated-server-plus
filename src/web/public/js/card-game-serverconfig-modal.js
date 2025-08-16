@@ -125,6 +125,16 @@
         { value: "2", label: "2 - 公開伺服器" },
       ],
     },
+    ServerDisabledNetworkProtocols: {
+      default: "SteamNetworking",
+      options: [
+        {
+          value: "LiteNetLib",
+          label: "LiteNetLib(已設定 NAT 或 Port-forward 建議使用)",
+        },
+        { value: "SteamNetworking", label: "SteamNetworking" },
+      ],
+    },
     WebDashboardEnabled: {
       default: "false",
       options: [
@@ -220,7 +230,7 @@
       options: [
         { value: "0", label: "0 - 無掉落" },
         { value: "1", label: "1 - 掉落全部物品" },
-        { value: "2", label: "2 - 僅掉落快捷欄" },
+        { value: "2", label: "2 - 僅掉落工具欄" },
         { value: "3", label: "3 - 僅掉落背包" },
         { value: "4", label: "4 - 物品直接刪除" },
       ],
@@ -230,7 +240,7 @@
       options: [
         { value: "0", label: "0 - 無掉落" },
         { value: "1", label: "1 - 掉落全部物品" },
-        { value: "2", label: "2 - 僅掉落快捷欄" },
+        { value: "2", label: "2 - 僅掉落工具欄" },
         { value: "3", label: "3 - 僅掉落背包" },
       ],
     },
@@ -254,6 +264,46 @@
       options: [
         { value: "0", label: "0 - 普通" },
         { value: "1", label: "1 - 狂暴" },
+      ],
+    },
+    ZombieMove: {
+      default: "0",
+      options: [
+        { value: "0", label: "0 - 白天步行" },
+        { value: "1", label: "1 - 白天慢跑" },
+        { value: "2", label: "2 - 白天奔跑" },
+        { value: "3", label: "3 - 白天衝刺" },
+        { value: "4", label: "4 - 白天夢魘" },
+      ],
+    },
+    ZombieMoveNight: {
+      default: "3",
+      options: [
+        { value: "0", label: "0 - 夜晚步行" },
+        { value: "1", label: "1 - 夜晚慢跑" },
+        { value: "2", label: "2 - 夜晚奔跑" },
+        { value: "3", label: "3 - 夜晚衝刺" },
+        { value: "4", label: "4 - 夜晚夢魘" },
+      ],
+    },
+    ZombieFeralMove: {
+      default: "3",
+      options: [
+        { value: "0", label: "0 - 發狂步行" },
+        { value: "1", label: "1 - 發狂慢跑" },
+        { value: "2", label: "2 - 發狂奔跑" },
+        { value: "3", label: "3 - 發狂衝刺" },
+        { value: "4", label: "4 - 發狂夢魘" },
+      ],
+    },
+    ZombieBMMove: {
+      default: "3",
+      options: [
+        { value: "0", label: "0 - 血月步行" },
+        { value: "1", label: "1 - 血月慢跑" },
+        { value: "2", label: "2 - 血月奔跑" },
+        { value: "3", label: "3 - 血月衝刺" },
+        { value: "4", label: "4 - 血月夢魘" },
       ],
     },
     AirDropMarker: {
@@ -719,7 +769,6 @@
       });
     }
 
-    // === 新增: 保存前差異確認 ===
     try {
       const needPreview = changed > 0 || toggleChanged > 0 || startAfter;
       if (needPreview) {
@@ -738,7 +787,7 @@
                 cancelText: "取消",
               }
             )
-          : Promise.resolve(true)); // 若無確認元件則直接通過
+          : Promise.resolve(true));
         if (!proceed) {
           App.console.appendLog(
             "system",
