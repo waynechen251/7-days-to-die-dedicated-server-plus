@@ -913,7 +913,7 @@ app.post("/api/start", async (req, res) => {
         const detected = m[1].trim().replace(/\//g, "\\");
         try {
           if (!CONFIG.game_server) CONFIG.game_server = {};
-          const newRoot = `${detected}\\Saves`;
+          const newRoot = `${detected}`;
           const prev = getSavesRoot();
           if (prev !== newRoot) {
             CONFIG.game_server.UserDataFolder = newRoot;

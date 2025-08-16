@@ -34,28 +34,23 @@
     const closeBtn2 = document.getElementById("adminCfgCloseBtn2");
     const refreshBtn = document.getElementById("adminCfgRefreshBtn");
     const copyBtn = document.getElementById("adminCfgCopyBtn");
-    const statusEl = document.getElementById("adminCfgStatus");
     const contentEl = document.getElementById("adminCfgContent");
 
     async function loadConfig() {
-      statusEl.textContent = "讀取中…";
       contentEl.textContent = "";
       try {
         const res = await fetchJSON("/api/get-config");
         if (!res?.ok) throw new Error(res?.message || "讀取失敗");
         const json = res.data || {};
         contentEl.textContent = JSON.stringify(json, null, 2);
-        statusEl.textContent = "✅ 已載入";
       } catch (e) {
         contentEl.textContent = "";
-        statusEl.textContent = "❌ 讀取失敗: " + e.message;
       }
     }
 
     function show() {
       modal.classList.remove("hidden");
       modal.setAttribute("aria-hidden", "false");
-      statusEl.textContent = "";
     }
     function hide() {
       modal.classList.add("hidden");
@@ -73,10 +68,7 @@
       if (!txt) return;
       try {
         await navigator.clipboard.writeText(txt);
-        statusEl.textContent = "📋 已複製";
-      } catch {
-        statusEl.textContent = "❌ 複製失敗";
-      }
+      } catch {}
     }
 
     refreshBtn?.addEventListener("click", refresh);

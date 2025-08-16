@@ -3,28 +3,6 @@ const { TelnetCtor } = require("./telnet");
 const steamcmd = require("./steamcmd");
 const gameServer = require("./gameServer");
 
-async function checkTelnet(config, target = gameServer) {
-  const connection = new TelnetCtor();
-  const params = {
-    host: "127.0.0.1",
-    port: config.TelnetPort,
-    shellPrompt: ">",
-    timeout: 2000,
-    negotiationMandatory: false,
-    ors: "\n",
-    irs: "\n",
-  };
-  try {
-    await connection.connect(params);
-    await connection.send(config.TelnetPassword, { waitfor: ">" });
-    target.isTelnetConnected = true;
-  } catch (err) {
-    target.isTelnetConnected = false;
-  } finally {
-    await connection.end().catch(() => {});
-  }
-}
-
 const processManager = {
   steamCmd: {
     get isRunning() {
@@ -68,7 +46,7 @@ const processManager = {
       return gameServer.getPid();
     },
     async checkTelnet(config) {
-      await checkTelnet(config, gameServer);
+      return await gameServer.checkTelnet(config);
     },
   },
 };

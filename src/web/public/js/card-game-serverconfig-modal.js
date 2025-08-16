@@ -77,6 +77,14 @@
       S.cfg.locked = App.status.computeGameRunning();
       App.status.updateCfgLockUI();
 
+      const loadBtn =
+        D.cfgLoadAdminBtn || document.getElementById("cfgLoadAdminBtn");
+      if (loadBtn) loadBtn.disabled = !!S.cfg.locked;
+      if (S.cfg.locked) {
+        D.cfgSaveBtn && (D.cfgSaveBtn.disabled = true);
+        D.cfgSaveStartBtn && (D.cfgSaveStartBtn.disabled = true);
+      }
+
       if (!S.cfg.locked) await runCfgChecks();
     } catch (e) {
       App.console.appendLog(
@@ -504,12 +512,14 @@
   async function loadAdminGameServerConfig() {
     ensureDom();
     if (!D.cfgBody) return;
-    if (
-      !confirm(
-        "是否確定載入後台管理設定?\n此動作將以 server.json 的 game_server 內容覆蓋目前編輯器中的值 (尚未保存)。"
-      )
-    )
+    if (S.cfg.locked) {
+      App.console.appendLog(
+        "system",
+        "❌ 伺服器運行中，禁止載入上次保存設定",
+        Date.now()
+      );
       return;
+    }
     try {
       const cfg = await fetchJSON("/api/get-config");
       const gs = cfg?.data?.game_server || {};
