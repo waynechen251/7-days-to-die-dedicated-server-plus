@@ -51,6 +51,23 @@
       setDisabled(all, true);
       setDisabled([D.installServerBtn, D.viewConfigBtn], false);
 
+      const savesControls = [
+        D.gwSelect,
+        D.gnSelect,
+        D.refreshSavesBtn,
+        D.exportSavesBtn,
+        D.exportGameNameBtn,
+        D.deleteGameNameBtn,
+        D.viewBackupsBtn,
+        D.backupSelect,
+        D.importBackupBtn,
+        D.importUploadFile,
+        D.importUploadBtn,
+      ];
+
+      const lockBecauseBackup = S.backupInProgress;
+      setDisabled(savesControls, !!lockBecauseBackup);
+
       if (D.installServerBtn) {
         D.installServerBtn.textContent = "❌ 中斷安裝 / 更新";
         D.installServerBtn.setAttribute(
