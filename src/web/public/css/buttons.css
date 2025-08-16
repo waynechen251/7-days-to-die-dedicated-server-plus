@@ -1,5 +1,4 @@
 button {
-  /* 補: 來自 style.css */
   position: relative;
   font: 500 0.8rem/1 var(--font-stack);
   cursor: pointer;
@@ -19,7 +18,6 @@ button:hover:not(:disabled) {
   background: #e2e8f0;
 }
 button:disabled {
-  /* 補: 灰階效果與現有屬性並存 */
   filter: grayscale(0.2);
   opacity: 0.55;
   cursor: not-allowed;
@@ -59,7 +57,6 @@ button:active:not(:disabled) {
   background: var(--c-surface-alt);
 }
 .btn--attention {
-  /* 取消動畫：保留 class 以免 JS 其他地方假設其存在 */
   animation: none !important;
 }
 

@@ -4,16 +4,9 @@
   const D = App.dom;
   const S = App.state;
 
-  function applyUIState({
-    backendUp,
-    steamRunning,
-    gameRunning,
-    telnetOk,
-    gameVersion,
-  }) {
+  function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk, gameVersion }) {
     const all = [
       D.installServerBtn,
-      D.abortInstallBtn,
       D.exportSavesBtn,
       D.deleteGameNameBtn,
       D.viewConfigBtn,
@@ -49,8 +42,28 @@
     }
     if (steamRunning) {
       setDisabled(all, true);
-      setDisabled([D.abortInstallBtn, D.viewConfigBtn], false);
+      setDisabled([D.installServerBtn, D.viewConfigBtn], false);
+
+      if (D.installServerBtn) {
+        D.installServerBtn.textContent = "❌ 中斷安裝 / 更新";
+        D.installServerBtn.setAttribute(
+          "data-danger",
+          "是否確定中斷安裝 / 更新?\n將不會正常退出，可能導致檔案損毀，請重新執行安裝 / 更新!"
+        );
+        D.installServerBtn.setAttribute("data-cancel-text", "取消");
+        D.installServerBtn.setAttribute("data-continue-text", "繼續");
+      }
       return;
+    } else {
+      if (D.installServerBtn) {
+        D.installServerBtn.textContent = "📥 安裝 / 更新";
+        D.installServerBtn.setAttribute(
+          "data-danger",
+          "是否確定安裝 / 更新伺服器?\nserverconfig.xml 將被重置"
+        );
+        D.installServerBtn.setAttribute("data-cancel-text", "取消");
+        D.installServerBtn.setAttribute("data-continue-text", "繼續");
+      }
     }
 
     const lockBecauseBackup = S.backupInProgress;

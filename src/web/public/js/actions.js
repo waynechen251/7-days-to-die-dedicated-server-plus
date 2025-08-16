@@ -25,6 +25,17 @@
 
     on(D.installServerBtn, "click", () => {
       switchTab("steamcmd");
+
+      if (App.state.current?.steamRunning) {
+        fetchText("/api/install-abort", { method: "POST" })
+          .then((msg) => appendLog("steamcmd", msg, Date.now()))
+          .catch((err) =>
+            appendLog("steamcmd", `❌ ${err.message}`, Date.now())
+          )
+          .finally(() => setTimeout(App.bootstrap.refreshStatus, 500));
+        return;
+      }
+
       const version = D.versionSelect?.value || "";
       const body = JSON.stringify({ version });
       const headers = { "Content-Type": "application/json" };
@@ -35,8 +46,8 @@
           applyUIState({
             backendUp: true,
             steamRunning: true,
-            gameRunning: S.current.gameRunning,
-            telnetOk: S.current.telnetOk,
+            gameRunning: App.state.current.gameRunning,
+            telnetOk: App.state.current.telnetOk,
           });
           return res.body.getReader();
         })
@@ -57,19 +68,6 @@
           pump();
         })
         .catch((err) => appendLog("system", `❌ ${err.message}`, Date.now()));
-    });
-
-    on(D.abortInstallBtn, "click", async () => {
-      switchTab("steamcmd");
-      try {
-        appendLog(
-          "steamcmd",
-          await fetchText("/api/install-abort", { method: "POST" }),
-          Date.now()
-        );
-      } catch (e) {
-        appendLog("system", `❌ ${e.message}`, Date.now());
-      }
     });
 
     on(D.configStartBtn, "click", () => {
