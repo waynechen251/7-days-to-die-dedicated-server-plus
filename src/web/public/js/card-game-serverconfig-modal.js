@@ -101,6 +101,208 @@
     }
   }
 
+  const ENUM_OPTIONS = {
+    Region: {
+      default: "NorthAmericaEast",
+      options: [
+        { value: "NorthAmericaEast", label: "北美東部" },
+        { value: "NorthAmericaWest", label: "北美西部" },
+        { value: "CentralAmerica", label: "中美洲" },
+        { value: "SouthAmerica", label: "南美洲" },
+        { value: "Europe", label: "歐洲" },
+        { value: "Russia", label: "俄羅斯" },
+        { value: "Asia", label: "亞洲" },
+        { value: "MiddleEast", label: "中東" },
+        { value: "Africa", label: "非洲" },
+        { value: "Oceania", label: "大洋洲" },
+      ],
+    },
+    ServerVisibility: {
+      default: "2",
+      options: [
+        { value: "0", label: "0 - 隱藏伺服器" },
+        { value: "1", label: "1 - 僅好友可見 (Steam 好友)" },
+        { value: "2", label: "2 - 公開伺服器" },
+      ],
+    },
+    WebDashboardEnabled: {
+      default: "false",
+      options: [
+        { value: "true", label: "啟用 Web 控制台" },
+        { value: "false", label: "停用 Web 控制台" },
+      ],
+    },
+    EnableMapRendering: {
+      default: "false",
+      options: [
+        { value: "true", label: "啟用 Web 地圖渲染" },
+        { value: "false", label: "停用 Web 地圖渲染" },
+      ],
+    },
+    TelnetEnabled: {
+      default: "true",
+      options: [
+        { value: "true", label: "啟用 Telnet 遠端控制" },
+        { value: "false", label: "停用 Telnet 遠端控制" },
+      ],
+    },
+    TerminalWindowEnabled: {
+      default: "false",
+      options: [
+        { value: "true", label: "顯示伺服器終端視窗" },
+        { value: "false", label: "不顯示伺服器終端視窗" },
+      ],
+    },
+    ServerAllowCrossplay: {
+      default: "true",
+      options: [
+        { value: "true", label: "允許跨平台連線" },
+        { value: "false", label: "不允許跨平台連線" },
+      ],
+    },
+    EACEnabled: {
+      default: "true",
+      options: [
+        { value: "true", label: "啟用 EAC 反作弊" },
+        { value: "false", label: "停用 EAC 反作弊" },
+      ],
+    },
+    IgnoreEOSSanctions: {
+      default: "false",
+      options: [
+        { value: "true", label: "忽略 EOS 封禁 (允許被封玩家)" },
+        { value: "false", label: "遵循 EOS 封禁 (建議)" },
+      ],
+    },
+    PersistentPlayerProfiles: {
+      default: "false",
+      options: [
+        { value: "true", label: "保留玩家角色設定" },
+        { value: "false", label: "不保留玩家角色設定" },
+      ],
+    },
+    GameDifficulty: {
+      default: "1",
+      options: [
+        { value: "0", label: "0 - 採集者 (最簡單)" },
+        { value: "1", label: "1 - 冒險者 (預設)" },
+        { value: "2", label: "2 - 偵查者" },
+        { value: "3", label: "3 - 生存者" },
+        { value: "4", label: "4 - 求生專家" },
+        { value: "5", label: "5 - 瘋狂 (最困難)" },
+      ],
+    },
+    BuildCreate: {
+      default: "false",
+      options: [
+        { value: "true", label: "啟用創造模式 (作弊)" },
+        { value: "false", label: "停用創造模式" },
+      ],
+    },
+    BiomeProgression: {
+      default: "true",
+      options: [
+        { value: "true", label: "啟用生物群落進程" },
+        { value: "false", label: "停用生物群落進程" },
+      ],
+    },
+    DeathPenalty: {
+      default: "1",
+      options: [
+        { value: "0", label: "0 - 無懲罰" },
+        { value: "1", label: "1 - 經典 (失去經驗)" },
+        { value: "2", label: "2 - 傷害懲罰" },
+        { value: "3", label: "3 - 永久死亡 (硬核)" },
+      ],
+    },
+    DropOnDeath: {
+      default: "1",
+      options: [
+        { value: "0", label: "0 - 無掉落" },
+        { value: "1", label: "1 - 掉落全部物品" },
+        { value: "2", label: "2 - 僅掉落快捷欄" },
+        { value: "3", label: "3 - 僅掉落背包" },
+        { value: "4", label: "4 - 物品直接刪除" },
+      ],
+    },
+    DropOnQuit: {
+      default: "0",
+      options: [
+        { value: "0", label: "0 - 無掉落" },
+        { value: "1", label: "1 - 掉落全部物品" },
+        { value: "2", label: "2 - 僅掉落快捷欄" },
+        { value: "3", label: "3 - 僅掉落背包" },
+      ],
+    },
+    AllowSpawnNearFriend: {
+      default: "2",
+      options: [
+        { value: "0", label: "0 - 禁止在好友附近重生" },
+        { value: "1", label: "1 - 允許 (任何地點)" },
+        { value: "2", label: "2 - 僅允許在森林生物群落" },
+      ],
+    },
+    EnemySpawnMode: {
+      default: "true",
+      options: [
+        { value: "true", label: "啟用殭屍生成" },
+        { value: "false", label: "停用殭屍生成" },
+      ],
+    },
+    EnemyDifficulty: {
+      default: "0",
+      options: [
+        { value: "0", label: "0 - 普通" },
+        { value: "1", label: "1 - 狂暴" },
+      ],
+    },
+    AirDropMarker: {
+      default: "true",
+      options: [
+        { value: "true", label: "顯示空投標記" },
+        { value: "false", label: "不顯示空投標記" },
+      ],
+    },
+    PartyKillingMode: {
+      default: "3",
+      options: [
+        { value: "0", label: "0 - 禁止 PvP" },
+        { value: "1", label: "1 - 允許隊友互相攻擊" },
+        { value: "2", label: "2 - 僅陌生人可互攻" },
+        { value: "3", label: "3 - 全部玩家可互攻" },
+      ],
+    },
+    LandClaimDecayMode: {
+      default: "0",
+      options: [
+        { value: "0", label: "0 - 緩慢衰減" },
+        { value: "1", label: "1 - 快速衰減" },
+        { value: "2", label: "2 - 永久保護 (直到過期)" },
+      ],
+    },
+    DynamicMeshEnabled: {
+      default: "true",
+      options: [
+        { value: "true", label: "啟用動態網格" },
+        { value: "false", label: "停用動態網格" },
+      ],
+    },
+    DynamicMeshLandClaimOnly: {
+      default: "false",
+      options: [
+        { value: "true", label: "僅在領地範圍啟用" },
+        { value: "false", label: "所有區域啟用" },
+      ],
+    },
+    TwitchBloodMoonAllowed: {
+      default: "false",
+      options: [
+        { value: "true", label: "允許 Twitch 血月事件" },
+        { value: "false", label: "不允許 Twitch 血月事件" },
+      ],
+    },
+  };
+
   function renderCfgEditor(items) {
     ensureDom();
     const grid = document.createElement("div");
@@ -202,40 +404,50 @@
         wrap.appendChild(sel);
         wrap.appendChild(txt);
         inputEl = wrap;
+      } else if (ENUM_OPTIONS[name]) {
+        const enumDef = ENUM_OPTIONS[name];
+        const enumList = Array.isArray(enumDef) ? enumDef : enumDef.options;
+        const defVal = Array.isArray(enumDef)
+          ? undefined
+          : enumDef.default || undefined;
+        const currentRaw = String(value ?? "");
+        const current =
+          currentRaw === "" && defVal !== undefined ? defVal : currentRaw;
+
+        const sel = document.createElement("select");
+        sel.dataset.name = name;
+        sel.dataset.type = "text";
+
+        const hasCurrent = enumList.some((o) => o.value === current);
+
+        sel.innerHTML =
+          `<option value="">(未設定 / 預設${
+            defVal ? `=${escapeHTML(defVal)}` : ""
+          })</option>` +
+          enumList
+            .map(
+              (o) =>
+                `<option value="${escapeHTML(o.value)}"${
+                  o.value === current ? " selected" : ""
+                }>${escapeHTML(o.label)}</option>`
+            )
+            .join("") +
+          (!hasCurrent && current
+            ? `<option value="${escapeHTML(
+                current
+              )}" selected>(自訂) ${escapeHTML(current)}</option>`
+            : "");
+
+        sel.addEventListener("change", rerunChecks);
+        inputEl = sel;
       } else {
-        const type = decideType(value);
-        if (type === "boolean") {
-          const sel = document.createElement("select");
-          sel.dataset.name = name;
-          sel.dataset.type = "boolean";
-          sel.innerHTML = `
-            <option value="true"${
-              /^true$/i.test(value) ? " selected" : ""
-            }>true</option>
-            <option value="false"${
-              /^false$/i.test(value) ? " selected" : ""
-            }>false</option>
-          `;
-          sel.addEventListener("change", rerunChecks);
-          inputEl = sel;
-        } else if (type === "number") {
-          const n = document.createElement("input");
-          n.type = "number";
-          n.step = "1";
-          n.value = value;
-          n.dataset.name = name;
-          n.dataset.type = "number";
-          n.addEventListener("input", rerunChecks);
-          inputEl = n;
-        } else {
-          const t = document.createElement("input");
-          t.type = "text";
-          t.value = value;
-          t.dataset.name = name;
-          t.dataset.type = "text";
-          t.addEventListener("input", rerunChecks);
-          inputEl = t;
-        }
+        const t = document.createElement("input");
+        t.type = "text";
+        t.value = value;
+        t.dataset.name = name;
+        t.dataset.type = "text";
+        t.addEventListener("input", rerunChecks);
+        inputEl = t;
       }
 
       if (commented) {
@@ -500,20 +712,6 @@
   App.configModal = App.configModal || {};
   App.configModal.openConfigModal = openConfigModal;
   App.openConfigModal = openConfigModal;
-
-  function safeObserveCfgBody(observer, options) {
-    if (!observer || typeof observer.observe !== "function") return;
-    const el = D?.cfgBody || document.getElementById("cfgBody");
-    if (el && el.nodeType === 1) {
-      try {
-        observer.observe(el, options);
-      } catch (e) {
-        console.warn("cfgBody observe 失敗:", e.message);
-      }
-    } else {
-      console.warn("cfgBody 尚未就緒，跳過 observe");
-    }
-  }
 
   async function loadAdminGameServerConfig() {
     ensureDom();
