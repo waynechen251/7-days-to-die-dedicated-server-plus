@@ -121,6 +121,34 @@ const steamcmd = {
   async abort() {
     await this.stop();
   },
+
+  buildInstallArgs(version, gameDir) {
+    const v = (version || "").trim() === "" ? "public" : version.trim();
+    return [
+      "+login",
+      "anonymous",
+      "+force_install_dir",
+      gameDir,
+      "+app_update",
+      "294420",
+      ...(v !== "public" ? ["-beta", v] : []),
+      "validate",
+      "+quit",
+    ];
+  },
+
+  install(version, gameDir, { onData, onError, onClose } = {}, options = {}) {
+    const args = this.buildInstallArgs(version, gameDir);
+    this.start(
+      args,
+      onData,
+      onError,
+      (code) => {
+        onClose && onClose(code, { version: version || "public" });
+      },
+      { autoQuitOnPrompt: true, cwd: options.cwd || process.cwd() }
+    );
+  },
 };
 
 module.exports = steamcmd;

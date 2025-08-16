@@ -13,6 +13,7 @@ const archive = require("./public/lib/archive");
 const eventBus = require("./public/lib/eventBus");
 const { tailFile } = require("./public/lib/tailer");
 const serverConfigLib = require("./public/lib/serverConfig");
+const steamcmd = require("./public/lib/steamcmd");
 
 if (process.platform === "win32") exec("chcp 65001 >NUL");
 
@@ -149,91 +150,14 @@ function listWorldTemplates() {
 }
 
 let stopGameTail = null;
-let lastGameVersion = null;
-let gameVersionFetched = false;
-
-let processStatusCache = {
-  status: {
-    steamCmd: { isRunning: false },
-    gameServer: {
-      isRunning: false,
-      isTelnetConnected: false,
-      pid: null,
-      gameVersion: null,
-      onlinePlayers: "",
-    },
-  },
-  lastUpdated: 0,
-};
-let processStatusUpdating = false;
-
-async function computeAndCacheProcessStatus() {
-  if (processStatusUpdating) return;
-  processStatusUpdating = true;
-  try {
-    await processManager.gameServer.checkTelnet(CONFIG.game_server);
-
-    if (
-      processManager.gameServer.isRunning &&
-      processManager.gameServer.isTelnetConnected
-    ) {
-      if (!gameVersionFetched) {
-        try {
-          const out = await sendTelnetCommand(CONFIG.game_server, "version");
-          const line = out
-            .split(/\r?\n/)
-            .map((l) => l.trim())
-            .find((l) => /^Game version:/i.test(l));
-          if (line) {
-            let versionText = line.replace(/^Game version:\s*/i, "").trim();
-            const m = line.match(
-              /^Game version:\s*(.+?)\s+Compatibility Version:/i
-            );
-            if (m) versionText = m[1].trim();
-            else
-              versionText = versionText
-                .replace(/\s+Compatibility Version:.*/i, "")
-                .trim();
-            lastGameVersion = versionText;
-            gameVersionFetched = true;
-          }
-        } catch (_) {}
-      }
-      try {
-        const playersOut = await sendTelnetCommand(
-          CONFIG.game_server,
-          "listplayers"
-        );
-        const playerCount =
-          playersOut.match(/Total of (\d+) in the game/)?.[1] || "0";
-        processManager.gameServer.onlinePlayers = playerCount;
-      } catch (_) {}
-    }
-
-    const status = {
-      steamCmd: { isRunning: processManager.steamCmd.isRunning },
-      gameServer: {
-        isRunning: processManager.gameServer.isRunning,
-        isTelnetConnected: processManager.gameServer.isTelnetConnected,
-        pid: processManager.gameServer.getPid(),
-        gameVersion: lastGameVersion,
-        onlinePlayers: processManager.gameServer.onlinePlayers || "",
-      },
-    };
-    processStatusCache = { status, lastUpdated: Date.now() };
-  } catch (err) {
-    error(`❌ 背景更新 process-status 失敗: ${err?.message || err}`);
-  } finally {
-    processStatusUpdating = false;
-  }
-}
-
-computeAndCacheProcessStatus();
-setInterval(computeAndCacheProcessStatus, 2000);
 
 const app = express();
 app.use(express.json());
 app.use(express.static(PUBLIC_DIR));
+processManager.initStatus({
+  getConfig: () => CONFIG.game_server,
+  sendTelnetCommand,
+});
 
 const rawUpload = express.raw({
   type: "application/octet-stream",
@@ -455,15 +379,16 @@ app.get("/api/get-config", (req, res) => {
 
 app.get("/api/process-status", async (req, res) => {
   if (req.query?.refresh === "1") {
-    computeAndCacheProcessStatus().catch(() => {});
+    processManager.status.refresh().catch(() => {});
   }
+  const ps = processManager.status.get();
   return http.respondJson(
     res,
     {
       ok: true,
-      data: processStatusCache.status,
-      lastUpdated: processStatusCache.lastUpdated,
-      updating: processStatusUpdating,
+      data: ps.status,
+      lastUpdated: ps.lastUpdated,
+      updating: ps.updating,
     },
     200
   );
@@ -803,53 +728,46 @@ app.post("/api/install", (req, res) => {
     CONFIG.web.lastInstallVersion = version;
     saveConfig();
 
-    const args = [
-      "+login",
-      "anonymous",
-      "+force_install_dir",
-      GAME_DIR,
-      "+app_update",
-      "294420",
-      ...(version !== "public" ? ["-beta", version] : []),
-      "validate",
-      "+quit",
-    ];
-
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     eventBus.push("steamcmd", {
-      text: `start install/update (${version || "public"})`,
+      text: `start install/update (${version})`,
     });
 
-    processManager.steamCmd.start(
-      args,
-      (data) => {
-        http.writeStamped(res, `[stdout] ${data}`);
-        eventBus.push("steamcmd", { level: "stdout", text: data });
+    const baseDirLocal = baseDir;
+    const gameDirLocal = GAME_DIR;
+    steamcmd.install(
+      version,
+      gameDirLocal,
+      {
+        onData: (data) => {
+          http.writeStamped(res, `[stdout] ${data}`);
+          eventBus.push("steamcmd", { level: "stdout", text: data });
+        },
+        onError: (err) => {
+          http.writeStamped(res, `[stderr] ${err}`);
+          eventBus.push("steamcmd", { level: "stderr", text: err });
+        },
+        onClose: (code) => {
+          const line = `✅ 安裝 / 更新結束，Exit Code: ${code}`;
+          try {
+            if (!CONFIG.web) CONFIG.web = {};
+            CONFIG.web.game_serverInit = true;
+            saveConfig();
+            eventBus.push("system", {
+              text: "已設定 game_serverInit=true (首次開啟編輯器時提示載入保存設定)",
+            });
+          } catch (e) {
+            eventBus.push("system", {
+              level: "warn",
+              text: `設定 game_serverInit 失敗: ${e.message}`,
+            });
+          }
+          http.writeStamped(res, line);
+          res.end();
+          eventBus.push("steamcmd", { text: line });
+        },
       },
-      (err) => {
-        http.writeStamped(res, `[stderr] ${err}`);
-        eventBus.push("steamcmd", { level: "stderr", text: err });
-      },
-      (code) => {
-        const line = `✅ 安裝 / 更新結束，Exit Code: ${code}`;
-        try {
-          if (!CONFIG.web) CONFIG.web = {};
-          CONFIG.web.game_serverInit = true;
-          saveConfig();
-          eventBus.push("system", {
-            text: "已設定 game_serverInit=true (首次開啟編輯器時提示載入保存設定)",
-          });
-        } catch (e) {
-          eventBus.push("system", {
-            level: "warn",
-            text: `設定 game_serverInit 失敗: ${e.message}`,
-          });
-        }
-        http.writeStamped(res, line);
-        res.end();
-        eventBus.push("steamcmd", { text: line });
-      },
-      { autoQuitOnPrompt: true, cwd: baseDir }
+      { cwd: baseDirLocal }
     );
   } catch (err) {
     const msg = `❌ 無法啟動 steamcmd: ${err.message}`;
@@ -885,8 +803,7 @@ app.post("/api/start", async (req, res) => {
     return http.sendOk(req, res, "❌ 伺服器已經在運行中，請先關閉伺服器再試。");
   }
   try {
-    lastGameVersion = null;
-    gameVersionFetched = false;
+    processManager.status.resetVersion();
     const exeName = fs.existsSync(path.join(GAME_DIR, "7DaysToDieServer.exe"))
       ? "7DaysToDieServer.exe"
       : "7DaysToDie.exe";
@@ -995,8 +912,7 @@ app.post("/api/start", async (req, res) => {
         eventBus.push("system", {
           text: `遊戲進程結束 (code=${code}, signal=${signal || "-"})`,
         });
-        gameVersionFetched = false;
-        lastGameVersion = null;
+        processManager.status.resetVersion();
       },
       onError: (err) => {
         eventBus.push("system", {
@@ -1085,8 +1001,7 @@ app.post("/api/kill", async (req, res) => {
     stopGameTail = null;
 
     if (ok) {
-      gameVersionFetched = false;
-      lastGameVersion = null;
+      processManager.status.resetVersion();
       const line = `⚠️ 已強制結束遊戲進程 pid=${targetPid}`;
       log(line);
       eventBus.push("system", { text: line });
@@ -1400,7 +1315,6 @@ app.listen(CONFIG.web.port, () => {
   logPathInfo("listen");
 });
 
-// 在適當位置(例如其它 API 定義區塊附近)新增清除旗標 API
 app.post("/api/clear-game-server-init", (req, res) => {
   try {
     if (!CONFIG.web) CONFIG.web = {};
