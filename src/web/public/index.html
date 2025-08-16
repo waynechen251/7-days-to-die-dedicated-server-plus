@@ -2,9 +2,21 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <title>7 Days To Die Dedicated Server Plus 管理後台 1.0.1</title>
+    <title>7 Days To Die Dedicated Server Plus 管理後台 1.0.2</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/link.css" />
+    <link rel="stylesheet" href="css/buttons.css" />
+    <link rel="stylesheet" href="css/forms.css" />
+    <link rel="stylesheet" href="css/cards.css" />
+    <link rel="stylesheet" href="css/console.css" />
+    <link rel="stylesheet" href="css/modal.css" />
+    <link rel="stylesheet" href="css/mask.css" />
+    <link rel="stylesheet" href="css/card-saves.css" />
+    <link rel="stylesheet" href="css/cfg-modal.css" />
+    <link rel="stylesheet" href="css/utilities.css" />
+    <link rel="stylesheet" href="css/theme-dark.css" />
   </head>
   <body>
     <div id="appMask" class="app-mask">
@@ -18,7 +30,7 @@
 
     <header class="topbar">
       <div class="brand">
-        7 Days To Die Dedicated Server Plus 管理後台 1.0.1
+        7 Days To Die Dedicated Server Plus 管理後台 1.0.2
       </div>
       <a
         href="https://github.com/waynechen251/7-days-to-die-dedicated-server-plus.git"
@@ -27,25 +39,24 @@
         class="github-link"
         >🌐 GitHub</a
       >
-      <div class="status-inline">
-        <span id="st-backend" class="badge">管理後台</span>
-        <span id="st-steam" class="badge">SteamCMD</span>
-        <span id="st-game" class="badge">7DaysToDieServer</span>
-        <span id="st-telnet" class="badge">Telnet</span>
-      </div>
+      <a
+        href="https://forum.gamer.com.tw/C.php?bsn=24608&snA=2831&tnum=6"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="github-link"
+        >🌐 巴哈姆特</a
+      >
     </header>
 
     <div class="app-split">
       <div class="pane pane-main">
         <main class="grid">
-          <!-- SteamCMD 卡片 -->
-          <div id="card-steamcmd" data-fragment="card-steamcmd"></div>
-
-          <!-- 7DaysToDieServer 卡片 -->
-          <div id="card-game" data-fragment="card-game"></div>
 
           <!-- 管理後台 卡片 -->
           <div id="card-dsp" data-fragment="card-dsp"></div>
+
+          <!-- 7DaysToDieServer 卡片 -->
+          <div id="card-game" data-fragment="card-game"></div>
 
           <!-- 存檔管理 卡片 -->
           <div id="card-saves" data-fragment="card-saves"></div>
@@ -77,7 +88,10 @@
     </div>
 
     <div id="dspModalHost" data-fragment="card-dsp-modal"></div>
-    <div id="gameServerconfigModalHost" data-fragment="card-game-serverconfig-modal"></div>
+    <div
+      id="gameServerconfigModalHost"
+      data-fragment="card-game-serverconfig-modal"
+    ></div>
 
     <noscript>
       <div class="modal" style="display: block">

@@ -7,7 +7,10 @@
 
   function fillNamesFor(world) {
     D.gnSelect.innerHTML = "";
-    const names = (S.worldMap.get(world) || []).slice().sort();
+    const sortOpts = { numeric: true, sensitivity: "base" };
+    const names = (S.worldMap.get(world) || [])
+      .slice()
+      .sort((a, b) => a.localeCompare(b, "zh-Hant", sortOpts));
     names.forEach((n) => {
       const opt = document.createElement("option");
       opt.value = n;
@@ -63,6 +66,20 @@
         if (!arr.includes(s.name)) arr.push(s.name);
         S.worldMap.set(s.world, arr);
       });
+
+      const sortOpts = { numeric: true, sensitivity: "base" };
+      const sortedWorlds = [...S.worldMap.keys()].sort((a, b) =>
+        a.localeCompare(b, "zh-Hant", sortOpts)
+      );
+      const ordered = new Map();
+      for (const w of sortedWorlds) {
+        const names = (S.worldMap.get(w) || [])
+          .slice()
+          .sort((a, b) => a.localeCompare(b, "zh-Hant", sortOpts));
+        ordered.set(w, names);
+      }
+      S.worldMap = ordered;
+
       fillWorldAndName();
 
       D.backupSelect.innerHTML = "";

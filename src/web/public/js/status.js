@@ -4,11 +4,18 @@
   const D = App.dom;
   const S = App.state;
 
-  function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
+  function applyUIState({
+    backendUp,
+    steamRunning,
+    gameRunning,
+    telnetOk,
+    gameVersion,
+    onlinePlayers,
+  }) {
     const all = [
       D.installServerBtn,
-      D.abortInstallBtn,
-      D.backupFullBtn,
+      D.exportSavesBtn,
+      D.deleteGameNameBtn,
       D.viewConfigBtn,
       D.stopServerBtn,
       D.killServerBtn,
@@ -19,7 +26,7 @@
       ...D.telnetBtns,
       D.gwSelect,
       D.gnSelect,
-      D.exportOneBtn,
+      D.exportGameNameBtn,
       D.refreshSavesBtn,
       D.viewBackupsBtn,
       D.backupSelect,
@@ -42,8 +49,45 @@
     }
     if (steamRunning) {
       setDisabled(all, true);
-      setDisabled([D.abortInstallBtn, D.viewConfigBtn], false);
+      setDisabled([D.installServerBtn, D.viewConfigBtn], false);
+
+      const savesControls = [
+        D.gwSelect,
+        D.gnSelect,
+        D.refreshSavesBtn,
+        D.exportSavesBtn,
+        D.exportGameNameBtn,
+        D.deleteGameNameBtn,
+        D.viewBackupsBtn,
+        D.backupSelect,
+        D.importBackupBtn,
+        D.importUploadFile,
+        D.importUploadBtn,
+      ];
+
+      const lockBecauseBackup = S.backupInProgress;
+      setDisabled(savesControls, !!lockBecauseBackup);
+
+      if (D.installServerBtn) {
+        D.installServerBtn.textContent = "❌ 中斷安裝 / 更新";
+        D.installServerBtn.setAttribute(
+          "data-danger",
+          "是否確定中斷安裝 / 更新?\n將不會正常退出，可能導致檔案損毀，請重新執行安裝 / 更新!"
+        );
+        D.installServerBtn.setAttribute("data-cancel-text", "取消");
+        D.installServerBtn.setAttribute("data-continue-text", "繼續");
+      }
       return;
+    } else {
+      if (D.installServerBtn) {
+        D.installServerBtn.textContent = "📥 安裝 / 更新";
+        D.installServerBtn.setAttribute(
+          "data-danger",
+          "是否確定安裝 / 更新伺服器?\nserverconfig.xml 將被重置"
+        );
+        D.installServerBtn.setAttribute("data-cancel-text", "取消");
+        D.installServerBtn.setAttribute("data-continue-text", "繼續");
+      }
     }
 
     const lockBecauseBackup = S.backupInProgress;
@@ -63,17 +107,14 @@
     );
 
     setDisabled(D.killServerBtn, !gameRunning);
-    setDisabled(D.backupFullBtn, gameRunning || lockBecauseBackup);
-    setDisabled(D.exportOneBtn, gameRunning || lockBecauseBackup);
+    setDisabled(D.exportSavesBtn, gameRunning || lockBecauseBackup);
+    setDisabled(D.deleteGameNameBtn, gameRunning || lockBecauseBackup);
+    setDisabled(D.exportGameNameBtn, gameRunning || lockBecauseBackup);
 
     const canManageSaves = !gameRunning && !lockBecauseBackup;
     setDisabled(
       [
-        D.gwSelect,
-        D.gnSelect,
-        D.refreshSavesBtn,
         D.viewBackupsBtn,
-        D.backupSelect,
         D.importBackupBtn,
         D.importUploadFile,
         D.importUploadBtn,
@@ -81,7 +122,32 @@
       !canManageSaves
     );
 
+    setDisabled(
+      [D.gwSelect, D.gnSelect, D.refreshSavesBtn, D.backupSelect],
+      false
+    );
+
     syncConfigLockFromStatus();
+
+    const gvEl = document.getElementById("gameVersionBadge");
+    if (gvEl) {
+      gvEl.textContent = `版本: ${
+        gameVersion ? gameVersion : gameRunning ? "偵測中…" : "-"
+      }`;
+    }
+
+    const opEl = document.getElementById("onlinePlayersBadge");
+    if (opEl) {
+      opEl.textContent = `線上玩家數: ${
+        onlinePlayers ? onlinePlayers : gameRunning ? "偵測中…" : "-"
+      }`;
+    }
+
+    if (D.configStartBtn) {
+      D.configStartBtn.textContent = gameRunning
+        ? "📝 檢視 serverconfig.xml"
+        : "🛠 啟動伺服器";
+    }
   }
 
   function computeGameRunning() {
@@ -119,13 +185,29 @@
       ? true
       : selected !== S.installedVersion;
 
-    if (!S.current.steamRunning && !S.backupInProgress) {
-      if (S.versionNeedsInstall) {
-        D.installServerBtn?.classList.add("btn--attention");
-      } else {
-        D.installServerBtn?.classList.remove("btn--attention");
-      }
+    if (D.installServerBtn) {
+      D.installServerBtn.classList.remove("btn--attention");
     }
+
+    const badgeEl =
+      D.gameSelectedVersionBadge ||
+      document.getElementById("gameSelectedVersionBadge");
+
+    if (badgeEl) {
+      const installed = S.installedVersion;
+      if (installed) {
+        badgeEl.textContent = "上次安裝版本: " + versionLabel(installed);
+      } else {
+        badgeEl.textContent = "上次安裝版本: 無";
+      }
+      if (!D.gameSelectedVersionBadge) D.gameSelectedVersionBadge = badgeEl;
+    }
+  }
+
+  function versionLabel(v) {
+    if (!v) return "";
+    if (v === "public") return "Stable (public)";
+    return v;
   }
 
   function updateCfgLockUI() {
@@ -156,5 +238,18 @@
     updateVersionLockUI,
     updateCfgLockUI,
     disableCfgInputs,
+    versionLabel,
   };
+
+  if (w.__fragmentsReady) {
+    setTimeout(updateVersionLockUI, 0);
+  } else {
+    w.addEventListener(
+      "fragments:ready",
+      () => {
+        updateVersionLockUI();
+      },
+      { once: true }
+    );
+  }
 })(window);

@@ -1,0 +1,80 @@
+:root {
+  --font-stack: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Noto Sans TC", Arial, sans-serif;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --radius-s: 0.35rem;
+  --radius-m: 0.65rem;
+  --c-bg: #f5f7f9;
+  --c-surface: #fff;
+  --c-surface-alt: #f1f5f9;
+  --c-border: #d8dee6;
+  --c-border-soft: #e5e9ef;
+  --c-text: #1e293b;
+  --c-text-sec: #475569;
+  --c-primary: #2563eb;
+  --c-primary-hov: #1d4ed8;
+  --c-accent: #16a34a;
+  --c-accent-hov: #15803d;
+  --c-danger: #dc2626;
+  --c-danger-hov: #b91c1c;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --console-dock-height: 40vh;
+  --console-dock-min: 120px;
+  --console-dock-max: 80vh;
+  --console-dock-collapsed: 32px;
+  --topbar-h: 48px;
+  --split-main-size: 50%;
+  --split-bar-size: 6px;
+  --split-main-min: 15%;
+  --split-main-max: 85%;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono",
+    monospace;
+}
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: var(--font-stack);
+  line-height: 1.4;
+  background: var(--c-bg);
+  color: var(--c-text);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  padding-bottom: calc(var(--console-dock-collapsed) + 4px);
+}
+h1,
+h2,
+h3 {
+  line-height: 1.2;
+  font-weight: 600;
+  margin: 0 0 var(--space-3);
+  letter-spacing: 0.5px;
+}
+p {
+  margin: 0 0 var(--space-3);
+}
+.hidden {
+  display: none !important;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+html {
+  font-size: 16px;
+}

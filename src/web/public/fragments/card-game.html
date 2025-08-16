@@ -1,31 +1,85 @@
 <section class="card">
-  <h2>7 Days To Die Dedicated Server</h2>
+  <header class="card-header">
+    <h2 class="card-title">7 Days To Die Dedicated Server</h2>
+    <div class="status-inline">
+      <span id="st-steam" class="badge">SteamCMD</span>
+      <span id="st-game" class="badge">7DaysToDieServer</span>
+      <span id="st-telnet" class="badge">Telnet</span>
+    </div>
+  </header>
+
+  <div class="row game-install">
+    <label
+      class="field"
+      style="display: flex; flex-direction: column; gap: 4px; min-width: 220px"
+    >
+      <span class="field__label">伺服器版本選擇</span>
+      <div class="row">
+        <span id="gameSelectedVersionBadge" class="badge">上次安裝版本:</span>
+      </div>
+      <div class="row" style="width: 100%; align-items: stretch">
+        <select id="versionSelect" style="flex: 1">
+          <option value="">Stable (public)</option>
+          <option value="latest_experimental">Unstable build</option>
+          <option value="v2.2">Version 2.2 Stable</option>
+          <option value="v2.1">Version 2.1 Stable</option>
+          <option value="v2.0">Version 2.0 Stable</option>
+          <option value="v1.4">Version 1.4 Stable</option>
+          <option value="alpha21.2">Alpha 21.2 Stable</option>
+          <option value="alpha20.7">Alpha 20.7 Stable</option>
+          <option value="alpha19.6">Alpha 19.6 Stable</option>
+          <option value="alpha18.4">Alpha 18.4 Stable</option>
+          <option value="alpha17.4">Alpha 17.4 Stable</option>
+          <option value="alpha16.4">Alpha 16.4 Stable</option>
+          <option value="alpha15.2">Alpha 15.2 Stable</option>
+          <option value="alpha14.7">Alpha 14.7 Stable</option>
+          <option value="alpha13.8">Alpha 13.8 Stable</option>
+          <option value="alpha12.5">Alpha 12.5 Stable</option>
+          <option value="alpha11.6">Alpha 11.6 Stable</option>
+          <option value="alpha10.4">Alpha 10.4 Stable</option>
+          <option value="alpha9.3">Alpha 9.3 Stable</option>
+          <option value="alpha8.8">Alpha 8.8 Stable</option>
+        </select>
+        <button
+          id="installServerBtn"
+          data-danger="是否確定安裝 / 更新伺服器?\nserverconfig.xml 將被重置"
+          data-cancel-text="取消"
+          data-continue-text="繼續"
+          style="white-space: nowrap"
+        >
+          📥 安裝 / 更新
+        </button>
+      </div>
+    </label>
+  </div>
+
+  <span class="field__label">七日殺伺服器管理</span>
   <div class="row">
-    <button id="configStartBtn">🛠 啟動伺服器 / 檢視 serverconfig.xml</button>
+    <span id="gameVersionBadge" class="badge">版本: (偵測中…)</span>
+    <span id="onlinePlayersBadge" class="badge">在線玩家數: (偵測中…)</span>
+  </div>
+  <div class="row">
+    <button id="configStartBtn">🛠 啟動伺服器</button>
     <button
       id="stopServerBtn"
-      data-danger="⏹️ 是否正常停止伺服器?"
+      data-danger="⏹️ 是否正常結束伺服器?\n將會正常關閉並寫入存檔。"
       data-cancel-text="取消"
       data-continue-text="繼續"
     >
-      ⏹️ 關閉伺服器
+      ⏹️ 正常結束
     </button>
     <button
       id="killServerBtn"
-      data-danger="是否強制結束伺服器?\n強制結束將不會正常保存，可能引發存檔異常，非必要請勿使用!"
+      data-danger="是否強制結束遊戲伺服器?\n強制結束遊戲伺服器將不會正常保存，可能引發存檔異常，非必要請勿使用!"
       data-cancel-text="取消"
       data-continue-text="繼續"
     >
-      ❌ 強制結束
+      ⚠️ 強制結束
     </button>
   </div>
   <div class="row">
     <input id="telnetInput" placeholder="輸入 Telnet 指令…" />
     <button id="telnetSendBtn" data-role="telnet">送出</button>
-    <button data-role="telnet" onclick="sendTelnet('version')">🔍 版本</button>
-    <button data-role="telnet" onclick="sendTelnet('listplayers')">
-      🧑‍🤝‍🧑 玩家
-    </button>
     <button data-role="telnet" onclick="sendTelnet('getgamepref')">
       ⚙️ 設定
     </button>

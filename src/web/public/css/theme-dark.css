@@ -1,0 +1,57 @@
+@media (prefers-color-scheme: dark) {
+  :root {
+    --c-bg: #0f172a;
+    --c-surface: #1e293b;
+    --c-surface-alt: #293649;
+    --c-border: #334155;
+    --c-border-soft: #2a3a4f;
+    --c-text: #f1f5f9;
+    --c-text-sec: #cbd5e1;
+  }
+  body {
+    background: var(--c-bg);
+  }
+  .card {
+    border-color: var(--c-border);
+  }
+  button {
+    background: var(--c-surface-alt);
+    border-color: var(--c-border);
+    color: var(--c-text);
+  }
+  button:hover:not(:disabled) {
+    background: #334155;
+  }
+  .field__control,
+  .field select,
+  .field input[type="file"],
+  input#telnetInput {
+    background: #0f172a;
+    border-color: var(--c-border);
+    color: var(--c-text);
+  }
+  .cfg-grid input[type="text"],
+  .cfg-grid input[type="number"],
+  .cfg-grid select {
+    background: #0f172a;
+    border-color: var(--c-border);
+    color: var(--c-text);
+  }
+  .app-mask__panel {
+    background: var(--c-surface);
+    border-color: var(--c-border);
+    color: var(--c-text);
+  }
+  .console {
+    border-color: #334155;
+  }
+  select {
+    background: #0f172a;
+    border-color: var(--c-border);
+    color: var(--c-text);
+  }
+  .topbar .status-inline .badge {
+    background: var(--c-surface-alt);
+    border-color: var(--c-border);
+  }
+}

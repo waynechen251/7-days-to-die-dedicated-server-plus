@@ -1,0 +1,60 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+.field__label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--c-text-sec);
+}
+.field__control,
+.field select,
+.field input[type="file"],
+input#telnetInput,
+select {
+  font: 400 0.8rem/1.3 var(--font-stack);
+  padding: 0.5rem 0.6rem;
+  background: #fff;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-s);
+  min-height: 2.25rem;
+  width: 100%;
+  color: var(--c-text);
+}
+.field__control:focus,
+.field select:focus,
+.field input[type="file"]:focus,
+input#telnetInput:focus,
+select:focus {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 1px;
+}
+.form-grid {
+  display: grid;
+  gap: var(--space-3);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  align-items: start;
+}
+.span-2 {
+  grid-column: span 2;
+}
+@media (max-width: 720px) {
+  .span-2 {
+    grid-column: auto;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  .field__control,
+  .field select,
+  .field input[type="file"],
+  input#telnetInput,
+  select {
+    background: #0f172a;
+    border-color: var(--c-border);
+    color: var(--c-text);
+  }
+}

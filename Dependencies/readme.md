@@ -6,6 +6,7 @@
 ## steamcmd
 ### [SteamCMD](https://developer.valvesoftware.com/wiki/SteamCMD)
 ### [Dedicated Servers List](https://developer.valvesoftware.com/wiki/Dedicated_Servers_List)
+### [SteamDB](https://steamdb.info/app/251570/depots/)
 
 ## Amazon Root CA 1.crt
 ### [Amazon Root CA 1.crt](https://www.amazontrust.com/repository/AmazonRootCA1.pem)

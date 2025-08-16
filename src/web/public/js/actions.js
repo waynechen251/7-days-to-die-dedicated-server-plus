@@ -25,6 +25,17 @@
 
     on(D.installServerBtn, "click", () => {
       switchTab("steamcmd");
+
+      if (App.state.current?.steamRunning) {
+        fetchText("/api/install-abort", { method: "POST" })
+          .then((msg) => appendLog("steamcmd", msg, Date.now()))
+          .catch((err) =>
+            appendLog("steamcmd", `❌ ${err.message}`, Date.now())
+          )
+          .finally(() => setTimeout(App.bootstrap.refreshStatus, 500));
+        return;
+      }
+
       const version = D.versionSelect?.value || "";
       const body = JSON.stringify({ version });
       const headers = { "Content-Type": "application/json" };
@@ -35,8 +46,8 @@
           applyUIState({
             backendUp: true,
             steamRunning: true,
-            gameRunning: S.current.gameRunning,
-            telnetOk: S.current.telnetOk,
+            gameRunning: App.state.current.gameRunning,
+            telnetOk: App.state.current.telnetOk,
           });
           return res.body.getReader();
         })
@@ -59,20 +70,25 @@
         .catch((err) => appendLog("system", `❌ ${err.message}`, Date.now()));
     });
 
-    on(D.abortInstallBtn, "click", async () => {
-      switchTab("steamcmd");
-      try {
-        appendLog(
-          "steamcmd",
-          await fetchText("/api/install-abort", { method: "POST" }),
-          Date.now()
-        );
-      } catch (e) {
-        appendLog("system", `❌ ${e.message}`, Date.now());
+    on(D.configStartBtn, "click", () => {
+      if (App.configModal?.openConfigModal) {
+        App.configModal.openConfigModal();
+        return;
       }
+      if (typeof App.openConfigModal === "function") {
+        App.openConfigModal();
+        return;
+      }
+      console.warn("configModal 尚未初始化，將延遲重試");
+      setTimeout(() => {
+        if (App.configModal?.openConfigModal) {
+          App.configModal.openConfigModal();
+        } else {
+          console.error("configModal 仍未就緒");
+          alert("設定視窗尚未載入，請稍候再試或重新整理頁面。");
+        }
+      }, 300);
     });
-
-    on(D.configStartBtn, "click", () => App.configModal.openConfigModal());
 
     on(D.stopServerBtn, "click", async () => {
       switchTab("system");
@@ -92,7 +108,7 @@
       try {
         appendLog(
           "system",
-          await fetchText("/api/kill", { method: "POST" }),
+          await fetchText("/api/processManager/game_server/kill", { method: "POST" }),
           Date.now()
         );
       } catch (e) {
@@ -121,17 +137,7 @@
 
     on(D.refreshSavesBtn, "click", () => App.saves.loadSaves());
 
-    on(D.viewBackupsBtn, "click", async () => {
-      switchTab("backup");
-      try {
-        const msg = await fetchText("/api/view-saves", { method: "POST" });
-        appendLog("backup", msg, Date.now());
-      } catch (e) {
-        appendLog("backup", `❌ ${e.message}`, Date.now());
-      }
-    });
-
-    on(D.exportOneBtn, "click", async () => {
+    on(D.exportGameNameBtn, "click", async () => {
       const world = D.gwSelect.value || "";
       const name = D.gnSelect.value || "";
       if (!world || !name) {
@@ -202,7 +208,7 @@
       }
     });
 
-    on(D.backupFullBtn, "click", async () => {
+    on(D.exportSavesBtn, "click", async () => {
       switchTab("backup");
       S.backupInProgress = true;
       applyUIState(S.current);
@@ -215,6 +221,51 @@
       } finally {
         S.backupInProgress = false;
         applyUIState(S.current);
+      }
+    });
+
+    on(D.deleteGameNameBtn, "click", async () => {
+      const world = D.gwSelect.value || "";
+      const name = D.gnSelect.value || "";
+      if (!world || !name) {
+        appendLog("backup", "❌ 請選擇 GameWorld / GameName", Date.now());
+        return;
+      }
+      switchTab("backup");
+      try {
+        const msg = await fetchText("/api/saves/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ world, name }),
+        });
+        appendLog("backup", msg, Date.now());
+        App.saves.loadSaves();
+      } catch (e) {
+        appendLog("backup", `❌ ${e.message}`, Date.now());
+      }
+    });
+
+    on(D.deleteBackupBtn, "click", async () => {
+      if (!D.deleteBackupBtn) {
+        console.warn("deleteBackupBtn 元素不存在，無法綁定刪除備份事件");
+        return;
+      }
+      const file = D.backupSelect.value || "";
+      if (!file) {
+        appendLog("backup", "❌ 請選擇備份檔", Date.now());
+        return;
+      }
+      switchTab("backup");
+      try {
+        const msg = await fetchText("/api/saves/delete-backup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ file }),
+        });
+        appendLog("backup", msg, Date.now());
+        App.saves.loadSaves();
+      } catch (e) {
+        appendLog("backup", `❌ ${e.message}`, Date.now());
       }
     });
 

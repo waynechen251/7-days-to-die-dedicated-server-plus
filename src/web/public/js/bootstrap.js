@@ -26,8 +26,21 @@
       } else {
         setInstalledVersion(null);
       }
+
+      if (D.gameSelectedVersionBadge) {
+        const installed = S.installedVersion;
+        if (installed) {
+          const lbl = App.status.versionLabel
+            ? App.status.versionLabel(installed)
+            : installed;
+          D.gameSelectedVersionBadge.textContent = "上次安裝版本: " + lbl;
+        }
+      }
     } catch (_) {
       setInstalledVersion(null);
+      if (D.gameSelectedVersionBadge) {
+        D.gameSelectedVersionBadge.textContent = "上次安裝版本: 無紀錄";
+      }
     }
     restoreUnreadBadges();
     App.saves.loadSaves();
@@ -41,7 +54,7 @@
 
   async function refreshStatus() {
     try {
-      const s = await fetchJSON("/api/process-status", { method: "GET" });
+      const s = await fetchJSON("/api/processManager/status", { method: "GET" });
       const game = s.data?.gameServer || {};
       const steam = s.data?.steamCmd || {};
       S.hasEverConnected = true;
@@ -50,6 +63,8 @@
         steamRunning: !!steam.isRunning,
         gameRunning: !!game.isRunning,
         telnetOk: !!game.isTelnetConnected,
+        gameVersion: game.gameVersion || "",
+        onlinePlayers: game.onlinePlayers || "",
       });
     } catch {
       setState({
@@ -57,6 +72,8 @@
         steamRunning: false,
         gameRunning: false,
         telnetOk: false,
+        gameVersion: "",
+        onlinePlayers: "",
       });
     } finally {
       setTimeout(refreshStatus, 1000);

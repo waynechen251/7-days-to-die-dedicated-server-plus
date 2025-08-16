@@ -1,0 +1,67 @@
+.app-mask {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(15, 17, 20, 0.6);
+  backdrop-filter: blur(2px);
+  user-select: none;
+}
+.app-mask.hidden {
+  display: none !important;
+}
+.app-mask__panel {
+  background: var(--c-surface);
+  color: var(--c-text);
+  border: 1px solid var(--c-border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow);
+  max-width: 90%;
+}
+.app-mask__spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--c-border);
+  border-top-color: var(--c-primary);
+  border-radius: 50%;
+  animation: mask-spin 0.9s linear infinite;
+}
+@keyframes mask-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.app-mask__icon {
+  font-size: 2rem;
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+.app-mask__message {
+  margin: 0.25rem 0 0.75rem;
+  text-align: center;
+  white-space: pre-line;
+}
+.app-mask__actions {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}
+@media (prefers-color-scheme: dark) {
+  .app-mask__panel {
+    background: var(--c-surface);
+    border-color: var(--c-border);
+    color: var(--c-text);
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

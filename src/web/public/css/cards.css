@@ -1,0 +1,32 @@
+.card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border-soft);
+  border-radius: var(--radius-m);
+  padding: clamp(var(--space-3), 1.2vw, var(--space-5));
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+.card-title {
+  margin: 0;
+  font-size: clamp(0.95rem, 1rem + 0.2vw, 1.1rem);
+}
+.btn-row,
+.btn-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.card-console.span2 {
+  grid-column: 1 / -1;
+}
+.card-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  border-bottom: 1px solid var(--c-border-soft);
+  padding-bottom: var(--space-2);
+}

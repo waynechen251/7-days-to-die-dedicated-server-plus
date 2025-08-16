@@ -13,6 +13,7 @@ const archive = require("./public/lib/archive");
 const eventBus = require("./public/lib/eventBus");
 const { tailFile } = require("./public/lib/tailer");
 const serverConfigLib = require("./public/lib/serverConfig");
+const steamcmd = require("./public/lib/steamcmd");
 
 if (process.platform === "win32") exec("chcp 65001 >NUL");
 
@@ -28,12 +29,44 @@ const PUBLIC_DIR = path.join(baseDir, "public");
 const BACKUP_SAVES_DIR = path.join(PUBLIC_DIR, "saves");
 const UPLOADS_DIR = path.join(BACKUP_SAVES_DIR, "_uploads");
 
+function getSavesRoot() {
+  const gs = CONFIG?.game_server || {};
+  let root = gs.UserDataFolder || gs.saves || "";
+  if (!root) return "";
+  try {
+    const baseName = path.basename(root).toLowerCase();
+    if (baseName !== "saves") {
+      const candidate = path.join(root, "Saves");
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+        return candidate;
+      }
+    }
+  } catch (_) {}
+  return root;
+}
+
 function logPathInfo(reason) {
   try {
-    const savesPath = CONFIG?.game_server?.saves || "(未設定)";
-    log(`ℹ️ [${reason}] 遊戲存檔目錄(Game Saves): ${savesPath}`);
+    const configured =
+      CONFIG?.game_server?.UserDataFolder ||
+      CONFIG?.game_server?.saves ||
+      "(未設定)";
+    const effective = getSavesRoot() || "(未偵測)";
+    log(
+      `ℹ️ [${reason}] 遊戲存檔目錄(設定值 UserDataFolder/saves): ${configured}`
+    );
+    if (effective !== configured) {
+      log(`ℹ️ [${reason}] 遊戲存檔目錄(實際使用 Saves 根目錄): ${effective}`);
+    }
     log(`ℹ️ [${reason}] 備份存放目錄(Backups): ${BACKUP_SAVES_DIR}`);
-    eventBus.push("system", { text: `[${reason}] Game Saves: ${savesPath}` });
+    eventBus.push("system", {
+      text: `[${reason}] Game Saves(Config): ${configured}`,
+    });
+    if (effective !== configured) {
+      eventBus.push("system", {
+        text: `[${reason}] Game Saves(Effective): ${effective}`,
+      });
+    }
     eventBus.push("system", {
       text: `[${reason}] Backups Dir: ${BACKUP_SAVES_DIR}`,
     });
@@ -76,12 +109,37 @@ function saveConfig() {
 }
 
 const GAME_DIR = resolveDirCaseInsensitive(baseDir, "7DaysToDieServer");
-
 let stopGameTail = null;
-
 const app = express();
 app.use(express.json());
 app.use(express.static(PUBLIC_DIR));
+processManager.initStatus({
+  getConfig: () => CONFIG.game_server,
+  sendTelnetCommand,
+});
+
+processManager.registerRoutes(app, {
+  eventBus,
+  http,
+  getStopGameTail: () => stopGameTail,
+  clearStopGameTail: () => {
+    if (stopGameTail) {
+      try {
+        stopGameTail();
+      } catch (_) {}
+    }
+    stopGameTail = null;
+  },
+});
+serverConfigLib.registerRoutes(app, {
+  http,
+  processManager,
+  eventBus,
+  baseDir,
+  GAME_DIR,
+  getConfig: () => CONFIG,
+  saveConfig,
+});
 
 const rawUpload = express.raw({
   type: "application/octet-stream",
@@ -115,6 +173,20 @@ function loadConfig() {
       }
     }
 
+    try {
+      if (config.game_server) {
+        if (config.game_server.saves && !config.game_server.UserDataFolder) {
+          config.game_server.UserDataFolder = config.game_server.saves;
+          delete config.game_server.saves;
+          log("ℹ️ 遷移 game_server.saves -> game_server.UserDataFolder");
+          fs.writeFileSync(
+            serverJsonPath,
+            JSON.stringify(config, null, 2),
+            "utf-8"
+          );
+        }
+      }
+    } catch (_) {}
     return config;
   } catch (err) {
     error(`❌ 讀取設定檔失敗: ${serverJsonPath}\n${err.message}`);
@@ -205,7 +277,7 @@ function detectBackupType(root) {
 }
 async function autoPreImportBackup(det) {
   try {
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot))
       return { ok: true, skipped: true, reason: "savesRoot-missing" };
     ensureDir(BACKUP_SAVES_DIR);
@@ -241,11 +313,11 @@ async function autoPreImportBackup(det) {
   }
 }
 async function importArchive(zipPath) {
-  const savesRoot = CONFIG?.game_server?.saves;
+  const savesRoot = getSavesRoot();
   if (!savesRoot || !fs.existsSync(savesRoot))
     return {
       ok: false,
-      message: "找不到遊戲存檔根目錄(CONFIG.game_server.saves)",
+      message: "找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)",
     };
   const det = await archive.inspectZip(zipPath);
   if (!det || det.type === "unknown")
@@ -287,28 +359,6 @@ app.get("/api/get-config", (req, res) => {
   return http.respondJson(res, { ok: true, data: CONFIG }, 200);
 });
 
-app.get("/api/process-status", async (req, res) => {
-  try {
-    await processManager.gameServer.checkTelnet(CONFIG.game_server);
-    const status = {
-      steamCmd: { isRunning: processManager.steamCmd.isRunning },
-      gameServer: {
-        isRunning: processManager.gameServer.isRunning,
-        isTelnetConnected: processManager.gameServer.isTelnetConnected,
-        pid: processManager.gameServer.getPid(),
-      },
-    };
-    return http.respondJson(res, { ok: true, data: status }, 200);
-  } catch (err) {
-    error(`❌ 無法查詢進程狀態: ${err?.message || err}`);
-    return http.respondJson(
-      res,
-      { ok: false, message: "無法查詢進程狀態" },
-      500
-    );
-  }
-});
-
 function tryBindOnce(port, host) {
   return new Promise((resolve) => {
     const srv = net.createServer();
@@ -340,10 +390,92 @@ function tryBindOnce(port, host) {
 }
 
 async function checkPortInUse(port) {
-  const hosts = ["0.0.0.0", "127.0.0.1", "::", "::1"];
+  const hosts = ["127.0.0.1"];
   const results = await Promise.all(hosts.map((h) => tryBindOnce(port, h)));
   return results.some((r) => r.inUse);
 }
+let dummyGamePortServer = null;
+let dummyGamePort = null;
+async function ensureDummyGamePort(wantedPortOverride) {
+  try {
+    if (processManager.gameServer.isRunning) {
+      if (dummyGamePortServer) closeDummyGamePort("game-running");
+      return { listening: false, started: false };
+    }
+
+    let wantedPort = Number.isFinite(parseInt(wantedPortOverride, 10))
+      ? parseInt(wantedPortOverride, 10)
+      : NaN;
+
+    if (!Number.isFinite(wantedPort)) {
+      const pRaw =
+        CONFIG?.game_server?.ServerPort ||
+        CONFIG?.game_server?.serverPort ||
+        CONFIG?.game_server?.serverport;
+      wantedPort = parseInt(pRaw, 10);
+    }
+
+    if (!Number.isFinite(wantedPort) || wantedPort <= 0 || wantedPort > 65535) {
+      if (dummyGamePortServer) closeDummyGamePort("invalid-port");
+      return { listening: false, started: false };
+    }
+
+    if (dummyGamePortServer && dummyGamePort !== wantedPort) {
+      closeDummyGamePort(`port-changed ${dummyGamePort}→${wantedPort}`);
+    }
+
+    if (dummyGamePortServer) {
+      return { listening: true, started: false };
+    }
+
+    if (await checkPortInUse(wantedPort)) {
+      return { listening: false, started: false };
+    }
+
+    await new Promise((resolve, reject) => {
+      const srv = require("net").createServer((socket) => {
+        socket.destroy();
+      });
+      srv.once("error", (e) => reject(e));
+      srv.listen(wantedPort, "0.0.0.0", () => {
+        dummyGamePortServer = srv;
+        dummyGamePort = wantedPort;
+        log(
+          `ℹ️ 已啟動假的 ServerPort 監聽 (dummy) 於 ${wantedPort} (等待實際伺服器啟動)`
+        );
+        eventBus.push("system", {
+          text: `啟動暫時 ServerPort 測試監聽 (dummy) 於 ${wantedPort}`,
+        });
+        resolve();
+      });
+    });
+
+    return { listening: true, started: true };
+  } catch (e) {
+    error(`❌ 啟動/切換 dummy ServerPort 失敗: ${e.message}`);
+    return { listening: false, started: false, error: e.message };
+  }
+}
+function closeDummyGamePort(reason = "start") {
+  if (dummyGamePortServer) {
+    try {
+      const p = dummyGamePort;
+      dummyGamePortServer.close(() => {
+        log(`ℹ️ 已關閉 dummy ServerPort 監聽 (${p}) 原因: ${reason}`);
+      });
+      eventBus.push("system", {
+        text: `關閉暫時 ServerPort 測試監聽 (${dummyGamePort}) (${reason})`,
+      });
+    } catch (_) {}
+    dummyGamePortServer = null;
+    dummyGamePort = null;
+  }
+}
+process.on("exit", () => closeDummyGamePort("process-exit"));
+process.on("SIGINT", () => {
+  closeDummyGamePort("sigint");
+  process.exit(0);
+});
 
 app.get("/api/check-port", async (req, res) => {
   const p = parseInt(req.query?.port, 10);
@@ -361,9 +493,25 @@ app.get("/api/check-port", async (req, res) => {
     );
   }
 });
+
+app.post("/api/close-dummy-port", (req, res) => {
+  try {
+    if (dummyGamePortServer) {
+      closeDummyGamePort("ui-close");
+    }
+    return http.respondJson(res, { ok: true }, 200);
+  } catch (e) {
+    return http.respondJson(
+      res,
+      { ok: false, message: e?.message || "關閉失敗" },
+      500
+    );
+  }
+});
+
 app.get("/api/saves/list", (req, res) => {
   try {
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     const saves =
       savesRoot && fs.existsSync(savesRoot) ? listGameSaves(savesRoot) : [];
     ensureDir(BACKUP_SAVES_DIR);
@@ -404,12 +552,12 @@ app.post("/api/view-saves", (req, res) => {
 });
 app.post("/api/saves/export-one", async (req, res) => {
   try {
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot)) {
       return http.sendErr(
         req,
         res,
-        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)"
       );
     }
     const world = sanitizeName(req.body?.world);
@@ -436,12 +584,12 @@ app.post("/api/saves/export-one", async (req, res) => {
 });
 app.post("/api/saves/export-all", async (req, res) => {
   try {
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot)) {
       return http.sendErr(
         req,
         res,
-        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)"
       );
     }
     ensureDir(BACKUP_SAVES_DIR);
@@ -462,7 +610,7 @@ app.post("/api/saves/export-all", async (req, res) => {
 });
 async function performPreImportBackup() {
   try {
-    const src = CONFIG?.game_server?.saves;
+    const src = getSavesRoot();
     if (!src || !fs.existsSync(src))
       return { ok: false, message: "找不到存檔資料夾" };
     ensureDir(BACKUP_SAVES_DIR);
@@ -506,12 +654,12 @@ function collectStructure(root) {
 }
 app.post("/api/saves/import-one", async (req, res) => {
   try {
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot)) {
       return http.sendErr(
         req,
         res,
-        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)"
       );
     }
     const world = sanitizeName(req.body?.world);
@@ -574,12 +722,12 @@ app.post("/api/saves/import-upload", rawUpload, async (req, res) => {
   try {
     const buf = req.body;
     if (!buf || !buf.length) return http.sendErr(req, res, "❌ 未收到檔案");
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot)) {
       return http.sendErr(
         req,
         res,
-        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)"
       );
     }
     ensureDir(UPLOADS_DIR);
@@ -614,7 +762,7 @@ app.post("/api/saves/import-upload", rawUpload, async (req, res) => {
 });
 app.post("/api/backup", async (req, res) => {
   try {
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot)) {
       const msg = `❌ 備份失敗: 找不到存檔資料夾(${savesRoot || "未設定"})`;
       error(msg);
@@ -643,40 +791,46 @@ app.post("/api/install", (req, res) => {
     CONFIG.web.lastInstallVersion = version;
     saveConfig();
 
-    const args = [
-      "+login",
-      "anonymous",
-      "+force_install_dir",
-      GAME_DIR,
-      "+app_update",
-      "294420",
-      ...(version !== "public" ? ["-beta", version] : []),
-      "validate",
-      "+quit",
-    ];
-
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     eventBus.push("steamcmd", {
-      text: `start install/update (${version || "public"})`,
+      text: `start install/update (${version})`,
     });
 
-    processManager.steamCmd.start(
-      args,
-      (data) => {
-        http.writeStamped(res, `[stdout] ${data}`);
-        eventBus.push("steamcmd", { level: "stdout", text: data });
+    const baseDirLocal = baseDir;
+    const gameDirLocal = GAME_DIR;
+    steamcmd.install(
+      version,
+      gameDirLocal,
+      {
+        onData: (data) => {
+          http.writeStamped(res, `[stdout] ${data}`);
+          eventBus.push("steamcmd", { level: "stdout", text: data });
+        },
+        onError: (err) => {
+          http.writeStamped(res, `[stderr] ${err}`);
+          eventBus.push("steamcmd", { level: "stderr", text: err });
+        },
+        onClose: (code) => {
+          const line = `✅ 安裝 / 更新結束，Exit Code: ${code}`;
+          try {
+            if (!CONFIG.web) CONFIG.web = {};
+            CONFIG.web.game_serverInit = "true";
+            saveConfig();
+            eventBus.push("system", {
+              text: "已設定 game_serverInit=true (首次開啟編輯器時提示載入保存設定)",
+            });
+          } catch (e) {
+            eventBus.push("system", {
+              level: "warn",
+              text: `設定 game_serverInit 失敗: ${e.message}`,
+            });
+          }
+          http.writeStamped(res, line);
+          res.end();
+          eventBus.push("steamcmd", { text: line });
+        },
       },
-      (err) => {
-        http.writeStamped(res, `[stderr] ${err}`);
-        eventBus.push("steamcmd", { level: "stderr", text: err });
-      },
-      (code) => {
-        const line = `✅ 安裝 / 更新結束，Exit Code: ${code}`;
-        http.writeStamped(res, line);
-        res.end();
-        eventBus.push("steamcmd", { text: line });
-      },
-      { autoQuitOnPrompt: true, cwd: baseDir }
+      { cwd: baseDirLocal }
     );
   } catch (err) {
     const msg = `❌ 無法啟動 steamcmd: ${err.message}`;
@@ -711,7 +865,9 @@ app.post("/api/start", async (req, res) => {
   if (processManager.gameServer.isRunning) {
     return http.sendOk(req, res, "❌ 伺服器已經在運行中，請先關閉伺服器再試。");
   }
+  closeDummyGamePort("game-start");
   try {
+    processManager.status.resetVersion();
     const exeName = fs.existsSync(path.join(GAME_DIR, "7DaysToDieServer.exe"))
       ? "7DaysToDieServer.exe"
       : "7DaysToDie.exe";
@@ -741,70 +897,13 @@ app.post("/api/start", async (req, res) => {
     process.env.SteamAppId = "251570";
     process.env.SteamGameId = "251570";
 
-    const stripQuotes = (s) =>
-      typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
-
-    const cfgRaw = stripQuotes(CONFIG?.game_server?.serverConfig);
-    const cfgCandidates = [];
-    if (cfgRaw) {
-      if (path.isAbsolute(cfgRaw)) {
-        cfgCandidates.push(cfgRaw);
-      } else {
-        cfgCandidates.push(path.join(GAME_DIR, cfgRaw));
-        cfgCandidates.push(path.join(baseDir, cfgRaw));
-      }
-    }
-    cfgCandidates.push(
-      resolveFileCaseInsensitive(GAME_DIR, "serverconfig.xml")
-    );
-    cfgCandidates.push(resolveFileCaseInsensitive(baseDir, "serverconfig.xml"));
-
-    let configArg = null;
-    for (const c of cfgCandidates) {
-      if (c && fs.existsSync(c)) {
-        configArg = c;
-        break;
-      }
-    }
-    if (!configArg) {
-      eventBus.push("system", {
-        text: "未找到 serverconfig.xml，將以預設設定啟動",
-      });
-    }
-
-    try {
-      if (!CONFIG.game_server) CONFIG.game_server = {};
-      if (configArg) {
-        const { items } = serverConfigLib.readValues(configArg);
-        const get = (n) =>
-          String(items.find((x) => x.name === n)?.value ?? "").trim();
-        const asBool = (s) => /^(true|1)$/i.test(String(s || ""));
-        const asInt = (s) => {
-          const n = parseInt(String(s || ""), 10);
-          return Number.isFinite(n) ? n : undefined;
-        };
-
-        const tEnabled = asBool(get("TelnetEnabled"));
-        const tPort = asInt(get("TelnetPort"));
-        const tPwd = get("TelnetPassword");
-        const sPort = asInt(get("ServerPort"));
-
-        if (typeof tEnabled === "boolean")
-          CONFIG.game_server.telnetEnabled = tEnabled;
-        if (tPort) CONFIG.game_server.telnetPort = tPort;
-        if (tPwd) CONFIG.game_server.telnetPassword = tPwd;
-        if (sPort) CONFIG.game_server.serverPort = sPort;
-
-        eventBus.push("system", {
-          text: `已讀取 telnet/port 設定: TelnetEnabled=${tEnabled}, TelnetPort=${tPort}, ServerPort=${sPort}`,
-        });
-      }
-    } catch (e) {
-      eventBus.push("system", {
-        level: "warn",
-        text: `讀取 telnet/port 設定失敗: ${e?.message || e}`,
-      });
-    }
+    const { configPath: configArg } = serverConfigLib.loadAndSyncServerConfig({
+      CONFIG,
+      baseDir,
+      GAME_DIR,
+      eventBus,
+      saveConfig,
+    });
 
     const nographics = req.body?.nographics ?? true;
     const args = [
@@ -822,6 +921,7 @@ app.post("/api/start", async (req, res) => {
         eventBus.push("system", {
           text: `遊戲進程結束 (code=${code}, signal=${signal || "-"})`,
         });
+        processManager.status.resetVersion();
       },
       onError: (err) => {
         eventBus.push("system", {
@@ -837,18 +937,19 @@ app.post("/api/start", async (req, res) => {
       } catch (_) {}
     stopGameTail = tailFile(logFilePath, (line) => {
       eventBus.push("game", { level: "stdout", text: line });
-
       const m = line.match(/UserDataFolder:\s*(.+)$/i);
       if (m && m[1]) {
         const detected = m[1].trim().replace(/\//g, "\\");
         try {
           if (!CONFIG.game_server) CONFIG.game_server = {};
-          const newSaves = `${detected}\\Saves`;
-          if (CONFIG.game_server.saves !== newSaves) {
-            CONFIG.game_server.saves = newSaves;
+          const newRoot = `${detected}`;
+          const prev = getSavesRoot();
+          if (prev !== newRoot) {
+            CONFIG.game_server.UserDataFolder = newRoot;
+            if (CONFIG.game_server.saves) delete CONFIG.game_server.saves;
             saveConfig();
             eventBus.push("system", {
-              text: `自動偵測存檔目錄: ${newSaves}`,
+              text: `自動偵測七日殺伺服器存檔目錄: ${newRoot}`,
             });
             logPathInfo("detect");
           }
@@ -885,46 +986,6 @@ app.post("/api/stop", async (req, res) => {
     error(msg);
     eventBus.push("system", { level: "error", text: msg });
     http.sendErr(req, res, `${msg}`);
-  }
-});
-
-app.post("/api/kill", async (req, res) => {
-  try {
-    const pidFromBody = req.body?.pid;
-    const targetPid = pidFromBody ?? processManager.gameServer.getPid();
-
-    if (!targetPid) {
-      const warn = "⚠️ 無可用 PID，可用狀態已重置";
-      log(warn);
-      eventBus.push("system", { text: warn });
-      return http.sendOk(req, res, `✅ ${warn}`);
-    }
-
-    eventBus.push("system", { text: `🗡️ 送出強制結束請求 pid=${targetPid}` });
-    const ok = await processManager.gameServer.killByPid(targetPid);
-
-    if (stopGameTail)
-      try {
-        stopGameTail();
-      } catch (_) {}
-    stopGameTail = null;
-
-    if (ok) {
-      const line = `⚠️ 已強制結束遊戲進程 pid=${targetPid}`;
-      log(line);
-      eventBus.push("system", { text: line });
-      return http.sendOk(req, res, `✅ ${line}`);
-    } else {
-      const line = `❌ 強制結束失敗 pid=${targetPid}(可能為權限不足或進程不存在)`;
-      error(line);
-      eventBus.push("system", { level: "error", text: line });
-      return http.sendErr(req, res, line);
-    }
-  } catch (err) {
-    const msg = `❌ 強制結束失敗: ${err?.message || err}`;
-    error(msg);
-    eventBus.push("system", { level: "error", text: msg });
-    http.sendErr(req, res, msg);
   }
 });
 
@@ -973,174 +1034,230 @@ app.post("/api/server-status", async (req, res) => {
   }
 });
 
-function resolveServerConfigPath() {
-  const stripQuotes = (s) =>
-    typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
-
-  const cfgRaw = stripQuotes(CONFIG?.game_server?.serverConfig);
-  const candidates = [];
-
-  if (cfgRaw) {
-    if (path.isAbsolute(cfgRaw)) candidates.push(cfgRaw);
-    else {
-      candidates.push(path.join(GAME_DIR, cfgRaw));
-      candidates.push(path.join(baseDir, cfgRaw));
-    }
-  }
-  candidates.push(resolveFileCaseInsensitive(GAME_DIR, "serverconfig.xml"));
-  candidates.push(resolveFileCaseInsensitive(baseDir, "serverconfig.xml"));
-
-  for (const c of candidates) {
-    if (c && fs.existsSync(c)) return c;
-  }
-  return null;
-}
-
-app.get("/api/serverconfig", (req, res) => {
+app.post("/api/saves/delete", async (req, res) => {
   try {
-    const cfgPath = resolveServerConfigPath();
-    if (!cfgPath) {
-      return http.respondJson(
+    if (processManager.gameServer.isRunning) {
+      return http.sendErr(req, res, "❌ 伺服器運行中，禁止刪除存檔");
+    }
+    const savesRoot = getSavesRoot();
+    if (!savesRoot || !fs.existsSync(savesRoot)) {
+      return http.sendErr(
+        req,
         res,
-        { ok: false, message: "找不到 serverconfig.xml" },
-        404
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)"
       );
     }
-    const { items } = serverConfigLib.readValues(cfgPath);
+    const world = sanitizeName(req.body?.world);
+    const name = sanitizeName(req.body?.name);
+    if (!world || !name)
+      return http.sendErr(req, res, "❌ 需提供 world 與 name");
+    const targetDir = path.join(savesRoot, world, name);
+    if (!fs.existsSync(targetDir) || !fs.lstatSync(targetDir).isDirectory()) {
+      return http.sendErr(req, res, "❌ 指定存檔不存在");
+    }
+
+    ensureDir(BACKUP_SAVES_DIR);
+    const tsStr = format(new Date(), "YYYYMMDDHHmmss");
+    const backupZip = `DelSaves-${world}-${name}-${tsStr}.zip`;
+    const backupPath = path.join(BACKUP_SAVES_DIR, backupZip);
+
+    try {
+      await archive.zipSingleWorldGame(savesRoot, world, name, backupPath);
+    } catch (e) {
+      return http.sendErr(req, res, `❌ 刪除前備份失敗: ${e?.message || e}`);
+    }
+
+    try {
+      fs.rmSync(targetDir, { recursive: true, force: true });
+    } catch (e) {
+      return http.sendErr(
+        req,
+        res,
+        `❌ 刪除失敗(仍保留備份 ${backupZip}): ${e?.message || e}`
+      );
+    }
+
+    const line = `🗑️ 已刪除存檔: ${world}/${name} (已建立備份 ${backupZip})`;
+    log(line);
+    eventBus.push("backup", { text: line });
+    return http.sendOk(req, res, `✅ ${line}`);
+  } catch (err) {
+    const msg = `❌ 刪除失敗: ${err?.message || err}`;
+    error(msg);
+    eventBus.push("backup", { level: "error", text: msg });
+    return http.sendErr(req, res, msg);
+  }
+});
+app.post("/api/saves/delete-backup", (req, res) => {
+  try {
+    const file = String(req.body?.file || "").trim();
+    if (!file) return http.sendErr(req, res, "❌ 需提供檔名");
+    if (!/^[\w.-]+\.zip$/i.test(file))
+      return http.sendErr(req, res, "❌ 檔名不合法");
+    const target = path.join(BACKUP_SAVES_DIR, file);
+    if (!target.startsWith(path.resolve(BACKUP_SAVES_DIR)))
+      return http.sendErr(req, res, "❌ 非法路徑");
+    if (!fs.existsSync(target))
+      return http.sendErr(req, res, "❌ 指定備份不存在");
+
+    fs.unlinkSync(target);
+
+    const line = `🗑️ 已刪除備份檔: ${file}`;
+    log(line);
+    eventBus.push("backup", { text: line });
+    return http.sendOk(req, res, `✅ ${line}`);
+  } catch (err) {
+    const msg = `❌ 刪除備份失敗: ${err?.message || err}`;
+    error(msg);
+    eventBus.push("backup", { level: "error", text: msg });
+    return http.sendErr(req, res, msg);
+  }
+});
+
+app.listen(CONFIG.web.port, () => {
+  log(`✅ 控制面板已啟動於 http://127.0.0.1:${CONFIG.web.port}`);
+  eventBus.push("system", {
+    text: `控制面板啟動於 http://127.0.0.1:${CONFIG.web.port}`,
+  });
+  logPathInfo("listen");
+});
+
+app.post("/api/clear-game-server-init", (req, res) => {
+  try {
+    if (!CONFIG.web) CONFIG.web = {};
+    if (CONFIG.web.game_serverInit) {
+      CONFIG.web.game_serverInit = "false";
+      saveConfig();
+      eventBus.push("system", { text: "已清除 game_serverInit 旗標" });
+    }
+    return http.sendOk(req, res, "✅ game_serverInit 已清除");
+  } catch (e) {
+    return http.sendErr(req, res, `❌ 清除失敗: ${e.message}`);
+  }
+});
+app.get("/api/public-ip", async (req, res) => {
+  try {
+    const r = await fetch("https://api.ipify.org?format=json", {
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!r.ok) throw new Error(`ip service ${r.status}`);
+    const j = await r.json();
+    const ip = j.ip;
+    if (!ip) throw new Error("no ip");
+    return http.respondJson(res, { ok: true, data: { ip } }, 200);
+  } catch (e) {
     return http.respondJson(
       res,
-      { ok: true, data: { path: cfgPath, items } },
+      { ok: false, message: e.message || "取得公網 IP 失敗" },
+      500
+    );
+  }
+});
+
+app.get("/api/check-port-forward", async (req, res) => {
+  try {
+    const ip = String(req.query.ip || "").trim();
+    const port = parseInt(req.query.port, 10);
+    const protocol = (req.query.protocol || "tcp").toString().toLowerCase();
+    if (!ip)
+      return http.respondJson(res, { ok: false, message: "缺少 ip" }, 400);
+    if (!Number.isFinite(port) || port <= 0 || port > 65535)
+      return http.respondJson(res, { ok: false, message: "port 無效" }, 400);
+    if (!/^(tcp|udp)$/.test(protocol))
+      return http.respondJson(
+        res,
+        { ok: false, message: "protocol 無效" },
+        400
+      );
+
+    const dummyState = await ensureDummyGamePort(port);
+
+    let open = false;
+    let raw = null;
+
+    const url = `https://portchecker.io/api/${encodeURIComponent(
+      ip
+    )}/${port}?protocol=${protocol}`;
+    try {
+      const r = await fetch(url, {
+        headers: { Accept: "text/plain, application/json;q=0.9, */*;q=0.8" },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!r.ok) throw new Error(`portchecker.io ${r.status}`);
+
+      const ct = (r.headers.get("content-type") || "").toLowerCase();
+      let bodyText = await r.text();
+      let parsed = null;
+
+      if (/application\/json/.test(ct) || bodyText.trim().startsWith("{")) {
+        try {
+          parsed = JSON.parse(bodyText);
+        } catch (_) {}
+      }
+      raw = parsed ?? bodyText;
+
+      if (parsed) {
+        if (
+          parsed.status === "open" ||
+          parsed.open === true ||
+          parsed.result === "open" ||
+          parsed.port_open === true ||
+          parsed.online === true ||
+          parsed === true
+        ) {
+          open = true;
+        }
+      } else {
+        const s = String(bodyText).trim().toLowerCase();
+        if (s === "true" || s === "open" || s === "online") open = true;
+      }
+
+      log(
+        `[PortForwardCheck] url=${url} ct=${ct || "-"} result=${JSON.stringify(
+          raw
+        )}`
+      );
+    } catch (e) {
+      error(`[PortForwardCheck] fetch error: ${e.message}`);
+      return http.respondJson(
+        res,
+        {
+          ok: true,
+          data: {
+            ip,
+            port,
+            protocol,
+            open: false,
+            dummyListening: dummyState.listening,
+            dummyJustStarted: dummyState.started,
+            error: e.message,
+          },
+        },
+        200
+      );
+    }
+
+    return http.respondJson(
+      res,
+      {
+        ok: true,
+        data: {
+          ip,
+          port,
+          protocol,
+          open,
+          raw,
+          dummyListening: dummyState.listening,
+          dummyJustStarted: dummyState.started,
+        },
+      },
       200
     );
   } catch (e) {
     return http.respondJson(
       res,
-      { ok: false, message: e.message || "讀取失敗" },
+      { ok: false, message: e.message || "檢查失敗" },
       500
     );
   }
-});
-app.post("/api/serverconfig", (req, res) => {
-  try {
-    if (processManager.gameServer.isRunning) {
-      return http.respondJson(
-        res,
-        { ok: false, message: "伺服器運行中，禁止修改" },
-        409
-      );
-    }
-    const cfgPath = resolveServerConfigPath();
-    if (!cfgPath) {
-      return http.respondJson(
-        res,
-        { ok: false, message: "找不到 serverconfig.xml" },
-        404
-      );
-    }
-
-    const updates = req.body?.updates || {};
-    const toggles = req.body?.toggles || {};
-    const hasUpdates =
-      updates && typeof updates === "object" && !Array.isArray(updates)
-        ? Object.keys(updates).length > 0
-        : false;
-    const hasToggles =
-      toggles && typeof toggles === "object" && !Array.isArray(toggles)
-        ? Object.keys(toggles).length > 0
-        : false;
-
-    if (!hasUpdates && !hasToggles) {
-      return http.respondJson(
-        res,
-        { ok: false, message: "缺少 updates 或 toggles" },
-        400
-      );
-    }
-
-    let txt = fs.readFileSync(cfgPath, "utf-8");
-    const toggled = [];
-
-    function escReg(s) {
-      return s.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-    }
-
-    if (hasToggles) {
-      for (const [name, enable] of Object.entries(toggles)) {
-        const nameEsc = escReg(name);
-        const reCommented = new RegExp(
-          `<!--\\s*<property\\s+name="${nameEsc}"\\s+value="([^"]*)"\\s*/>\\s*-->`,
-          "i"
-        );
-        const reActive = new RegExp(
-          `<property\\s+name="${nameEsc}"\\s+value="([^"]*)"\\s*/>`,
-          "i"
-        );
-
-        if (enable) {
-          if (reCommented.test(txt)) {
-            txt = txt.replace(reCommented, (_m, val) => {
-              const newVal = Object.prototype.hasOwnProperty.call(updates, name)
-                ? updates[name]
-                : val;
-              return `<property name="${name}" value="${newVal}" />`;
-            });
-            toggled.push(`${name}:enable`);
-          }
-        } else {
-          if (reActive.test(txt)) {
-            txt = txt.replace(reActive, (_m, val) => {
-              return `<!-- <property name="${name}" value="${val}" /> -->`;
-            });
-            toggled.push(`${name}:disable`);
-          }
-        }
-      }
-
-      if (toggled.length) {
-        fs.writeFileSync(cfgPath, txt, "utf-8");
-      }
-    }
-
-    let changed = [];
-    if (hasUpdates) {
-      const result = serverConfigLib.writeValues(cfgPath, updates);
-      changed = result.changed || [];
-      txt = fs.readFileSync(cfgPath, "utf-8");
-    }
-
-    if (changed.length || toggled.length) {
-      eventBus.push("system", {
-        text: `serverconfig.xml 已更新: ${[
-          changed.length ? `值(${changed.join(",")})` : null,
-          toggled.length ? `狀態(${toggled.join(",")})` : null,
-        ]
-          .filter(Boolean)
-          .join(" ")}`,
-      });
-    }
-
-    const { items } = serverConfigLib.readValues(cfgPath);
-    return http.respondJson(
-      res,
-      {
-        ok: true,
-        data: { path: cfgPath, changed, toggled, items },
-      },
-      200
-    );
-  } catch (err) {
-    return http.respondJson(
-      res,
-      { ok: false, message: err.message || "寫入失敗" },
-      500
-    );
-  }
-});
-
-app.listen(CONFIG.web.port, () => {
-  log(`✅ 控制面板已啟動於 http://localhost:${CONFIG.web.port}`);
-  eventBus.push("system", {
-    text: `控制面板啟動於 http://localhost:${CONFIG.web.port}`,
-  });
-  logPathInfo("listen");
 });

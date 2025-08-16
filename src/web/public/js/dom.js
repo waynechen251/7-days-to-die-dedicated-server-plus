@@ -10,7 +10,6 @@
       stopServerBtn: $("stopServerBtn"),
       killServerBtn: $("killServerBtn"),
       versionSelect: $("versionSelect"),
-      abortInstallBtn: $("abortInstallBtn"),
       telnetInput: $("telnetInput"),
       telnetSendBtn: $("telnetSendBtn"),
       telnetBtns: Array.from(
@@ -18,9 +17,8 @@
       ),
       gwSelect: $("gwSelect"),
       gnSelect: $("gnSelect"),
-      exportOneBtn: $("exportOneBtn"),
+      exportGameNameBtn: $("exportGameNameBtn"),
       refreshSavesBtn: $("refreshSavesBtn"),
-      viewBackupsBtn: $("viewBackupsBtn"),
       backupSelect: $("backupSelect"),
       importBackupBtn: $("importBackupBtn"),
       importUploadFile: $("importUploadFile"),
@@ -29,7 +27,8 @@
       stSteam: $("st-steam"),
       stGame: $("st-game"),
       stTelnet: $("st-telnet"),
-      backupFullBtn: $("backupFullBtn"),
+      exportSavesBtn: $("exportSavesBtn"),
+      deleteGameNameBtn: $("deleteGameNameBtn"),
       cfgModal: $("cfgModal"),
       cfgBody: $("cfgBody"),
       cfgChecks: $("cfgChecks"),
@@ -60,6 +59,8 @@
         });
         return map;
       })(),
+
+      deleteBackupBtn: document.getElementById("deleteBackupBtn"),
     };
   }
 

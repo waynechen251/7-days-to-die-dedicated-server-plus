@@ -9,7 +9,7 @@
 #define AppServiceName "7 Days To Die Dedicated Server Plus"
 #define AppName "7DTD-DS-P"
 #define AppType "Setup"
-#define AppVersion "1.0.1"
+#define AppVersion "1.0.2"
 #define AppPublisher "waynechen251"
 #define AppURL "https://github.com/waynechen251/7-days-to-die-dedicated-server-plus"
 
@@ -141,9 +141,9 @@ begin
         '', SW_HIDE, ewWaitUntilTerminated, ResultCode
       );
 
-      // 設定啟動模式為手動
+      // 設定啟動模式為自動
       Exec('sc.exe',
-        'config {#AppName} start= demand',
+        'config {#AppName} start= auto',
         '', SW_HIDE, ewWaitUntilTerminated, ResultCode
       );
 

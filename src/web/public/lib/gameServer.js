@@ -2,6 +2,7 @@ const { spawn, execFile } = require("child_process");
 const path = require("path");
 const killTree = require("tree-kill");
 const { log, error } = require("./logger");
+const { TelnetCtor } = require("./telnet");
 
 const gameServer = {
   child: null,
@@ -148,6 +149,31 @@ const gameServer = {
     this.isTelnetConnected = false;
     this.basePath = null;
     log("✅ 狀態已重置");
+  },
+
+  async checkTelnet(config) {
+    const connection = new TelnetCtor();
+    const params = {
+      host: "127.0.0.1",
+      port: config.TelnetPort,
+      shellPrompt: ">",
+      timeout: 2000,
+      negotiationMandatory: false,
+      ors: "\n",
+      irs: "\n",
+    };
+    const started = Date.now();
+    try {
+      await connection.connect(params);
+      await connection.send(config.TelnetPassword, { waitfor: ">" });
+      this.isTelnetConnected = true;
+      return { ok: true, ms: Date.now() - started };
+    } catch (e) {
+      this.isTelnetConnected = false;
+      return { ok: false, ms: Date.now() - started, error: e.message };
+    } finally {
+      await connection.end().catch(() => {});
+    }
   },
 };
 
