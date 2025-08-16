@@ -832,6 +832,19 @@ app.post("/api/install", (req, res) => {
       },
       (code) => {
         const line = `✅ 安裝 / 更新結束，Exit Code: ${code}`;
+        try {
+          if (!CONFIG.web) CONFIG.web = {};
+          CONFIG.web.game_serverInit = true;
+          saveConfig();
+          eventBus.push("system", {
+            text: "已設定 game_serverInit=true (首次開啟編輯器時提示載入保存設定)",
+          });
+        } catch (e) {
+          eventBus.push("system", {
+            level: "warn",
+            text: `設定 game_serverInit 失敗: ${e.message}`,
+          });
+        }
         http.writeStamped(res, line);
         res.end();
         eventBus.push("steamcmd", { text: line });
@@ -1385,4 +1398,19 @@ app.listen(CONFIG.web.port, () => {
     text: `控制面板啟動於 http://127.0.0.1:${CONFIG.web.port}`,
   });
   logPathInfo("listen");
+});
+
+// 在適當位置(例如其它 API 定義區塊附近)新增清除旗標 API
+app.post("/api/clear-game-server-init", (req, res) => {
+  try {
+    if (!CONFIG.web) CONFIG.web = {};
+    if (CONFIG.web.game_serverInit) {
+      CONFIG.web.game_serverInit = false;
+      saveConfig();
+      eventBus.push("system", { text: "已清除 game_serverInit 旗標" });
+    }
+    return http.sendOk(req, res, "✅ game_serverInit 已清除");
+  } catch (e) {
+    return http.sendErr(req, res, `❌ 清除失敗: ${e.message}`);
+  }
 });

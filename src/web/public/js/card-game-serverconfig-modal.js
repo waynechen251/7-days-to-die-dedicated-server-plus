@@ -44,10 +44,11 @@
         "<div style='padding:8px;font-size:0.75rem;'>讀取中...</div>";
 
     try {
-      const [procRes, cfgRes, savesRes] = await Promise.all([
+      const [procRes, cfgRes, savesRes, appCfgRes] = await Promise.all([
         fetchJSON("/api/process-status").catch(() => null),
         fetchJSON("/api/serverconfig"),
         fetchJSON("/api/saves/list"),
+        fetchJSON("/api/get-config").catch(() => null),
       ]);
       ensureDom();
       if (!cfgRes.ok) throw new Error(cfgRes.message || "讀取設定失敗");
@@ -89,6 +90,45 @@
       if (S.cfg.locked) {
         D.cfgSaveBtn && (D.cfgSaveBtn.disabled = true);
         D.cfgSaveStartBtn && (D.cfgSaveStartBtn.disabled = true);
+      }
+
+      const gsInit =
+        appCfgRes?.data?.web && appCfgRes.data.web.game_serverInit === true;
+      if (gsInit && !S.cfg.locked) {
+        try {
+          const proceed = await (window.DangerConfirm
+            ? window.DangerConfirm.showConfirm(
+                "偵測到剛完成安裝。是否載入上次保存的 game_server 設定?\n(選擇『載入設定』將覆蓋目前編輯器中的值)",
+                {
+                  title: "載入上次保存設定",
+                  continueText: "載入設定",
+                  cancelText: "略過",
+                }
+              )
+            : Promise.resolve(window.confirm("是否載入上次保存設定?")));
+          fetch("/api/clear-game-server-init", { method: "POST" }).catch(
+            () => {}
+          );
+          if (proceed) {
+            if (typeof loadAdminGameServerConfig === "function") {
+              await loadAdminGameServerConfig();
+            } else if (loadBtn) {
+              loadBtn.click();
+            }
+          } else {
+            App.console.appendLog(
+              "system",
+              "ℹ️ 已略過載入上次保存設定",
+              Date.now()
+            );
+          }
+        } catch (e) {
+          App.console.appendLog(
+            "system",
+            `⚠️ 初始載入提示失敗: ${e.message}`,
+            Date.now()
+          );
+        }
       }
 
       if (!S.cfg.locked) await runCfgChecks();
