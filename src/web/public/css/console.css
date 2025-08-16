@@ -53,7 +53,6 @@
   user-select: none;
 }
 .dock-bar-spacer {
-  /* 補: 使 dock 工具列左右元件可拉開 */
   flex: 1;
 }
 .dock-toggle {
@@ -84,15 +83,10 @@
   color: #fff;
   box-shadow: 0 0 0 1px #1d4ed8 inset;
 }
-.console-tabs button.unread:not(.active) {
-  box-shadow: 0 0 0 2px #f59e0b inset;
-}
+.console-tabs button.unread,
+.console-tabs button.unread:not(.active),
 .console-tabs button.unread.active {
-  box-shadow: 0 0 0 2px #f59e0b inset, 0 0 0 1px #1d4ed8;
-}
-/* 補: 一般（非 dock 限定）未讀標籤樣式 */
-.console-tabs button.unread {
-  box-shadow: 0 0 0 2px #f59e0b inset;
+  box-shadow: none !important;
 }
 .console {
   border: 1px solid #222;

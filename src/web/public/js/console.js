@@ -41,6 +41,12 @@
     }
   }
 
+  function restoreUnreadBadges() {
+    Object.keys(panes).forEach((topic) => {
+      tabBtns[topic]?.classList.remove("unread");
+    });
+  }
+
   function appendLog(topic, line, ts) {
     const p = panes[topic] || panes.system;
     const nearBottom = p.scrollTop + p.clientHeight >= p.scrollHeight - 5;
@@ -57,23 +63,10 @@
     const t = Number(ts) || Date.now();
     S.lastSeen[topic] = Math.max(S.lastSeen[topic] || 0, t);
     S.persistLastSeen();
-    if (topic !== S.activeTab && t > (S.lastRead[topic] || 0)) {
-      App.dom.tabBtns[topic]?.classList.add("unread");
+    const btn = tabBtns[topic];
+    if (btn) {
+      btn.classList.remove("unread");
     }
-  }
-
-  function restoreUnreadBadges() {
-    Object.keys(panes).forEach((topic) => {
-      if (topic === S.activeTab) {
-        tabBtns[topic]?.classList.remove("unread");
-        return;
-      }
-      if ((S.lastSeen[topic] || 0) > (S.lastRead[topic] || 0)) {
-        tabBtns[topic]?.classList.add("unread");
-      } else {
-        tabBtns[topic]?.classList.remove("unread");
-      }
-    });
   }
 
   function appendStamped(topic, text, ts) {

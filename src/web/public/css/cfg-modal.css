@@ -95,7 +95,6 @@
   color: var(--c-text);
 }
 .cfg-grid .cfg-label {
-  /* 補: 與 style.css 一致的文字色彩（保留既有 nowrap 設定） */
   color: var(--c-text-sec);
   word-break: normal;
   white-space: nowrap;
@@ -113,7 +112,6 @@
   }
 }
 @media (max-width: 900px) {
-  /* 補: 窄版單欄配置與允許換行 */
   .cfg-grid {
     grid-template-columns: 1fr;
   }

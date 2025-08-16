@@ -134,12 +134,8 @@
       ? true
       : selected !== S.installedVersion;
 
-    if (!S.current.steamRunning && !S.backupInProgress) {
-      if (S.versionNeedsInstall) {
-        D.installServerBtn?.classList.add("btn--attention");
-      } else {
-        D.installServerBtn?.classList.remove("btn--attention");
-      }
+    if (D.installServerBtn) {
+      D.installServerBtn.classList.remove("btn--attention");
     }
 
     const badgeEl =
@@ -194,7 +190,6 @@
     versionLabel,
   };
 
-  // fragments 載入後補跑一次 (解決啟動時元素尚未存在)
   if (w.__fragmentsReady) {
     setTimeout(updateVersionLockUI, 0);
   } else {
