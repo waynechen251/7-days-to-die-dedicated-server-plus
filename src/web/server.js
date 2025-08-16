@@ -30,15 +30,42 @@ const UPLOADS_DIR = path.join(BACKUP_SAVES_DIR, "_uploads");
 
 function getSavesRoot() {
   const gs = CONFIG?.game_server || {};
-  return gs.UserDataFolder || gs.saves || "";
+  let root = gs.UserDataFolder || gs.saves || "";
+  if (!root) return "";
+  try {
+    const baseName = path.basename(root).toLowerCase();
+    if (baseName !== "saves") {
+      const candidate = path.join(root, "Saves");
+      if (fs.existsSync(candidate) && fs.statSync(candidate).isDirectory()) {
+        return candidate;
+      }
+    }
+  } catch (_) {}
+  return root;
 }
 
 function logPathInfo(reason) {
   try {
-    const savesPath = CONFIG?.game_server?.saves || "(未設定)";
-    log(`ℹ️ [${reason}] 遊戲存檔目錄(Game Saves): ${savesPath}`);
+    const configured =
+      CONFIG?.game_server?.UserDataFolder ||
+      CONFIG?.game_server?.saves ||
+      "(未設定)";
+    const effective = getSavesRoot() || "(未偵測)";
+    log(
+      `ℹ️ [${reason}] 遊戲存檔目錄(設定值 UserDataFolder/saves): ${configured}`
+    );
+    if (effective !== configured) {
+      log(`ℹ️ [${reason}] 遊戲存檔目錄(實際使用 Saves 根目錄): ${effective}`);
+    }
     log(`ℹ️ [${reason}] 備份存放目錄(Backups): ${BACKUP_SAVES_DIR}`);
-    eventBus.push("system", { text: `[${reason}] Game Saves: ${savesPath}` });
+    eventBus.push("system", {
+      text: `[${reason}] Game Saves(Config): ${configured}`,
+    });
+    if (effective !== configured) {
+      eventBus.push("system", {
+        text: `[${reason}] Game Saves(Effective): ${effective}`,
+      });
+    }
     eventBus.push("system", {
       text: `[${reason}] Backups Dir: ${BACKUP_SAVES_DIR}`,
     });

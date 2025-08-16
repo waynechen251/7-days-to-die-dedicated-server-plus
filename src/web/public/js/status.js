@@ -96,16 +96,17 @@
     const canManageSaves = !gameRunning && !lockBecauseBackup;
     setDisabled(
       [
-        D.gwSelect,
-        D.gnSelect,
-        D.refreshSavesBtn,
         D.viewBackupsBtn,
-        D.backupSelect,
         D.importBackupBtn,
         D.importUploadFile,
         D.importUploadBtn,
       ],
       !canManageSaves
+    );
+
+    setDisabled(
+      [D.gwSelect, D.gnSelect, D.refreshSavesBtn, D.backupSelect],
+      false
     );
 
     syncConfigLockFromStatus();

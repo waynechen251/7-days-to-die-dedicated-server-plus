@@ -7,3 +7,9 @@
   gap: var(--space-2);
   min-width: 0;
 }
+.card-saves .form-grid.backup-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+.card-saves .form-grid.backup-grid > .field.span-2 {
+  grid-column: 1 / -1;
+}
