@@ -137,16 +137,6 @@
 
     on(D.refreshSavesBtn, "click", () => App.saves.loadSaves());
 
-    on(D.viewBackupsBtn, "click", async () => {
-      switchTab("backup");
-      try {
-        const msg = await fetchText("/api/view-saves", { method: "POST" });
-        appendLog("backup", msg, Date.now());
-      } catch (e) {
-        appendLog("backup", `❌ ${e.message}`, Date.now());
-      }
-    });
-
     on(D.exportGameNameBtn, "click", async () => {
       const world = D.gwSelect.value || "";
       const name = D.gnSelect.value || "";

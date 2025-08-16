@@ -19,7 +19,6 @@
       gnSelect: $("gnSelect"),
       exportGameNameBtn: $("exportGameNameBtn"),
       refreshSavesBtn: $("refreshSavesBtn"),
-      viewBackupsBtn: $("viewBackupsBtn"),
       backupSelect: $("backupSelect"),
       importBackupBtn: $("importBackupBtn"),
       importUploadFile: $("importUploadFile"),
