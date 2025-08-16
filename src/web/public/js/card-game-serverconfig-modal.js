@@ -33,6 +33,7 @@
   function closeCfgModal() {
     D.cfgModal?.classList.add("hidden");
     D.cfgModal?.setAttribute("aria-hidden", "true");
+    clearInterval(S.__cfgCheckTimer);
   }
 
   async function openConfigModal() {
@@ -131,7 +132,13 @@
         }
       }
 
-      if (!S.cfg.locked) await runCfgChecks();
+      if (!S.cfg.locked) {
+        await runCfgChecks();
+        clearInterval(S.__cfgCheckTimer);
+        S.__cfgCheckTimer = setInterval(() => {
+          runCfgChecks().catch(() => {});
+        }, 5000);
+      }
     } catch (e) {
       App.console.appendLog(
         "system",
@@ -655,18 +662,84 @@
       const sp = parseInt(values.ServerPort, 10);
       if (Number.isFinite(sp) && sp > 0 && sp <= 65535) {
         asyncChecks.push(
-          fetchJSON(`/api/check-port?port=${sp}`)
-            .then((r) => {
-              const inUse = !!r?.data?.inUse;
-              results.push(
-                inUse
-                  ? { ok: false, text: `ServerPort ${sp} 已被佔用` }
-                  : { ok: true, text: `ServerPort ${sp} 可用` }
+          (async () => {
+            try {
+              try {
+                const localRes = await fetchJSON(`/api/check-port?port=${sp}`);
+                if (localRes?.ok) {
+                  if (localRes.data?.inUse) {
+                    results.push({
+                      ok: false,
+                      text: `ServerPort 本機 ${sp} 已被佔用`,
+                    });
+                  } else {
+                    results.push({
+                      ok: true,
+                      text: `ServerPort 本機 ${sp} 未被佔用`,
+                    });
+                  }
+                } else {
+                  results.push({
+                    ok: "warn",
+                    text: `ServerPort 本機檢查失敗: ${
+                      localRes?.message || "未知錯誤"
+                    }`,
+                  });
+                }
+              } catch (e) {
+                results.push({
+                  ok: "warn",
+                  text: `ServerPort 本機檢查例外: ${e.message}`,
+                });
+              }
+
+              const ipRes = await fetchJSON("/api/public-ip");
+              const pubIp = ipRes?.data?.ip;
+              if (!pubIp) {
+                results.push({
+                  ok: "warn",
+                  text: "ServerPort 檢查異常: 無法取得公網 IP",
+                });
+                return;
+              }
+              const pfRes = await fetchJSON(
+                `/api/check-port-forward?ip=${encodeURIComponent(
+                  pubIp
+                )}&port=${sp}`
               );
-            })
-            .catch(() =>
-              results.push({ ok: false, text: "ServerPort 檢查失敗" })
-            )
+              if (pfRes.ok) {
+                const svcErr = !!pfRes.data?.error;
+                if (pfRes.data?.open === true) {
+                  results.push({
+                    ok: true,
+                    text: `ServerPort 轉發正常：${pubIp}:${sp} 可從公網連線`,
+                  });
+                } else if (svcErr) {
+                  results.push({
+                    ok: "warn",
+                    text: `ServerPort 轉發檢查服務失敗：${pfRes.data.error}`,
+                  });
+                } else {
+                  results.push({
+                    ok: "warn",
+                    text: `ServerPort 轉發測試未通：${pubIp}:${sp}（請稍後再試或確認 NAT/防火牆）`,
+                  });
+                }
+              } else {
+                results.push({
+                  ok: "warn",
+                  text: `ServerPort 轉發檢查錯誤: ${
+                    pfRes.message || "未知錯誤"
+                  }`,
+                });
+              }
+            } catch (e) {
+              results.push({
+                ok: "warn",
+                text: `ServerPort 檢查異常: ${e.message}`,
+              });
+            }
+          })()
         );
       }
     }
