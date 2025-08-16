@@ -7,7 +7,7 @@ async function checkTelnet(config, target = gameServer) {
   const connection = new TelnetCtor();
   const params = {
     host: "127.0.0.1",
-    port: config.telnetPort,
+    port: config.TelnetPort,
     shellPrompt: ">",
     timeout: 2000,
     negotiationMandatory: false,
@@ -16,7 +16,7 @@ async function checkTelnet(config, target = gameServer) {
   };
   try {
     await connection.connect(params);
-    await connection.send(config.telnetPassword, { waitfor: ">" });
+    await connection.send(config.TelnetPassword, { waitfor: ">" });
     target.isTelnetConnected = true;
   } catch (err) {
     target.isTelnetConnected = false;

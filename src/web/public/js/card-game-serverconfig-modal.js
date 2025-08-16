@@ -18,6 +18,13 @@
     D.cfgCancelBtn?.addEventListener("click", closeCfgModal);
     D.cfgSaveBtn?.addEventListener("click", () => saveConfigValues(false));
     D.cfgSaveStartBtn?.addEventListener("click", () => saveConfigValues(true));
+
+    const loadBtn =
+      D.cfgLoadAdminBtn || document.getElementById("cfgLoadAdminBtn");
+    if (loadBtn && !loadBtn.__bound_loadAdmin) {
+      loadBtn.addEventListener("click", loadAdminGameServerConfig);
+      loadBtn.__bound_loadAdmin = true;
+    }
   }
 
   if (w.__fragmentsReady) bindButtons();
@@ -492,5 +499,104 @@
     } else {
       console.warn("cfgBody 尚未就緒，跳過 observe");
     }
+  }
+
+  async function loadAdminGameServerConfig() {
+    ensureDom();
+    if (!D.cfgBody) return;
+    if (
+      !confirm(
+        "是否確定載入後台管理設定?\n此動作將以 server.json 的 game_server 內容覆蓋目前編輯器中的值 (尚未保存)。"
+      )
+    )
+      return;
+    try {
+      const cfg = await fetchJSON("/api/get-config");
+      const gs = cfg?.data?.game_server || {};
+      if (!gs || typeof gs !== "object") throw new Error("缺少 game_server");
+      applyGameServerValuesToEditor(gs);
+      App.console.appendLog(
+        "system",
+        "✅ 已載入上次保存設定到編輯器 (尚未保存)",
+        Date.now()
+      );
+    } catch (e) {
+      App.console.appendLog(
+        "system",
+        `❌ 載入上次保存設定失敗: ${e.message}`,
+        Date.now()
+      );
+    }
+  }
+
+  function applyGameServerValuesToEditor(gs) {
+    ensureDom();
+    if (!D.cfgBody) return;
+
+    const inputsByName = new Map();
+    D.cfgBody.querySelectorAll("[data-name]").forEach((el) => {
+      const n = el.dataset.name;
+      if (!n) return;
+      const list = inputsByName.get(n) || [];
+      list.push(el);
+      inputsByName.set(n, list);
+    });
+
+    const enableMap = new Map();
+    D.cfgBody
+      .querySelectorAll(".cfg-enable")
+      .forEach((cb) => enableMap.set(cb.dataset.enableFor, cb));
+
+    let applied = 0;
+
+    inputsByName.forEach((els, name) => {
+      if (!Object.prototype.hasOwnProperty.call(gs, name)) return;
+      const val = gs[name];
+      els.forEach((el) => {
+        if (el.dataset.type === "boolean") {
+          el.value = /^(true|1)$/i.test(String(val)) ? "true" : "false";
+        } else {
+          el.value = String(val);
+        }
+        const combo = el.closest(".cfg-combo");
+        if (combo) {
+          combo.querySelectorAll("select[data-name]").forEach((sel) => {
+            const hasOpt = Array.from(sel.options).some(
+              (o) => o.value === String(val)
+            );
+            sel.value = hasOpt ? String(val) : "";
+          });
+          if (!S.cfg.locked) {
+            combo
+              .querySelectorAll("input,select")
+              .forEach((c) => (c.disabled = false));
+          }
+        } else if (!S.cfg.locked) {
+          el.disabled = false;
+        }
+      });
+
+      const cb = enableMap.get(name);
+      if (cb) {
+        cb.checked = true;
+      }
+      applied++;
+    });
+
+    if (applied === 0) {
+      App.console.appendLog(
+        "system",
+        "ℹ️ 載入後台設定: 無可套用的屬性 (server.json 中的 game_server 可能尚未保存或屬性名稱不相符)",
+        Date.now()
+      );
+    } else {
+      App.console.appendLog(
+        "system",
+        `✅ 已套用後台設定 (${applied} 項) (尚未保存)`,
+        Date.now()
+      );
+    }
+
+    rerunChecks();
   }
 })(window);

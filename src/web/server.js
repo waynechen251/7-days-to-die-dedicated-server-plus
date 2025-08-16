@@ -28,6 +28,11 @@ const PUBLIC_DIR = path.join(baseDir, "public");
 const BACKUP_SAVES_DIR = path.join(PUBLIC_DIR, "saves");
 const UPLOADS_DIR = path.join(BACKUP_SAVES_DIR, "_uploads");
 
+function getSavesRoot() {
+  const gs = CONFIG?.game_server || {};
+  return gs.UserDataFolder || gs.saves || "";
+}
+
 function logPathInfo(reason) {
   try {
     const savesPath = CONFIG?.game_server?.saves || "(未設定)";
@@ -75,6 +80,30 @@ function saveConfig() {
   }
 }
 
+function syncGameServerFromItems(items) {
+  if (!CONFIG.game_server) CONFIG.game_server = {};
+  const gs = CONFIG.game_server;
+  let synced = 0;
+  let removed = 0;
+  const existingKeys = Object.keys(gs);
+
+  items.forEach(({ name, value }) => {
+    const lower = name.toLowerCase();
+    existingKeys.forEach((k) => {
+      if (k !== name && k.toLowerCase() === lower) {
+        delete gs[k];
+        removed++;
+      }
+    });
+    if (gs[name] !== value) {
+      gs[name] = value;
+      synced++;
+    }
+  });
+
+  return { synced, removed };
+}
+
 const GAME_DIR = resolveDirCaseInsensitive(baseDir, "7DaysToDieServer");
 
 let stopGameTail = null;
@@ -117,6 +146,20 @@ function loadConfig() {
       }
     }
 
+    try {
+      if (config.game_server) {
+        if (config.game_server.saves && !config.game_server.UserDataFolder) {
+          config.game_server.UserDataFolder = config.game_server.saves;
+          delete config.game_server.saves;
+          log("ℹ️ 遷移 game_server.saves -> game_server.UserDataFolder");
+          fs.writeFileSync(
+            serverJsonPath,
+            JSON.stringify(config, null, 2),
+            "utf-8"
+          );
+        }
+      }
+    } catch (_) {}
     return config;
   } catch (err) {
     error(`❌ 讀取設定檔失敗: ${serverJsonPath}\n${err.message}`);
@@ -207,7 +250,7 @@ function detectBackupType(root) {
 }
 async function autoPreImportBackup(det) {
   try {
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot))
       return { ok: true, skipped: true, reason: "savesRoot-missing" };
     ensureDir(BACKUP_SAVES_DIR);
@@ -243,11 +286,11 @@ async function autoPreImportBackup(det) {
   }
 }
 async function importArchive(zipPath) {
-  const savesRoot = CONFIG?.game_server?.saves;
+  const savesRoot = getSavesRoot();
   if (!savesRoot || !fs.existsSync(savesRoot))
     return {
       ok: false,
-      message: "找不到遊戲存檔根目錄(CONFIG.game_server.saves)",
+      message: "找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)",
     };
   const det = await archive.inspectZip(zipPath);
   if (!det || det.type === "unknown")
@@ -393,7 +436,7 @@ app.get("/api/check-port", async (req, res) => {
 });
 app.get("/api/saves/list", (req, res) => {
   try {
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     const saves =
       savesRoot && fs.existsSync(savesRoot) ? listGameSaves(savesRoot) : [];
     ensureDir(BACKUP_SAVES_DIR);
@@ -434,12 +477,12 @@ app.post("/api/view-saves", (req, res) => {
 });
 app.post("/api/saves/export-one", async (req, res) => {
   try {
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot)) {
       return http.sendErr(
         req,
         res,
-        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)"
       );
     }
     const world = sanitizeName(req.body?.world);
@@ -466,12 +509,12 @@ app.post("/api/saves/export-one", async (req, res) => {
 });
 app.post("/api/saves/export-all", async (req, res) => {
   try {
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot)) {
       return http.sendErr(
         req,
         res,
-        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)"
       );
     }
     ensureDir(BACKUP_SAVES_DIR);
@@ -492,7 +535,7 @@ app.post("/api/saves/export-all", async (req, res) => {
 });
 async function performPreImportBackup() {
   try {
-    const src = CONFIG?.game_server?.saves;
+    const src = getSavesRoot();
     if (!src || !fs.existsSync(src))
       return { ok: false, message: "找不到存檔資料夾" };
     ensureDir(BACKUP_SAVES_DIR);
@@ -536,12 +579,12 @@ function collectStructure(root) {
 }
 app.post("/api/saves/import-one", async (req, res) => {
   try {
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot)) {
       return http.sendErr(
         req,
         res,
-        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)"
       );
     }
     const world = sanitizeName(req.body?.world);
@@ -604,12 +647,12 @@ app.post("/api/saves/import-upload", rawUpload, async (req, res) => {
   try {
     const buf = req.body;
     if (!buf || !buf.length) return http.sendErr(req, res, "❌ 未收到檔案");
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot)) {
       return http.sendErr(
         req,
         res,
-        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)"
       );
     }
     ensureDir(UPLOADS_DIR);
@@ -644,7 +687,7 @@ app.post("/api/saves/import-upload", rawUpload, async (req, res) => {
 });
 app.post("/api/backup", async (req, res) => {
   try {
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot)) {
       const msg = `❌ 備份失敗: 找不到存檔資料夾(${savesRoot || "未設定"})`;
       error(msg);
@@ -803,9 +846,9 @@ app.post("/api/start", async (req, res) => {
     }
 
     try {
-      if (!CONFIG.game_server) CONFIG.game_server = {};
       if (configArg) {
         const { items } = serverConfigLib.readValues(configArg);
+        const { synced, removed } = syncGameServerFromItems(items);
         const get = (n) =>
           String(items.find((x) => x.name === n)?.value ?? "").trim();
         const asBool = (s) => /^(true|1)$/i.test(String(s || ""));
@@ -813,20 +856,18 @@ app.post("/api/start", async (req, res) => {
           const n = parseInt(String(s || ""), 10);
           return Number.isFinite(n) ? n : undefined;
         };
-
         const tEnabled = asBool(get("TelnetEnabled"));
         const tPort = asInt(get("TelnetPort"));
         const tPwd = get("TelnetPassword");
         const sPort = asInt(get("ServerPort"));
-
         if (typeof tEnabled === "boolean")
-          CONFIG.game_server.telnetEnabled = tEnabled;
-        if (tPort) CONFIG.game_server.telnetPort = tPort;
-        if (tPwd) CONFIG.game_server.telnetPassword = tPwd;
-        if (sPort) CONFIG.game_server.serverPort = sPort;
-
+          CONFIG.game_server.TelnetEnabled = tEnabled.toString();
+        if (tPort) CONFIG.game_server.TelnetPort = tPort.toString();
+        if (tPwd) CONFIG.game_server.TelnetPassword = tPwd;
+        if (sPort) CONFIG.game_server.ServerPort = sPort.toString();
+        if (synced > 0 || removed > 0) saveConfig();
         eventBus.push("system", {
-          text: `已讀取 telnet/port 設定: TelnetEnabled=${tEnabled}, TelnetPort=${tPort}, ServerPort=${sPort}`,
+          text: `已同步並讀取 serverconfig.xml 屬性 (${items.length}) (更新${synced}項, 修正大小寫${removed}項)`,
         });
       }
     } catch (e) {
@@ -867,18 +908,19 @@ app.post("/api/start", async (req, res) => {
       } catch (_) {}
     stopGameTail = tailFile(logFilePath, (line) => {
       eventBus.push("game", { level: "stdout", text: line });
-
       const m = line.match(/UserDataFolder:\s*(.+)$/i);
       if (m && m[1]) {
         const detected = m[1].trim().replace(/\//g, "\\");
         try {
           if (!CONFIG.game_server) CONFIG.game_server = {};
-          const newSaves = `${detected}\\Saves`;
-          if (CONFIG.game_server.saves !== newSaves) {
-            CONFIG.game_server.saves = newSaves;
+          const newRoot = `${detected}\\Saves`;
+          const prev = getSavesRoot();
+          if (prev !== newRoot) {
+            CONFIG.game_server.UserDataFolder = newRoot;
+            if (CONFIG.game_server.saves) delete CONFIG.game_server.saves;
             saveConfig();
             eventBus.push("system", {
-              text: `自動偵測存檔目錄: ${newSaves}`,
+              text: `自動偵測七日殺伺服器存檔目錄: ${newRoot}`,
             });
             logPathInfo("detect");
           }
@@ -1105,7 +1147,6 @@ app.post("/api/serverconfig", (req, res) => {
           `<property\\s+name="${nameEsc}"\\s+value="([^"]*)"\\s*/>`,
           "i"
         );
-
         if (enable) {
           if (reCommented.test(txt)) {
             txt = txt.replace(reCommented, (_m, val) => {
@@ -1125,37 +1166,36 @@ app.post("/api/serverconfig", (req, res) => {
           }
         }
       }
-
-      if (toggled.length) {
-        fs.writeFileSync(cfgPath, txt, "utf-8");
-      }
+      if (toggled.length) fs.writeFileSync(cfgPath, txt, "utf-8");
     }
 
     let changed = [];
     if (hasUpdates) {
       const result = serverConfigLib.writeValues(cfgPath, updates);
       changed = result.changed || [];
-      txt = fs.readFileSync(cfgPath, "utf-8");
-    }
-
-    if (changed.length || toggled.length) {
-      eventBus.push("system", {
-        text: `serverconfig.xml 已更新: ${[
-          changed.length ? `值(${changed.join(",")})` : null,
-          toggled.length ? `狀態(${toggled.join(",")})` : null,
-        ]
-          .filter(Boolean)
-          .join(" ")}`,
-      });
     }
 
     const { items } = serverConfigLib.readValues(cfgPath);
+
+    try {
+      if (!CONFIG.game_server) CONFIG.game_server = {};
+      const { synced, removed } = syncGameServerFromItems(items);
+      if (synced > 0 || removed > 0) {
+        saveConfig();
+        eventBus.push("system", {
+          text: `已同步 serverconfig.xml 至 server.json (${synced}項變更, 修正大小寫${removed}項)`,
+        });
+      }
+    } catch (e) {
+      eventBus.push("system", {
+        level: "warn",
+        text: `同步 server.json 失敗: ${e?.message || e}`,
+      });
+    }
+
     return http.respondJson(
       res,
-      {
-        ok: true,
-        data: { path: cfgPath, changed, toggled, items },
-      },
+      { ok: true, data: { path: cfgPath, changed, toggled, items } },
       200
     );
   } catch (err) {
@@ -1171,12 +1211,12 @@ app.post("/api/saves/delete", async (req, res) => {
     if (processManager.gameServer.isRunning) {
       return http.sendErr(req, res, "❌ 伺服器運行中，禁止刪除存檔");
     }
-    const savesRoot = CONFIG?.game_server?.saves;
+    const savesRoot = getSavesRoot();
     if (!savesRoot || !fs.existsSync(savesRoot)) {
       return http.sendErr(
         req,
         res,
-        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.saves)"
+        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)"
       );
     }
     const world = sanitizeName(req.body?.world);
