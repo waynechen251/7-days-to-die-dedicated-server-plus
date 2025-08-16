@@ -54,7 +54,7 @@
 
   async function refreshStatus() {
     try {
-      const s = await fetchJSON("/api/process-status", { method: "GET" });
+      const s = await fetchJSON("/api/processManager/status", { method: "GET" });
       const game = s.data?.gameServer || {};
       const steam = s.data?.steamCmd || {};
       S.hasEverConnected = true;

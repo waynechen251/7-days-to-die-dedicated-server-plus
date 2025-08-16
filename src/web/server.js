@@ -159,6 +159,20 @@ processManager.initStatus({
   sendTelnetCommand,
 });
 
+processManager.registerRoutes(app, {
+  eventBus,
+  http,
+  getStopGameTail: () => stopGameTail,
+  clearStopGameTail: () => {
+    if (stopGameTail) {
+      try {
+        stopGameTail();
+      } catch (_) {}
+    }
+    stopGameTail = null;
+  },
+});
+
 const rawUpload = express.raw({
   type: "application/octet-stream",
   limit: "4096mb",
@@ -375,23 +389,6 @@ app.get("/api/stream", eventBus.sseHandler);
 
 app.get("/api/get-config", (req, res) => {
   return http.respondJson(res, { ok: true, data: CONFIG }, 200);
-});
-
-app.get("/api/process-status", async (req, res) => {
-  if (req.query?.refresh === "1") {
-    processManager.status.refresh().catch(() => {});
-  }
-  const ps = processManager.status.get();
-  return http.respondJson(
-    res,
-    {
-      ok: true,
-      data: ps.status,
-      lastUpdated: ps.lastUpdated,
-      updating: ps.updating,
-    },
-    200
-  );
 });
 
 function tryBindOnce(port, host) {
@@ -977,46 +974,6 @@ app.post("/api/stop", async (req, res) => {
     error(msg);
     eventBus.push("system", { level: "error", text: msg });
     http.sendErr(req, res, `${msg}`);
-  }
-});
-
-app.post("/api/kill", async (req, res) => {
-  try {
-    const pidFromBody = req.body?.pid;
-    const targetPid = pidFromBody ?? processManager.gameServer.getPid();
-    if (!targetPid) {
-      const warn = "⚠️ 無可用 PID，可用狀態已重置";
-      log(warn);
-      eventBus.push("system", { text: warn });
-      return http.sendOk(req, res, `✅ ${warn}`);
-    }
-    eventBus.push("system", { text: `🗡️ 送出強制結束請求 pid=${targetPid}` });
-    const ok = await processManager.gameServer.killByPid(targetPid);
-
-    if (stopGameTail) {
-      try {
-        stopGameTail();
-      } catch (_) {}
-    }
-    stopGameTail = null;
-
-    if (ok) {
-      processManager.status.resetVersion();
-      const line = `⚠️ 已強制結束遊戲進程 pid=${targetPid}`;
-      log(line);
-      eventBus.push("system", { text: line });
-      return http.sendOk(req, res, `✅ ${line}`);
-    } else {
-      const line = `❌ 強制結束失敗 pid=${targetPid}(可能為權限不足或進程不存在)`;
-      error(line);
-      eventBus.push("system", { level: "error", text: line });
-      return http.sendErr(req, res, line);
-    }
-  } catch (err) {
-    const msg = `❌ 強制結束失敗: ${err?.message || err}`;
-    error(msg);
-    eventBus.push("system", { level: "error", text: msg });
-    http.sendErr(req, res, msg);
   }
 });
 

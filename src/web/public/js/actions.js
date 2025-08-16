@@ -108,7 +108,7 @@
       try {
         appendLog(
           "system",
-          await fetchText("/api/kill", { method: "POST" }),
+          await fetchText("/api/processManager/game_server/kill", { method: "POST" }),
           Date.now()
         );
       } catch (e) {

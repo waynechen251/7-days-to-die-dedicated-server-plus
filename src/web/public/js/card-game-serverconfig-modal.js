@@ -45,7 +45,7 @@
 
     try {
       const [procRes, cfgRes, savesRes, appCfgRes] = await Promise.all([
-        fetchJSON("/api/process-status").catch(() => null),
+        fetchJSON("/api/processManager/status").catch(() => null),
         fetchJSON("/api/serverconfig"),
         fetchJSON("/api/saves/list"),
         fetchJSON("/api/get-config").catch(() => null),
