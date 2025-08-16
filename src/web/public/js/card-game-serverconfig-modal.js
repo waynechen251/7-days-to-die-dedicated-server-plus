@@ -88,6 +88,7 @@
       S.cfg.commentedOriginal = new Map(
         items.map((x) => [x.name, !!x.commented])
       );
+      S.cfg.webPort = parseInt(appCfgRes?.data?.web?.port, 10) || NaN;
       renderCfgEditor(items);
 
       S.cfg.locked = App.status.computeGameRunning();
@@ -614,6 +615,7 @@
     if (!D.cfgChecks) return { passAll: true, results: [] };
     const { values, enables } = readCfgValuesFromUI();
     const results = [];
+    const webPort = Number.isFinite(S.cfg.webPort) ? S.cfg.webPort : NaN;
 
     function needEnabled(name, failMsgIfDisabled, validateFn) {
       if (!enables[name]) {
@@ -664,6 +666,41 @@
         text: "EACEnabled=true: 啟用 EAC 時無法使用模組",
       });
     else results.push({ ok: true, text: "EACEnabled=false" });
+
+    (function equalPortGuards() {
+      const portEntries = [];
+      Object.keys(values).forEach((k) => {
+        if (!/Port$/i.test(k)) return;
+        if (!enables[k]) return;
+        const v = parseInt(values[k], 10);
+        if (!Number.isFinite(v) || v <= 0 || v > 65535) return;
+        portEntries.push({ name: k, port: v });
+      });
+
+      if (Number.isFinite(webPort)) {
+        for (const pe of portEntries) {
+          if (pe.port === webPort) {
+            results.push({
+              ok: false,
+              text: `${pe.name} 不可與控制台埠 ${webPort} 相同(避免衝突)`,
+            });
+          }
+        }
+      }
+
+      for (let i = 0; i < portEntries.length; i++) {
+        for (let j = i + 1; j < portEntries.length; j++) {
+          const a = portEntries[i];
+          const b = portEntries[j];
+          if (a.port === b.port) {
+            results.push({
+              ok: false,
+              text: `${a.name} 與 ${b.name} 不可使用相同埠 (${a.port})`,
+            });
+          }
+        }
+      }
+    })();
 
     const asyncChecks = [];
     if (enables.ServerPort) {
@@ -730,7 +767,7 @@
                 } else {
                   results.push({
                     ok: "warn",
-                    text: `ServerPort 轉發測試未通：${pubIp}:${sp}（請稍後再試或確認 NAT/防火牆）`,
+                    text: `ServerPort 轉發測試未通：${pubIp}:${sp}(請稍後再試或確認 NAT/防火牆)`,
                   });
                 }
               } else {

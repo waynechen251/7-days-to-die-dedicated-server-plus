@@ -99,7 +99,7 @@
             App.adminConfig.open();
           } else if (!alreadyBound) {
             console.error("管理後台設定視窗綁定失敗：缺少 open()");
-            alert("載入管理後台設定視窗失敗（缺少開啟方法）");
+            alert("載入管理後台設定視窗失敗(缺少開啟方法)");
           }
         } catch (e) {
           console.error(e);
