@@ -150,7 +150,7 @@ function listWorldTemplates() {
 
 let stopGameTail = null;
 let lastGameVersion = null;
-let lastGameVersionAt = 0;
+let gameVersionFetched = false;
 
 const app = express();
 app.use(express.json());
@@ -377,33 +377,44 @@ app.get("/api/get-config", (req, res) => {
 app.get("/api/process-status", async (req, res) => {
   try {
     await processManager.gameServer.checkTelnet(CONFIG.game_server);
+
     if (
       processManager.gameServer.isRunning &&
-      processManager.gameServer.isTelnetConnected &&
-      Date.now() - lastGameVersionAt > 15000
+      processManager.gameServer.isTelnetConnected
     ) {
-      try {
-        const out = await sendTelnetCommand(CONFIG.game_server, "version");
-        const line = out
-          .split(/\r?\n/)
-          .map((l) => l.trim())
-          .find((l) => /^Game version:/i.test(l));
-        if (line) {
-          let versionText = line.replace(/^Game version:\s*/i, "").trim();
-          const m = line.match(
-            /^Game version:\s*(.+?)\s+Compatibility Version:/i
-          );
-          if (m) versionText = m[1].trim();
-          else {
-            versionText = versionText
-              .replace(/\s+Compatibility Version:.*/i, "")
-              .trim();
+      if (!gameVersionFetched) {
+        try {
+          const out = await sendTelnetCommand(CONFIG.game_server, "version");
+          const line = out
+            .split(/\r?\n/)
+            .map((l) => l.trim())
+            .find((l) => /^Game version:/i.test(l));
+          if (line) {
+            let versionText = line.replace(/^Game version:\s*/i, "").trim();
+            const m = line.match(
+              /^Game version:\s*(.+?)\s+Compatibility Version:/i
+            );
+            if (m) versionText = m[1].trim();
+            else
+              versionText = versionText
+                .replace(/\s+Compatibility Version:.*/i, "")
+                .trim();
+            lastGameVersion = versionText;
+            gameVersionFetched = true;
           }
-          lastGameVersion = versionText;
-          lastGameVersionAt = Date.now();
-        }
+        } catch (_) {}
+      }
+      try {
+        const playersOut = await sendTelnetCommand(
+          CONFIG.game_server,
+          "listplayers"
+        );
+        const playerCount =
+          playersOut.match(/Total of (\d+) in the game/)?.[1] || "0";
+        processManager.gameServer.onlinePlayers = playerCount;
       } catch (_) {}
     }
+
     const status = {
       steamCmd: { isRunning: processManager.steamCmd.isRunning },
       gameServer: {
@@ -411,6 +422,7 @@ app.get("/api/process-status", async (req, res) => {
         isTelnetConnected: processManager.gameServer.isTelnetConnected,
         pid: processManager.gameServer.getPid(),
         gameVersion: lastGameVersion,
+        onlinePlayers: processManager.gameServer.onlinePlayers || "",
       },
     };
     return http.respondJson(res, { ok: true, data: status }, 200);
@@ -827,6 +839,8 @@ app.post("/api/start", async (req, res) => {
     return http.sendOk(req, res, "❌ 伺服器已經在運行中，請先關閉伺服器再試。");
   }
   try {
+    lastGameVersion = null;
+    gameVersionFetched = false;
     const exeName = fs.existsSync(path.join(GAME_DIR, "7DaysToDieServer.exe"))
       ? "7DaysToDieServer.exe"
       : "7DaysToDie.exe";
@@ -935,6 +949,8 @@ app.post("/api/start", async (req, res) => {
         eventBus.push("system", {
           text: `遊戲進程結束 (code=${code}, signal=${signal || "-"})`,
         });
+        gameVersionFetched = false;
+        lastGameVersion = null;
       },
       onError: (err) => {
         eventBus.push("system", {
@@ -1006,24 +1022,25 @@ app.post("/api/kill", async (req, res) => {
   try {
     const pidFromBody = req.body?.pid;
     const targetPid = pidFromBody ?? processManager.gameServer.getPid();
-
     if (!targetPid) {
       const warn = "⚠️ 無可用 PID，可用狀態已重置";
       log(warn);
       eventBus.push("system", { text: warn });
       return http.sendOk(req, res, `✅ ${warn}`);
     }
-
     eventBus.push("system", { text: `🗡️ 送出強制結束請求 pid=${targetPid}` });
     const ok = await processManager.gameServer.killByPid(targetPid);
 
-    if (stopGameTail)
+    if (stopGameTail) {
       try {
         stopGameTail();
       } catch (_) {}
+    }
     stopGameTail = null;
 
     if (ok) {
+      gameVersionFetched = false;
+      lastGameVersion = null;
       const line = `⚠️ 已強制結束遊戲進程 pid=${targetPid}`;
       log(line);
       eventBus.push("system", { text: line });

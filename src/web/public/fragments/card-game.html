@@ -56,6 +56,7 @@
   <span class="field__label">七日殺伺服器管理</span>
   <div class="row">
     <span id="gameVersionBadge" class="badge">版本: (偵測中…)</span>
+    <span id="onlinePlayersBadge" class="badge">在線玩家數: (偵測中…)</span>
   </div>
   <div class="row">
     <button id="configStartBtn">🛠 啟動伺服器</button>
@@ -79,9 +80,6 @@
   <div class="row">
     <input id="telnetInput" placeholder="輸入 Telnet 指令…" />
     <button id="telnetSendBtn" data-role="telnet">送出</button>
-    <button data-role="telnet" onclick="sendTelnet('listplayers')">
-      🧑‍🤝‍🧑 玩家
-    </button>
     <button data-role="telnet" onclick="sendTelnet('getgamepref')">
       ⚙️ 設定
     </button>

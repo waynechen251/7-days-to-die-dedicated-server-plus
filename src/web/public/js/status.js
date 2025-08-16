@@ -10,6 +10,7 @@
     gameRunning,
     telnetOk,
     gameVersion,
+    onlinePlayers,
   }) {
     const all = [
       D.installServerBtn,
@@ -115,6 +116,13 @@
     if (gvEl) {
       gvEl.textContent = `版本: ${
         gameVersion ? gameVersion : gameRunning ? "偵測中…" : "-"
+      }`;
+    }
+
+    const opEl = document.getElementById("onlinePlayersBadge");
+    if (opEl) {
+      opEl.textContent = `線上玩家數: ${
+        onlinePlayers ? onlinePlayers : gameRunning ? "偵測中…" : "-"
       }`;
     }
 

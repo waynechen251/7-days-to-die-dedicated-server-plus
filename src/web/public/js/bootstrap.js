@@ -64,6 +64,7 @@
         gameRunning: !!game.isRunning,
         telnetOk: !!game.isTelnetConnected,
         gameVersion: game.gameVersion || "",
+        onlinePlayers: game.onlinePlayers || "",
       });
     } catch {
       setState({
@@ -72,6 +73,7 @@
         gameRunning: false,
         telnetOk: false,
         gameVersion: "",
+        onlinePlayers: "",
       });
     } finally {
       setTimeout(refreshStatus, 1000);
