@@ -133,6 +133,21 @@ function syncGameServerFromItems(items) {
 
 const GAME_DIR = resolveDirCaseInsensitive(baseDir, "7DaysToDieServer");
 
+function listWorldTemplates() {
+  try {
+    const worldsDir = path.join(GAME_DIR, "Data", "Worlds");
+    if (!fs.existsSync(worldsDir)) return [];
+    const exclude = new Set(["empty", "playtesting"]);
+    return fs
+      .readdirSync(worldsDir, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+      .filter((n) => n && !/^\./.test(n) && !exclude.has(n.toLowerCase()));
+  } catch (_) {
+    return [];
+  }
+}
+
 let stopGameTail = null;
 let lastGameVersion = null;
 let lastGameVersionAt = 0;
@@ -1106,9 +1121,10 @@ app.get("/api/serverconfig", (req, res) => {
       );
     }
     const { items } = serverConfigLib.readValues(cfgPath);
+    const worlds = listWorldTemplates();
     return http.respondJson(
       res,
-      { ok: true, data: { path: cfgPath, items } },
+      { ok: true, data: { path: cfgPath, items, worlds } },
       200
     );
   } catch (e) {

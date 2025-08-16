@@ -52,6 +52,16 @@
       ensureDom();
       if (!cfgRes.ok) throw new Error(cfgRes.message || "讀取設定失敗");
 
+      const saves = savesRes?.data?.saves || [];
+      S.cfg.worldList = Array.isArray(saves) ? saves.slice() : [];
+
+      const tmplWorlds = cfgRes?.data?.worlds || [];
+      tmplWorlds.forEach((w) => {
+        if (!S.cfg.worldList.some((x) => x.world === w)) {
+          S.cfg.worldList.push({ world: w, name: "" });
+        }
+      });
+
       if (procRes?.data?.gameServer) {
         const game = procRes.data.gameServer;
         const steam = procRes.data.steamCmd || {};
@@ -64,10 +74,6 @@
       }
 
       const items = cfgRes.data?.items || [];
-      S.cfg.worldList = (savesRes?.data?.saves || []).map((s) => ({
-        world: s.world,
-        name: s.name,
-      }));
       S.cfg.original = new Map(items.map((x) => [x.name, x.value]));
       S.cfg.commentedOriginal = new Map(
         items.map((x) => [x.name, !!x.commented])
