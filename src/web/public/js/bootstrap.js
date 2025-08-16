@@ -50,6 +50,7 @@
         steamRunning: !!steam.isRunning,
         gameRunning: !!game.isRunning,
         telnetOk: !!game.isTelnetConnected,
+        gameVersion: game.gameVersion || "",
       });
     } catch {
       setState({
@@ -57,6 +58,7 @@
         steamRunning: false,
         gameRunning: false,
         telnetOk: false,
+        gameVersion: "",
       });
     } finally {
       setTimeout(refreshStatus, 1000);

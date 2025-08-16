@@ -47,6 +47,7 @@
       steamRunning: false,
       gameRunning: false,
       telnetOk: false,
+      gameVersion: "",
     },
     hasEverConnected: false,
     backupInProgress: false,

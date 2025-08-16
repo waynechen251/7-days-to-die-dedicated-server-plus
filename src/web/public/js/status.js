@@ -4,7 +4,13 @@
   const D = App.dom;
   const S = App.state;
 
-  function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk }) {
+  function applyUIState({
+    backendUp,
+    steamRunning,
+    gameRunning,
+    telnetOk,
+    gameVersion,
+  }) {
     const all = [
       D.installServerBtn,
       D.abortInstallBtn,
@@ -84,6 +90,13 @@
     );
 
     syncConfigLockFromStatus();
+
+    const gvEl = document.getElementById("gameVersionBadge");
+    if (gvEl) {
+      gvEl.textContent = `版本: ${
+        gameVersion ? gameVersion : gameRunning ? "偵測中…" : "-"
+      }`;
+    }
   }
 
   function computeGameRunning() {

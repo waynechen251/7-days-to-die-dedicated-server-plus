@@ -1,6 +1,9 @@
 <section class="card">
   <header class="card-header">
     <h2 class="card-title">7 Days To Die Dedicated Server</h2>
+    <div class="row">
+      <span id="gameVersionBadge" class="badge">版本: (偵測中…)</span>
+    </div>
   </header>
   <div class="row">
     <button id="configStartBtn">🛠 啟動伺服器 / 檢視 serverconfig.xml</button>
@@ -27,9 +30,6 @@
     <button data-role="telnet" onclick="sendTelnet('version')">🔍 版本</button>
     <button data-role="telnet" onclick="sendTelnet('listplayers')">
       🧑‍🤝‍🧑 玩家
-    </button>
-    <button data-role="telnet" onclick="sendTelnet('getgamepref')">
-      ⚙️ 設定
     </button>
   </div>
 </section>

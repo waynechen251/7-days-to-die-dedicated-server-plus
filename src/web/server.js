@@ -78,6 +78,8 @@ function saveConfig() {
 const GAME_DIR = resolveDirCaseInsensitive(baseDir, "7DaysToDieServer");
 
 let stopGameTail = null;
+let lastGameVersion = null;
+let lastGameVersionAt = 0;
 
 const app = express();
 app.use(express.json());
@@ -290,12 +292,40 @@ app.get("/api/get-config", (req, res) => {
 app.get("/api/process-status", async (req, res) => {
   try {
     await processManager.gameServer.checkTelnet(CONFIG.game_server);
+    if (
+      processManager.gameServer.isRunning &&
+      processManager.gameServer.isTelnetConnected &&
+      Date.now() - lastGameVersionAt > 15000
+    ) {
+      try {
+        const out = await sendTelnetCommand(CONFIG.game_server, "version");
+        const line = out
+          .split(/\r?\n/)
+          .map((l) => l.trim())
+          .find((l) => /^Game version:/i.test(l));
+        if (line) {
+          let versionText = line.replace(/^Game version:\s*/i, "").trim();
+          const m = line.match(
+            /^Game version:\s*(.+?)\s+Compatibility Version:/i
+          );
+          if (m) versionText = m[1].trim();
+          else {
+            versionText = versionText
+              .replace(/\s+Compatibility Version:.*/i, "")
+              .trim();
+          }
+          lastGameVersion = versionText;
+          lastGameVersionAt = Date.now();
+        }
+      } catch (_) {}
+    }
     const status = {
       steamCmd: { isRunning: processManager.steamCmd.isRunning },
       gameServer: {
         isRunning: processManager.gameServer.isRunning,
         isTelnetConnected: processManager.gameServer.isTelnetConnected,
         pid: processManager.gameServer.getPid(),
+        gameVersion: lastGameVersion,
       },
     };
     return http.respondJson(res, { ok: true, data: status }, 200);
