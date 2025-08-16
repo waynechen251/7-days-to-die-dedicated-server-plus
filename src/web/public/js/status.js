@@ -4,7 +4,13 @@
   const D = App.dom;
   const S = App.state;
 
-  function applyUIState({ backendUp, steamRunning, gameRunning, telnetOk, gameVersion }) {
+  function applyUIState({
+    backendUp,
+    steamRunning,
+    gameRunning,
+    telnetOk,
+    gameVersion,
+  }) {
     const all = [
       D.installServerBtn,
       D.exportSavesBtn,
@@ -109,6 +115,12 @@
       gvEl.textContent = `版本: ${
         gameVersion ? gameVersion : gameRunning ? "偵測中…" : "-"
       }`;
+    }
+
+    if (D.configStartBtn) {
+      D.configStartBtn.textContent = gameRunning
+        ? "📝 檢視 serverconfig.xml"
+        : "🛠 啟動伺服器";
     }
   }
 
