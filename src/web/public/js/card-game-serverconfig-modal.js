@@ -690,6 +690,38 @@
       }
     }
 
+    (function crossplayCheck() {
+      const condsMissing = [];
+      const allowEnabled =
+        enables.ServerAllowCrossplay &&
+        /^(true)$/i.test(values.ServerAllowCrossplay || "");
+      if (!allowEnabled) condsMissing.push("ServerAllowCrossplay!=true");
+      const maxPlayers = parseInt(values.ServerMaxPlayerCount, 10);
+      if (!Number.isFinite(maxPlayers) || maxPlayers > 8)
+        condsMissing.push("ServerMaxPlayerCount>8");
+      const eacOk =
+        enables.EACEnabled && /^(true)$/i.test(values.EACEnabled || "");
+      if (!eacOk) condsMissing.push("EACEnabled!=true");
+      const eosOk =
+        enables.IgnoreEOSSanctions &&
+        /^(false)$/i.test(values.IgnoreEOSSanctions || "");
+      if (!eosOk) condsMissing.push("IgnoreEOSSanctions!=false");
+      if (condsMissing.length === 0) {
+        results.push({
+          ok: true,
+          text: "跨平台連線相容: (MaxPlayer≤8, AllowCrossplay=true, EAC=true, IgnoreEOSSanctions=false)",
+        });
+      } else {
+        results.push({
+          ok: "warn",
+          text:
+            "跨平台連線不相容: " +
+            condsMissing.join(", ") +
+            " (不會出現在跨平台搜尋)",
+        });
+      }
+    })();
+
     await Promise.all(asyncChecks);
 
     const passAll = results.every((x) => x.ok === true || x.ok === "warn");
