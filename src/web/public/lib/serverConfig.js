@@ -1,6 +1,122 @@
 const fs = require("fs");
 const path = require("path");
 
+function stripQuotes(s) {
+  return typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
+}
+
+function syncGameServerFromItems(items, CONFIG) {
+  if (!CONFIG.game_server) CONFIG.game_server = {};
+  const gs = CONFIG.game_server;
+  let synced = 0;
+  let removed = 0;
+  const existingKeys = Object.keys(gs);
+
+  items.forEach(({ name, value }) => {
+    const lower = name.toLowerCase();
+    existingKeys.forEach((k) => {
+      if (k !== name && k.toLowerCase() === lower) {
+        delete gs[k];
+        removed++;
+      }
+    });
+    if (gs[name] !== value) {
+      gs[name] = value;
+      synced++;
+    }
+  });
+
+  return { synced, removed };
+}
+
+function resolveFileCaseInsensitive(dir, file) {
+  try {
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
+    const hit = entries.find(
+      (e) => e.isFile() && e.name.toLowerCase() === file.toLowerCase()
+    );
+    return hit ? path.join(dir, hit.name) : path.join(dir, file);
+  } catch (_) {
+    return path.join(dir, file);
+  }
+}
+
+function resolveServerConfigPath({ CONFIG, baseDir, GAME_DIR }) {
+  const cfgRaw = stripQuotes(CONFIG?.game_server?.serverConfig);
+  const candidates = [];
+
+  if (cfgRaw) {
+    if (path.isAbsolute(cfgRaw)) candidates.push(cfgRaw);
+    else {
+      candidates.push(path.join(GAME_DIR, cfgRaw));
+      candidates.push(path.join(baseDir, cfgRaw));
+    }
+  }
+  candidates.push(resolveFileCaseInsensitive(GAME_DIR, "serverconfig.xml"));
+  candidates.push(resolveFileCaseInsensitive(baseDir, "serverconfig.xml"));
+
+  for (const c of candidates) {
+    if (c && fs.existsSync(c)) return c;
+  }
+  return null;
+}
+
+function loadAndSyncServerConfig({
+  CONFIG,
+  baseDir,
+  GAME_DIR,
+  eventBus,
+  saveConfig,
+}) {
+  let configPath = null;
+  try {
+    configPath = resolveServerConfigPath({ CONFIG, baseDir, GAME_DIR });
+    if (!configPath) {
+      eventBus.push("system", {
+        text: "未找到 serverconfig.xml，將以預設設定啟動",
+      });
+      return { configPath: null };
+    }
+    const { items } = readValues(configPath);
+    const { synced, removed } = syncGameServerFromItems(items, CONFIG);
+
+    try {
+      const get = (n) =>
+        String(items.find((x) => x.name === n)?.value ?? "").trim();
+      const asBool = (s) => /^(true|1)$/i.test(String(s || ""));
+      const asInt = (s) => {
+        const n = parseInt(String(s || ""), 10);
+        return Number.isFinite(n) ? n : undefined;
+      };
+      const tEnabled = asBool(get("TelnetEnabled"));
+      const tPort = asInt(get("TelnetPort"));
+      const tPwd = get("TelnetPassword");
+      const sPort = asInt(get("ServerPort"));
+      if (typeof tEnabled === "boolean")
+        CONFIG.game_server.TelnetEnabled = tEnabled.toString();
+      if (tPort) CONFIG.game_server.TelnetPort = tPort.toString();
+      if (tPwd) CONFIG.game_server.TelnetPassword = tPwd;
+      if (sPort) CONFIG.game_server.ServerPort = sPort.toString();
+    } catch (e) {
+      eventBus.push("system", {
+        level: "warn",
+        text: `讀取 telnet/port 設定失敗: ${e?.message || e}`,
+      });
+    }
+
+    if (synced > 0 || removed > 0) saveConfig();
+    eventBus.push("system", {
+      text: `已同步並讀取 serverconfig.xml 屬性 (${items.length}) (更新${synced}項, 修正大小寫${removed}項)`,
+    });
+  } catch (e) {
+    eventBus.push("system", {
+      level: "warn",
+      text: `讀取 serverconfig.xml 失敗: ${e?.message || e}`,
+    });
+  }
+  return { configPath };
+}
+
 function readValues(filePath) {
   const text = fs.readFileSync(filePath, "utf-8");
   const lines = text.split(/\r?\n/);
@@ -86,52 +202,23 @@ function registerRoutes(
     getConfig,
     saveConfig,
     listWorldTemplates,
-    syncGameServerFromItems,
   }
 ) {
   if (!app || !http) throw new Error("registerRoutes 需要 app 與 http");
   if (!getConfig)
     throw new Error("registerRoutes 需要 getConfig() 取得 CONFIG 物件");
 
-  function resolveFileCaseInsensitive(dir, file) {
-    try {
-      const entries = require("fs").readdirSync(dir, { withFileTypes: true });
-      const hit = entries.find(
-        (e) => e.isFile() && e.name.toLowerCase() === file.toLowerCase()
-      );
-      return hit ? path.join(dir, hit.name) : path.join(dir, file);
-    } catch (_) {
-      return path.join(dir, file);
-    }
-  }
-
-  function resolveServerConfigPath() {
-    const CONFIG = getConfig();
-    const stripQuotes = (s) =>
-      typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
-
-    const cfgRaw = stripQuotes(CONFIG?.game_server?.serverConfig);
-    const candidates = [];
-
-    if (cfgRaw) {
-      if (path.isAbsolute(cfgRaw)) candidates.push(cfgRaw);
-      else {
-        candidates.push(path.join(GAME_DIR, cfgRaw));
-        candidates.push(path.join(baseDir, cfgRaw));
-      }
-    }
-    candidates.push(resolveFileCaseInsensitive(GAME_DIR, "serverconfig.xml"));
-    candidates.push(resolveFileCaseInsensitive(baseDir, "serverconfig.xml"));
-
-    for (const c of candidates) {
-      if (c && require("fs").existsSync(c)) return c;
-    }
-    return null;
+  function _resolveServerConfigPath() {
+    return resolveServerConfigPath({
+      CONFIG: getConfig(),
+      baseDir,
+      GAME_DIR,
+    });
   }
 
   app.get("/api/serverconfig", (req, res) => {
     try {
-      const cfgPath = resolveServerConfigPath();
+      const cfgPath = _resolveServerConfigPath();
       if (!cfgPath) {
         return http.respondJson(
           res,
@@ -140,7 +227,7 @@ function registerRoutes(
         );
       }
       const { items } = readValues(cfgPath);
-      const worlds = listWorldTemplates ? listWorldTemplates() : [];
+      const worlds = listWorldTemplates ? initStatus() : [];
       return http.respondJson(
         res,
         { ok: true, data: { path: cfgPath, items, worlds } },
@@ -157,7 +244,6 @@ function registerRoutes(
 
   app.post("/api/serverconfig", (req, res) => {
     try {
-      const CONFIG = getConfig();
       if (processManager.gameServer.isRunning) {
         return http.respondJson(
           res,
@@ -165,7 +251,7 @@ function registerRoutes(
           409
         );
       }
-      const cfgPath = resolveServerConfigPath();
+      const cfgPath = _resolveServerConfigPath();
       if (!cfgPath) {
         return http.respondJson(
           res,
@@ -246,7 +332,8 @@ function registerRoutes(
       const { items } = readValues(cfgPath);
 
       try {
-        const { synced, removed } = syncGameServerFromItems(items);
+        const CONFIG = getConfig();
+        const { synced, removed } = syncGameServerFromItems(items, CONFIG);
         if (synced > 0 || removed > 0) {
           saveConfig();
           eventBus.push("system", {
@@ -275,4 +362,11 @@ function registerRoutes(
   });
 }
 
-module.exports = { readValues, writeValues, registerRoutes };
+module.exports = {
+  readValues,
+  writeValues,
+  registerRoutes,
+  resolveServerConfigPath,
+  syncGameServerFromItems,
+  loadAndSyncServerConfig,
+};

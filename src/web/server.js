@@ -108,49 +108,8 @@ function saveConfig() {
   }
 }
 
-function syncGameServerFromItems(items) {
-  if (!CONFIG.game_server) CONFIG.game_server = {};
-  const gs = CONFIG.game_server;
-  let synced = 0;
-  let removed = 0;
-  const existingKeys = Object.keys(gs);
-
-  items.forEach(({ name, value }) => {
-    const lower = name.toLowerCase();
-    existingKeys.forEach((k) => {
-      if (k !== name && k.toLowerCase() === lower) {
-        delete gs[k];
-        removed++;
-      }
-    });
-    if (gs[name] !== value) {
-      gs[name] = value;
-      synced++;
-    }
-  });
-
-  return { synced, removed };
-}
-
 const GAME_DIR = resolveDirCaseInsensitive(baseDir, "7DaysToDieServer");
-
-function listWorldTemplates() {
-  try {
-    const worldsDir = path.join(GAME_DIR, "Data", "Worlds");
-    if (!fs.existsSync(worldsDir)) return [];
-    const exclude = new Set(["empty", "playtesting"]);
-    return fs
-      .readdirSync(worldsDir, { withFileTypes: true })
-      .filter((d) => d.isDirectory())
-      .map((d) => d.name)
-      .filter((n) => n && !/^\./.test(n) && !exclude.has(n.toLowerCase()));
-  } catch (_) {
-    return [];
-  }
-}
-
 let stopGameTail = null;
-
 const app = express();
 app.use(express.json());
 app.use(express.static(PUBLIC_DIR));
@@ -180,8 +139,6 @@ serverConfigLib.registerRoutes(app, {
   GAME_DIR,
   getConfig: () => CONFIG,
   saveConfig,
-  listWorldTemplates,
-  syncGameServerFromItems,
 });
 
 const rawUpload = express.raw({
@@ -841,68 +798,13 @@ app.post("/api/start", async (req, res) => {
     process.env.SteamAppId = "251570";
     process.env.SteamGameId = "251570";
 
-    const stripQuotes = (s) =>
-      typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
-
-    const cfgRaw = stripQuotes(CONFIG?.game_server?.serverConfig);
-    const cfgCandidates = [];
-    if (cfgRaw) {
-      if (path.isAbsolute(cfgRaw)) {
-        cfgCandidates.push(cfgRaw);
-      } else {
-        cfgCandidates.push(path.join(GAME_DIR, cfgRaw));
-        cfgCandidates.push(path.join(baseDir, cfgRaw));
-      }
-    }
-    cfgCandidates.push(
-      resolveFileCaseInsensitive(GAME_DIR, "serverconfig.xml")
-    );
-    cfgCandidates.push(resolveFileCaseInsensitive(baseDir, "serverconfig.xml"));
-
-    let configArg = null;
-    for (const c of cfgCandidates) {
-      if (c && fs.existsSync(c)) {
-        configArg = c;
-        break;
-      }
-    }
-    if (!configArg) {
-      eventBus.push("system", {
-        text: "未找到 serverconfig.xml，將以預設設定啟動",
-      });
-    }
-
-    try {
-      if (configArg) {
-        const { items } = serverConfigLib.readValues(configArg);
-        const { synced, removed } = syncGameServerFromItems(items);
-        const get = (n) =>
-          String(items.find((x) => x.name === n)?.value ?? "").trim();
-        const asBool = (s) => /^(true|1)$/i.test(String(s || ""));
-        const asInt = (s) => {
-          const n = parseInt(String(s || ""), 10);
-          return Number.isFinite(n) ? n : undefined;
-        };
-        const tEnabled = asBool(get("TelnetEnabled"));
-        const tPort = asInt(get("TelnetPort"));
-        const tPwd = get("TelnetPassword");
-        const sPort = asInt(get("ServerPort"));
-        if (typeof tEnabled === "boolean")
-          CONFIG.game_server.TelnetEnabled = tEnabled.toString();
-        if (tPort) CONFIG.game_server.TelnetPort = tPort.toString();
-        if (tPwd) CONFIG.game_server.TelnetPassword = tPwd;
-        if (sPort) CONFIG.game_server.ServerPort = sPort.toString();
-        if (synced > 0 || removed > 0) saveConfig();
-        eventBus.push("system", {
-          text: `已同步並讀取 serverconfig.xml 屬性 (${items.length}) (更新${synced}項, 修正大小寫${removed}項)`,
-        });
-      }
-    } catch (e) {
-      eventBus.push("system", {
-        level: "warn",
-        text: `讀取 telnet/port 設定失敗: ${e?.message || e}`,
-      });
-    }
+    const { configPath: configArg } = serverConfigLib.loadAndSyncServerConfig({
+      CONFIG,
+      baseDir,
+      GAME_DIR,
+      eventBus,
+      saveConfig,
+    });
 
     const nographics = req.body?.nographics ?? true;
     const args = [
