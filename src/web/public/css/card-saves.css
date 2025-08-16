@@ -7,11 +7,3 @@
   gap: var(--space-2);
   min-width: 0;
 }
-.saves-group__title {
-  font-size: 0.7rem;
-  letter-spacing: 0.6px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: var(--c-text-sec);
-  margin: 0;
-}

@@ -50,7 +50,6 @@
     border-color: var(--c-border);
     color: var(--c-text);
   }
-  /* 補: topbar 內狀態徽章深色樣式 */
   .topbar .status-inline .badge {
     background: var(--c-surface-alt);
     border-color: var(--c-border);

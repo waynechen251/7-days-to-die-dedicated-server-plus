@@ -137,3 +137,42 @@ main.grid > [data-fragment] > .card {
   flex-direction: column;
   min-height: 0;
 }
+
+.card-header .status-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.card-header .status-inline .badge {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.65rem;
+  line-height: 1;
+  border: 1px solid #475569;
+  background: #374151;
+  color: #e2e8f0;
+  border-radius: 999px;
+  font-weight: 600;
+}
+.card-header .status-inline .badge.ok {
+  background: #16a34a;
+  border-color: #15803d;
+  color: #fff;
+}
+.card-header .status-inline .badge.warn {
+  background: #d97706;
+  border-color: #b45309;
+  color: #fff;
+}
+.card-header .status-inline .badge.err {
+  background: #dc2626;
+  border-color: #b91c1c;
+  color: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .card-header .status-inline .badge {
+    border-color: #475569;
+    background: #374151;
+    color: #e2e8f0;
+  }
+}

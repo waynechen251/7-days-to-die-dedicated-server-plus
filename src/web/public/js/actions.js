@@ -72,7 +72,25 @@
       }
     });
 
-    on(D.configStartBtn, "click", () => App.configModal.openConfigModal());
+    on(D.configStartBtn, "click", () => {
+      if (App.configModal?.openConfigModal) {
+        App.configModal.openConfigModal();
+        return;
+      }
+      if (typeof App.openConfigModal === "function") {
+        App.openConfigModal();
+        return;
+      }
+      console.warn("configModal 尚未初始化，將延遲重試");
+      setTimeout(() => {
+        if (App.configModal?.openConfigModal) {
+          App.configModal.openConfigModal();
+        } else {
+          console.error("configModal 仍未就緒");
+          alert("設定視窗尚未載入，請稍候再試或重新整理頁面。");
+        }
+      }, 300);
+    });
 
     on(D.stopServerBtn, "click", async () => {
       switchTab("system");

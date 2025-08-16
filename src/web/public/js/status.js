@@ -141,6 +141,26 @@
         D.installServerBtn?.classList.remove("btn--attention");
       }
     }
+
+    const badgeEl =
+      D.gameSelectedVersionBadge ||
+      document.getElementById("gameSelectedVersionBadge");
+
+    if (badgeEl) {
+      const installed = S.installedVersion;
+      if (installed) {
+        badgeEl.textContent = "上次安裝版本: " + versionLabel(installed);
+      } else {
+        badgeEl.textContent = "上次安裝版本: 無";
+      }
+      if (!D.gameSelectedVersionBadge) D.gameSelectedVersionBadge = badgeEl;
+    }
+  }
+
+  function versionLabel(v) {
+    if (!v) return "";
+    if (v === "public") return "Stable (public)";
+    return v;
   }
 
   function updateCfgLockUI() {
@@ -171,5 +191,19 @@
     updateVersionLockUI,
     updateCfgLockUI,
     disableCfgInputs,
+    versionLabel,
   };
+
+  // fragments 載入後補跑一次 (解決啟動時元素尚未存在)
+  if (w.__fragmentsReady) {
+    setTimeout(updateVersionLockUI, 0);
+  } else {
+    w.addEventListener(
+      "fragments:ready",
+      () => {
+        updateVersionLockUI();
+      },
+      { once: true }
+    );
+  }
 })(window);

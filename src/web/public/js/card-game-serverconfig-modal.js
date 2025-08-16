@@ -476,13 +476,21 @@
     }
   }
 
-  const stGameObserver = new MutationObserver(
-    App.status.syncConfigLockFromStatus
-  );
-  stGameObserver.observe(App.dom.stGame, {
-    attributes: true,
-    attributeFilter: ["class"],
-  });
+  App.configModal = App.configModal || {};
+  App.configModal.openConfigModal = openConfigModal;
+  App.openConfigModal = openConfigModal;
 
-  App.configModal = { openConfigModal, closeCfgModal };
+  function safeObserveCfgBody(observer, options) {
+    if (!observer || typeof observer.observe !== "function") return;
+    const el = D?.cfgBody || document.getElementById("cfgBody");
+    if (el && el.nodeType === 1) {
+      try {
+        observer.observe(el, options);
+      } catch (e) {
+        console.warn("cfgBody observe 失敗:", e.message);
+      }
+    } else {
+      console.warn("cfgBody 尚未就緒，跳過 observe");
+    }
+  }
 })(window);
