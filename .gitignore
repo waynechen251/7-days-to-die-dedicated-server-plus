@@ -1,5 +1,8 @@
 node_modules
 output
+src/web/7daystodieserver
+src/web/Data
+src/web/public/saves
 
 *.log
 *.tmp

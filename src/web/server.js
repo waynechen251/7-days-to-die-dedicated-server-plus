@@ -14,6 +14,7 @@ const eventBus = require("./public/lib/eventBus");
 const { tailFile } = require("./public/lib/tailer");
 const serverConfigLib = require("./public/lib/serverConfig");
 const steamcmd = require("./public/lib/steamcmd");
+const { telnetStart } = require("./public/lib/telnet");
 
 if (process.platform === "win32") exec("chcp 65001 >NUL");
 
@@ -913,6 +914,8 @@ app.post("/api/start", async (req, res) => {
       ...(nographics ? ["-nographics"] : []),
       ...(configArg ? [`-configfile=${configArg}`] : []),
       "-dedicated",
+      CONFIG.game_server.TelnetPort,
+      CONFIG.game_server.TelnetPassword,
     ];
 
     processManager.gameServer.start(args, GAME_DIR, {
@@ -955,6 +958,21 @@ app.post("/api/start", async (req, res) => {
           }
         } catch (_) {}
       }
+      
+      let serverStatues = eventBus.parseServerStatus(line);
+      if (serverStatues) {
+        processManager.gameServer.onlinePlayers = serverStatues.ply;
+      }
+      let serverVersionStatues = eventBus.parseServerVersionInfo(line);
+      if (serverVersionStatues) {
+        processManager.gameServer.gameVersion = serverVersionStatues.version;
+      }
+      if (eventBus.isTelnetStarted(line)) {
+        telnetStart({
+          TelnetPort: CONFIG.game_server.TelnetPort,
+          TelnetPassword: CONFIG.game_server.TelnetPassword
+        })
+      }
     });
 
     const line = `✅ 伺服器已啟動，日誌: ${logFileName}`;
@@ -971,7 +989,7 @@ app.post("/api/start", async (req, res) => {
 
 app.post("/api/stop", async (req, res) => {
   try {
-    const result = await sendTelnetCommand(CONFIG.game_server, "shutdown");
+    const result = await sendTelnetCommand("shutdown");
     if (stopGameTail)
       try {
         stopGameTail();
@@ -995,7 +1013,7 @@ app.post("/api/telnet", async (req, res) => {
     return http.respondText(res, "❌ 請提供 Telnet 指令", 400, true);
 
   try {
-    const result = await sendTelnetCommand(CONFIG.game_server, command);
+    const result = await sendTelnetCommand(command);
     eventBus.push("telnet", {
       level: "stdout",
       text: `> ${command}\n${result}`,
@@ -1023,7 +1041,7 @@ app.post("/api/view-config", (req, res) => {
 
 app.post("/api/server-status", async (req, res) => {
   try {
-    await sendTelnetCommand(CONFIG.game_server, "version");
+    await sendTelnetCommand("version");
     return http.respondJson(res, { ok: true, status: "online" }, 200);
   } catch (err) {
     return http.respondJson(

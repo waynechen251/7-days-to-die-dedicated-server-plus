@@ -46,8 +46,8 @@ const processManager = {
     getPid() {
       return gameServer.getPid();
     },
-    async checkTelnet(config) {
-      return await gameServer.checkTelnet(config);
+    async checkTelnet() {
+      return await gameServer.checkTelnet();
     },
   },
 };
@@ -75,7 +75,9 @@ const status = (function () {
     if (updating) return;
     updating = true;
     try {
-      await processManager.gameServer.checkTelnet(getConfigFn());
+      if (processManager.gameServer.gameVersion) {
+        await processManager.gameServer.checkTelnet(getConfigFn());
+      }
 
       cache = {
         status: {
@@ -85,7 +87,7 @@ const status = (function () {
             isTelnetConnected: processManager.gameServer.isTelnetConnected,
             pid: processManager.gameServer.getPid(),
             gameVersion: processManager.gameServer.gameVersion || "",
-            onlinePlayers: processManager.gameServer.onlinePlayers || "",
+            onlinePlayers: processManager.gameServer.onlinePlayers != null ? processManager.gameServer.onlinePlayers : "",
           },
         },
         lastUpdated: Date.now(),

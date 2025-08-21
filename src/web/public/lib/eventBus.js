@@ -1,5 +1,4 @@
 const { EventEmitter } = require("events");
-const processManager = require("./processManager");
 
 const TOPICS = ["system", "steamcmd", "game", "telnet", "backup"];
 const MAX_PER_TOPIC = 1000;
@@ -54,16 +53,6 @@ function sseHandler(req, res) {
   const ping = setInterval(() => res.write(`event: ping\ndata: {}\n\n`), 20000);
   const onEvt = (e) => {
     if (wanted.includes(e.topic)) send(e);
-    if (e.topic === "game" && e.level === "info") {
-      let serverStatues = parseServerStatus(e.text);
-      if (serverStatues) {
-        processManager.gameServer.onlinePlayers = serverStatues.ply;
-      }
-      let serverVersionStatues = parseServerStatus(e.text);
-      if (serverVersionStatues) {
-        processManager.gameServer.gameVersion = gameVersion.version;
-      }
-    }
   };
 
   bus.on("evt", onEvt);
@@ -100,4 +89,8 @@ function parseServerVersionInfo(line) {
   };
 }
 
-module.exports = { bus, push, getSince, sseHandler, TOPICS };
+function isTelnetStarted(line) {
+  return line.includes("Started Telnet on");
+}
+
+module.exports = { bus, push, getSince, sseHandler, TOPICS, parseServerStatus, parseServerVersionInfo, isTelnetStarted };

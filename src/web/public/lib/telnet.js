@@ -1,37 +1,112 @@
 const TelnetPkg = require("telnet-client");
 
 function getTelnetCtor(pkg) {
-  if (typeof pkg === "function") return pkg;
-  if (pkg && typeof pkg.Telnet === "function") return pkg.Telnet;
-  if (pkg && typeof pkg.default === "function") return pkg.default;
-  throw new Error("telnet-client export not recognized");
+    if (typeof pkg === "function") return pkg;
+    if (pkg && typeof pkg.Telnet === "function") return pkg.Telnet;
+    if (pkg && typeof pkg.default === "function") return pkg.default;
+    throw new Error("telnet-client export not recognized");
 }
 
 const TelnetCtor = getTelnetCtor(TelnetPkg);
 
-async function sendTelnetCommand(config, command) {
-  const connection = new TelnetCtor();
-  const params = {
-    host: "127.0.0.1",
-    port: config.TelnetPort,
-    shellPrompt: ">",
-    timeout: 2000,
-    negotiationMandatory: false,
-    ors: "\n",
-    irs: "\n",
-  };
-  try {
-    await connection.connect(params);
-    await connection.send(config.TelnetPassword, { waitfor: ">" });
-    const result = await connection.send(command, { waitfor: ">" });
-    await connection.end();
-    return result.trim();
-  } catch (err) {
-    await connection.end().catch(() => {});
-    throw new Error(
-      `連線或指令執行失敗: ${err.message}\n執行的命令: ${command}`
-    );
-  }
+let telnetConfig = null;
+let connection = null;
+let isAlive = false;
+let reconnectToken = -1;
+
+async function telnetStart(config) {
+    telnetConfig = config;
+    const params = {
+        host: "127.0.0.1",
+        port: telnetConfig.TelnetPort,
+        shellPrompt: "Logon successful",
+        timeout: 0,
+        negotiationMandatory: false,
+        ors: "\r\n",
+        irs: "\r\n",
+        password: "" + telnetConfig.TelnetPassword,
+        passwordPrompt: "Please enter password:",
+    };
+    if (connection != null) {
+        connection.end()
+    }
+    connection = new TelnetCtor();
+    // Telnet-client 事件
+    connection.on("connect", () => {
+        console.log("Telnet session connect!"); // 已建立連接
+        isAlive = true;
+        connection.socket.setKeepAlive(true, 5000);
+    });
+    connection.on("ready", () => {
+        console.log("Telnet session ready!"); // 已登入
+        isAlive = true;
+    });
+
+    connection.on("timeout", () => {
+        console.log("Telnet timeout!");
+        isAlive = false;
+        _telnetReconnect();
+    });
+
+    connection.on("error", (err) => {
+        console.log("Telnet error!", err);
+        isAlive = false;
+        _telnetReconnect();
+    });
+
+    connection.on("close", () => {
+        console.log("Telnet connection closed!");
+        isAlive = false;
+    });
+    try {
+        clearTimeout(reconnectToken);
+        reconnectToken = -1;
+        await connection.connect(params);
+    } catch (err) {
+        if (connection != null) {
+            connection.end().catch(() => { });
+        }
+    }
 }
 
-module.exports = { sendTelnetCommand, TelnetCtor };
+async function telnetEnd() {
+    isAlive = false;
+    clearTimeout(reconnectToken);
+    reconnectToken = -1;
+    if (connection != null) {
+        await connection.end();
+        connection = null;
+    }
+    console.log("telnet連線中斷");
+}
+
+async function sendTelnetCommand(command) {
+    try {
+        const result = await connection.send(command, { waitfor: ">" });
+        return result.trim();
+    } catch (err) {
+        await connection.end().catch(() => { });
+        throw new Error(
+            `連線或指令執行失敗: ${err.message}\n執行的命令: ${command}`
+        );
+    }
+}
+
+function checkTelnetAlive() {
+    return isAlive;
+}
+
+function _telnetReconnect() {
+    console.log("telnet準備重新連線");
+    if (connection != null) {
+        connection.end();
+    }
+    connection = null;
+    clearTimeout(reconnectToken);
+    reconnectToken = setTimeout(() => {
+        console.log("telnet開始重新連線");
+        telnetStart(telnetConfig)
+    }, 10000);
+}
+
+module.exports = { telnetStart, telnetEnd, checkTelnetAlive, sendTelnetCommand };

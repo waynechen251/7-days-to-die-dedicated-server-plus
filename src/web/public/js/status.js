@@ -139,7 +139,7 @@
     const opEl = document.getElementById("onlinePlayersBadge");
     if (opEl) {
       opEl.textContent = `線上玩家數: ${
-        onlinePlayers ? onlinePlayers : gameRunning ? "偵測中…" : "-"
+        onlinePlayers !== "" ? onlinePlayers : gameRunning ? "偵測中…" : "-"
       }`;
     }
 

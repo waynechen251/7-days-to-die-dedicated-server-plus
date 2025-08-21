@@ -64,7 +64,7 @@
         gameRunning: !!game.isRunning,
         telnetOk: !!game.isTelnetConnected,
         gameVersion: game.gameVersion || "",
-        onlinePlayers: game.onlinePlayers || "",
+        onlinePlayers: game.onlinePlayers != null && game.onlinePlayers !== "" ? game.onlinePlayers : "",
       });
     } catch {
       setState({
