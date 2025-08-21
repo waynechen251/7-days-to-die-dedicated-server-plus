@@ -1,4 +1,5 @@
 const { EventEmitter } = require("events");
+const processManager = require("./processManager");
 
 const TOPICS = ["system", "steamcmd", "game", "telnet", "backup"];
 const MAX_PER_TOPIC = 1000;
@@ -53,6 +54,16 @@ function sseHandler(req, res) {
   const ping = setInterval(() => res.write(`event: ping\ndata: {}\n\n`), 20000);
   const onEvt = (e) => {
     if (wanted.includes(e.topic)) send(e);
+    if (e.topic === "game" && e.level === "info") {
+      let serverStatues = parseServerStatus(e.text);
+      if (serverStatues) {
+        processManager.gameServer.onlinePlayers = serverStatues.ply;
+      }
+      let serverVersionStatues = parseServerStatus(e.text);
+      if (serverVersionStatues) {
+        processManager.gameServer.gameVersion = gameVersion.version;
+      }
+    }
   };
 
   bus.on("evt", onEvt);
@@ -60,6 +71,33 @@ function sseHandler(req, res) {
     clearInterval(ping);
     bus.off("evt", onEvt);
   });
+}
+
+function parseServerStatus(line) {
+  const re =
+    /Time:\s*(?<time>\d+(?:\.\d+)?)m\s+FPS:\s*(?<fps>\d+(?:\.\d+)?)\s+.*?\bPly:\s*(?<ply>\d+)\s+.*?RSS:\s*(?<rss>\d+(?:\.\d+)?)MB/;
+
+  const m = line.match(re);
+  if (!m || !m.groups) return null;
+
+  return {
+    time: parseFloat(m.groups.time),
+    fps: parseFloat(m.groups.fps),
+    ply: parseInt(m.groups.ply, 10),
+    rss: parseFloat(m.groups.rss),
+  };
+}
+
+function parseServerVersionInfo(line) {
+  const re = /Version:\s*(?<version>V\s*[\d.]+\s*\(.*?\))\s+Compatibility Version:\s*(?<compat>[^,]+),\s*Build:\s*(?<build>.+)$/;
+  const m = line.match(re);
+  if (!m || !m.groups) return null;
+
+  return {
+    version: m.groups.version.trim(),      // 只取主 Version
+    compatibility: m.groups.compat.trim(), // 可選: 相容版本
+    build: m.groups.build.trim(),          // 可選: Build 資訊
+  };
 }
 
 module.exports = { bus, push, getSince, sseHandler, TOPICS };

@@ -1,5 +1,3 @@
-const path = require("path");
-const { TelnetCtor } = require("./telnet");
 const steamcmd = require("./steamcmd");
 const gameServer = require("./gameServer");
 const { log, error } = require("./logger");
@@ -28,6 +26,8 @@ const processManager = {
     },
   },
   gameServer: {
+    gameVersion: null,
+    onlinePlayers: null,
     get isRunning() {
       return gameServer.isRunning;
     },
@@ -70,48 +70,12 @@ const status = (function () {
   let intervalId = null;
   let getConfigFn = null;
   let sendTelnetFn = null;
-  let fetchedGameVersion = false;
-  let lastGameVersion = null;
 
   async function update() {
     if (updating) return;
     updating = true;
     try {
       await processManager.gameServer.checkTelnet(getConfigFn());
-
-      if (
-        processManager.gameServer.isRunning &&
-        processManager.gameServer.isTelnetConnected
-      ) {
-        if (!fetchedGameVersion) {
-          try {
-            const out = await sendTelnetFn(getConfigFn(), "version");
-            const line = out
-              .split(/\r?\n/)
-              .map((l) => l.trim())
-              .find((l) => /^Game version:/i.test(l));
-            if (line) {
-              let versionText = line.replace(/^Game version:\s*/i, "").trim();
-              const m = line.match(
-                /^Game version:\s*(.+?)\s+Compatibility Version:/i
-              );
-              if (m) versionText = m[1].trim();
-              else
-                versionText = versionText
-                  .replace(/\s+Compatibility Version:.*/i, "")
-                  .trim();
-              lastGameVersion = versionText;
-              fetchedGameVersion = true;
-            }
-          } catch (_) {}
-        }
-        try {
-          const playersOut = await sendTelnetFn(getConfigFn(), "listplayers");
-          const playerCount =
-            playersOut.match(/Total of (\d+) in the game/)?.[1] || "0";
-          processManager.gameServer.onlinePlayers = playerCount;
-        } catch (_) {}
-      }
 
       cache = {
         status: {
@@ -120,7 +84,7 @@ const status = (function () {
             isRunning: processManager.gameServer.isRunning,
             isTelnetConnected: processManager.gameServer.isTelnetConnected,
             pid: processManager.gameServer.getPid(),
-            gameVersion: lastGameVersion,
+            gameVersion: processManager.gameServer.gameVersion || "",
             onlinePlayers: processManager.gameServer.onlinePlayers || "",
           },
         },
@@ -147,8 +111,8 @@ const status = (function () {
       return this.get();
     },
     resetVersion() {
-      fetchedGameVersion = false;
-      lastGameVersion = null;
+      processManager.gameServer.gameVersion = null;
+      processManager.gameServer.onlinePlayers = null;
     },
   };
 })();
