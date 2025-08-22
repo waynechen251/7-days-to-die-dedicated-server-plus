@@ -12,8 +12,10 @@ const processManager = require("./public/lib/processManager");
 const archive = require("./public/lib/archive");
 const eventBus = require("./public/lib/eventBus");
 const { tailFile } = require("./public/lib/tailer");
+const logParser = require("./public/lib/logParser");
 const serverConfigLib = require("./public/lib/serverConfig");
 const steamcmd = require("./public/lib/steamcmd");
+const { telnetStart } = require("./public/lib/telnet");
 
 if (process.platform === "win32") exec("chcp 65001 >NUL");
 
@@ -913,6 +915,8 @@ app.post("/api/start", async (req, res) => {
       ...(nographics ? ["-nographics"] : []),
       ...(configArg ? [`-configfile=${configArg}`] : []),
       "-dedicated",
+      CONFIG.game_server.TelnetPort,
+      CONFIG.game_server.TelnetPassword,
     ];
 
     processManager.gameServer.start(args, GAME_DIR, {
@@ -931,29 +935,45 @@ app.post("/api/start", async (req, res) => {
       },
     });
 
-    if (stopGameTail)
+    if (stopGameTail) {
       try {
         stopGameTail();
       } catch (_) {}
+    }
     stopGameTail = tailFile(logFilePath, (line) => {
       eventBus.push("game", { level: "stdout", text: line });
-      const m = line.match(/UserDataFolder:\s*(.+)$/i);
-      if (m && m[1]) {
-        const detected = m[1].trim().replace(/\//g, "\\");
-        try {
-          if (!CONFIG.game_server) CONFIG.game_server = {};
-          const newRoot = `${detected}`;
-          const prev = getSavesRoot();
-          if (prev !== newRoot) {
-            CONFIG.game_server.UserDataFolder = newRoot;
-            if (CONFIG.game_server.saves) delete CONFIG.game_server.saves;
-            saveConfig();
-            eventBus.push("system", {
-              text: `自動偵測七日殺伺服器存檔目錄: ${newRoot}`,
-            });
-            logPathInfo("detect");
-          }
-        } catch (_) {}
+      const logData = logParser.detectAndParse(line);
+      if (logData == null) return;
+      switch (logData.kind) {
+        case "status":
+          processManager.gameServer.onlinePlayers = logData.data.ply;
+          break;
+        case "version":
+          processManager.gameServer.gameVersion = logData.data.version;
+          break;
+        case "telnetStarted":
+          telnetStart({
+            TelnetPort: CONFIG.game_server.TelnetPort,
+            TelnetPassword: CONFIG.game_server.TelnetPassword,
+          });
+          break;
+        case "userDataFolder":
+          const detected = logData.data.path.trim().replace(/\//g, "\\");
+          try {
+            if (!CONFIG.game_server) CONFIG.game_server = {};
+            const newRoot = `${detected}`;
+            const prev = getSavesRoot();
+            if (prev !== newRoot) {
+              CONFIG.game_server.UserDataFolder = newRoot;
+              if (CONFIG.game_server.saves) delete CONFIG.game_server.saves;
+              saveConfig();
+              eventBus.push("system", {
+                text: `自動偵測七日殺伺服器存檔目錄: ${newRoot}`,
+              });
+              logPathInfo("detect");
+            }
+          } catch (_) {}
+          break;
       }
     });
 
@@ -971,7 +991,7 @@ app.post("/api/start", async (req, res) => {
 
 app.post("/api/stop", async (req, res) => {
   try {
-    const result = await sendTelnetCommand(CONFIG.game_server, "shutdown");
+    const result = await sendTelnetCommand("shutdown");
     if (stopGameTail)
       try {
         stopGameTail();
@@ -995,7 +1015,7 @@ app.post("/api/telnet", async (req, res) => {
     return http.respondText(res, "❌ 請提供 Telnet 指令", 400, true);
 
   try {
-    const result = await sendTelnetCommand(CONFIG.game_server, command);
+    const result = await sendTelnetCommand(command);
     eventBus.push("telnet", {
       level: "stdout",
       text: `> ${command}\n${result}`,
@@ -1023,7 +1043,7 @@ app.post("/api/view-config", (req, res) => {
 
 app.post("/api/server-status", async (req, res) => {
   try {
-    await sendTelnetCommand(CONFIG.game_server, "version");
+    await sendTelnetCommand("version");
     return http.respondJson(res, { ok: true, status: "online" }, 200);
   } catch (err) {
     return http.respondJson(

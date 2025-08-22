@@ -9,22 +9,79 @@ function getTelnetCtor(pkg) {
 
 const TelnetCtor = getTelnetCtor(TelnetPkg);
 
-async function sendTelnetCommand(config, command) {
-  const connection = new TelnetCtor();
+let telnetConfig = null;
+let connection = null;
+let isAlive = false;
+let reconnectToken = -1;
+
+async function telnetStart(config) {
+  telnetConfig = config;
   const params = {
     host: "127.0.0.1",
-    port: config.TelnetPort,
-    shellPrompt: ">",
-    timeout: 2000,
+    port: telnetConfig.TelnetPort,
+    shellPrompt: "Logon successful",
+    timeout: 0,
     negotiationMandatory: false,
-    ors: "\n",
-    irs: "\n",
+    ors: "\r\n",
+    irs: "\r\n",
+    password: "" + telnetConfig.TelnetPassword,
+    passwordPrompt: "Please enter password:",
   };
+  if (connection != null) {
+    connection.end();
+  }
+  connection = new TelnetCtor();
+  connection.on("connect", () => {
+    console.log("Telnet session connect!");
+    isAlive = true;
+    connection.socket.setKeepAlive(true, 5000);
+  });
+  connection.on("ready", () => {
+    console.log("Telnet session ready!");
+    isAlive = true;
+  });
+
+  connection.on("timeout", () => {
+    console.log("Telnet timeout!");
+    isAlive = false;
+    _telnetReconnect();
+  });
+
+  connection.on("error", (err) => {
+    console.log("Telnet error!", err);
+    isAlive = false;
+    _telnetReconnect();
+  });
+
+  connection.on("close", () => {
+    console.log("Telnet connection closed!");
+    isAlive = false;
+  });
   try {
+    clearTimeout(reconnectToken);
+    reconnectToken = -1;
     await connection.connect(params);
-    await connection.send(config.TelnetPassword, { waitfor: ">" });
-    const result = await connection.send(command, { waitfor: ">" });
+  } catch (err) {
+    if (connection != null) {
+      connection.end().catch(() => {});
+    }
+  }
+}
+
+async function telnetEnd() {
+  isAlive = false;
+  clearTimeout(reconnectToken);
+  reconnectToken = -1;
+  if (connection != null) {
     await connection.end();
+    connection = null;
+  }
+  console.log("telnet連線中斷");
+}
+
+async function sendTelnetCommand(command) {
+  try {
+    const result = await connection.send(command, { waitfor: ">" });
     return result.trim();
   } catch (err) {
     await connection.end().catch(() => {});
@@ -34,4 +91,26 @@ async function sendTelnetCommand(config, command) {
   }
 }
 
-module.exports = { sendTelnetCommand, TelnetCtor };
+function checkTelnetAlive() {
+  return isAlive;
+}
+
+function _telnetReconnect() {
+  console.log("telnet準備重新連線");
+  if (connection != null) {
+    connection.end();
+  }
+  connection = null;
+  clearTimeout(reconnectToken);
+  reconnectToken = setTimeout(() => {
+    console.log("telnet開始重新連線");
+    telnetStart(telnetConfig);
+  }, 10000);
+}
+
+module.exports = {
+  telnetStart,
+  telnetEnd,
+  checkTelnetAlive,
+  sendTelnetCommand,
+};
