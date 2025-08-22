@@ -62,35 +62,4 @@ function sseHandler(req, res) {
   });
 }
 
-function parseServerStatus(line) {
-  const re =
-    /Time:\s*(?<time>\d+(?:\.\d+)?)m\s+FPS:\s*(?<fps>\d+(?:\.\d+)?)\s+.*?\bPly:\s*(?<ply>\d+)\s+.*?RSS:\s*(?<rss>\d+(?:\.\d+)?)MB/;
-
-  const m = line.match(re);
-  if (!m || !m.groups) return null;
-
-  return {
-    time: parseFloat(m.groups.time),
-    fps: parseFloat(m.groups.fps),
-    ply: parseInt(m.groups.ply, 10),
-    rss: parseFloat(m.groups.rss),
-  };
-}
-
-function parseServerVersionInfo(line) {
-  const re = /Version:\s*(?<version>V\s*[\d.]+\s*\(.*?\))\s+Compatibility Version:\s*(?<compat>[^,]+),\s*Build:\s*(?<build>.+)$/;
-  const m = line.match(re);
-  if (!m || !m.groups) return null;
-
-  return {
-    version: m.groups.version.trim(),      // 只取主 Version
-    compatibility: m.groups.compat.trim(), // 可選: 相容版本
-    build: m.groups.build.trim(),          // 可選: Build 資訊
-  };
-}
-
-function isTelnetStarted(line) {
-  return line.includes("Started Telnet on");
-}
-
-module.exports = { bus, push, getSince, sseHandler, TOPICS, parseServerStatus, parseServerVersionInfo, isTelnetStarted };
+module.exports = { bus, push, getSince, sseHandler, TOPICS };

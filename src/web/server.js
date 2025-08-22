@@ -12,6 +12,7 @@ const processManager = require("./public/lib/processManager");
 const archive = require("./public/lib/archive");
 const eventBus = require("./public/lib/eventBus");
 const { tailFile } = require("./public/lib/tailer");
+const logParser = require("./public/lib/logParser");
 const serverConfigLib = require("./public/lib/serverConfig");
 const steamcmd = require("./public/lib/steamcmd");
 const { telnetStart } = require("./public/lib/telnet");
@@ -934,44 +935,45 @@ app.post("/api/start", async (req, res) => {
       },
     });
 
-    if (stopGameTail)
+    if (stopGameTail) {
       try {
         stopGameTail();
       } catch (_) {}
+    }
     stopGameTail = tailFile(logFilePath, (line) => {
       eventBus.push("game", { level: "stdout", text: line });
-      const m = line.match(/UserDataFolder:\s*(.+)$/i);
-      if (m && m[1]) {
-        const detected = m[1].trim().replace(/\//g, "\\");
-        try {
-          if (!CONFIG.game_server) CONFIG.game_server = {};
-          const newRoot = `${detected}`;
-          const prev = getSavesRoot();
-          if (prev !== newRoot) {
-            CONFIG.game_server.UserDataFolder = newRoot;
-            if (CONFIG.game_server.saves) delete CONFIG.game_server.saves;
-            saveConfig();
-            eventBus.push("system", {
-              text: `自動偵測七日殺伺服器存檔目錄: ${newRoot}`,
-            });
-            logPathInfo("detect");
-          }
-        } catch (_) {}
-      }
-      
-      let serverStatues = eventBus.parseServerStatus(line);
-      if (serverStatues) {
-        processManager.gameServer.onlinePlayers = serverStatues.ply;
-      }
-      let serverVersionStatues = eventBus.parseServerVersionInfo(line);
-      if (serverVersionStatues) {
-        processManager.gameServer.gameVersion = serverVersionStatues.version;
-      }
-      if (eventBus.isTelnetStarted(line)) {
-        telnetStart({
-          TelnetPort: CONFIG.game_server.TelnetPort,
-          TelnetPassword: CONFIG.game_server.TelnetPassword
-        })
+      const logData = logParser.detectAndParse(line);
+      if (logData == null) return;
+      switch (logData.kind) {
+        case "status":
+          processManager.gameServer.onlinePlayers = logData.data.ply;
+          break;
+        case "version":
+          processManager.gameServer.gameVersion = logData.data.version;
+          break;
+        case "telnetStarted":
+          telnetStart({
+            TelnetPort: CONFIG.game_server.TelnetPort,
+            TelnetPassword: CONFIG.game_server.TelnetPassword
+          })
+          break;
+        case "userDataFolder":
+          const detected = logData.data.path.trim().replace(/\//g, "\\");
+          try {
+            if (!CONFIG.game_server) CONFIG.game_server = {};
+            const newRoot = `${detected}`;
+            const prev = getSavesRoot();
+            if (prev !== newRoot) {
+              CONFIG.game_server.UserDataFolder = newRoot;
+              if (CONFIG.game_server.saves) delete CONFIG.game_server.saves;
+              saveConfig();
+              eventBus.push("system", {
+                text: `自動偵測七日殺伺服器存檔目錄: ${newRoot}`,
+              });
+              logPathInfo("detect");
+            }
+          } catch (_) {}
+          break;
       }
     });
 
