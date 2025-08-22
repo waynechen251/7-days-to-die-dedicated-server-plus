@@ -24,6 +24,8 @@
   gap: 10px;
   box-shadow: var(--shadow);
   max-width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
 }
 .app-mask__spinner {
   width: 18px;
