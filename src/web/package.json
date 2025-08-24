@@ -1,13 +1,13 @@
 {
   "name": "7-days-to-die-dedicated-server-plus",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "pack": "pkg server.js --targets node18-win-x64 --output server.exe",
-    "setup": "cd /d ../inno-setup && iscc Setup.iss && start ../web/7DTD-DS-P-Setup(1.0.2).exe",
+    "setup": "cd /d ../inno-setup && iscc Setup.iss && start ../web/7DTD-DS-P-Setup(1.0.3).exe",
     "release": "npm run pack && npm run setup"
   },
   "keywords": [],

@@ -10,6 +10,7 @@
 
 | 版本號 | 下載地址                                                                                                                                                                  | MD5                              | 發布時間   |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ---------- |
+| 1.0.3  | [GoogleDrive](https://drive.google.com/file/d/1wfZofYVxu8UZBVO4353ZVWKB3u9Xee4x/view) / [MEGA](https://mega.nz/file/WAMGBIiT#cQFFSFwRtUiXIg0dtyu81Uog6JGKzw5ikA7YN7cHhuo) | B4C4FBF2FCA9B5751B433E077AADAC2C | 2025-08-24 |
 | 1.0.2  | [GoogleDrive](https://drive.google.com/file/d/1jZUoiq1JUw8f0PNUuTMRfAslME2b3_0w/view) / [MEGA](https://mega.nz/file/OVtQlSAS#pH5iiv6cwg6upR6hgNsrI83fI3tEG-R-24_SOpKtVwI) | F6203D69C4CB8F9ED2A461C4D9DE9E5A | 2025-08-17 |
 | 1.0.1  | [GoogleDrive](https://drive.google.com/file/d/1rtdseTAagd5p4YXTDjvwIklcCeqggs25/view) / [MEGA](https://mega.nz/file/HAsX3T4A#YtC4N163VSh7rv9MAOEH0dU4QuJcvNVbuPYD8F2VPlo) | 88C5D42677B44C31B0C86E8BD3EF7B3F | 2025-08-12 |
 | 1.0.0  | [GoogleDrive](https://drive.google.com/file/d/1H-lRoq2Xy35WPMZUeWU5E1R64IN_nQ5n/view) / [MEGA](https://mega.nz/file/aUNhnAxS#tnK-_t_AdD4M63KXluIpWQ2mMpNGQ8dEg5EGp5QHZqI) | A637F79C1AE04B58B3AD8C9E7F065F2F | 2025-08-10 |
