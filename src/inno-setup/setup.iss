@@ -201,14 +201,19 @@ end;
 procedure InitializeWizard();
 var
   ResultCode: Integer;
-  
 begin
-
   Log('InitializeWizard');
+
+  // 提示使用者安裝程式會停止服務，請先手動關閉遊戲伺服器
+  if MsgBox('安裝程式將會停止伺服器服務。請先手動關閉正在執行的遊戲伺服器。是否要繼續？',
+            mbConfirmation, MB_YESNO) <> IDYES then
+  begin
+    MsgBox('安裝已取消。請在關閉遊戲伺服器後重新執行安裝。', mbInformation, MB_OK);
+    Abort;
+  end;
 
   Exec('cmd.exe', '/C net stop {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
   CreateConfigPage();
-
 end;
 
 // 下一步按鈕點擊事件
