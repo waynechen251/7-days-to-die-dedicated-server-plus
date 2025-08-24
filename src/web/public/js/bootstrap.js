@@ -47,8 +47,8 @@
   }
 
   function setState(s) {
-    S.current = s;
-    App.status.applyUIState(s);
+    S.current = Object.assign({}, S.current || {}, s);
+    App.status.applyUIState(S.current);
     App.mask.updateMask();
   }
 
@@ -60,6 +60,23 @@
       const game = s.data?.gameServer || {};
       const steam = s.data?.steamCmd || {};
       S.hasEverConnected = true;
+
+      const heapVal = Number.isFinite(game.heap)
+        ? game.heap
+        : Number.isFinite(game.heapMB)
+        ? game.heapMB
+        : undefined;
+      const maxVal = Number.isFinite(game.max)
+        ? game.max
+        : Number.isFinite(game.maxMB)
+        ? game.maxMB
+        : undefined;
+      const rssVal = Number.isFinite(game.rss)
+        ? game.rss
+        : Number.isFinite(game.rssMB)
+        ? game.rssMB
+        : undefined;
+
       setState({
         backendUp: true,
         steamRunning: !!steam.isRunning,
@@ -70,6 +87,11 @@
           game.onlinePlayers != null && game.onlinePlayers !== ""
             ? game.onlinePlayers
             : "",
+        fps: Number.isFinite(game.fps) ? game.fps : undefined,
+        heap: heapVal,
+        max: maxVal,
+        zom: Number.isFinite(game.zom) ? game.zom : undefined,
+        rss: rssVal,
       });
     } catch {
       setState({

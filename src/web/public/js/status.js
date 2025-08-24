@@ -11,6 +11,11 @@
     telnetOk,
     gameVersion,
     onlinePlayers,
+    fps,
+    heap,
+    max,
+    zom,
+    rss,
   }) {
     const all = [
       D.installServerBtn,
@@ -132,16 +137,34 @@
     const gvEl = document.getElementById("gameVersionBadge");
     if (gvEl) {
       gvEl.textContent = `版本: ${
-        gameVersion ? gameVersion : gameRunning ? "偵測中…" : "-"
+        gameVersion ? gameVersion : gameRunning ? "-" : "-"
       }`;
     }
 
     const opEl = document.getElementById("onlinePlayersBadge");
     if (opEl) {
       opEl.textContent = `線上玩家數: ${
-        onlinePlayers !== "" ? onlinePlayers : gameRunning ? "偵測中…" : "-"
+        onlinePlayers !== "" ? onlinePlayers : gameRunning ? "-" : "-"
       }`;
     }
+
+    const fpsEl = document.getElementById("fpsBadge");
+    if (fpsEl) fpsEl.textContent = `FPS: ${Number.isFinite(fps) ? fps : "-"}`;
+
+    const heapEl = document.getElementById("heapBadge");
+    if (heapEl)
+      heapEl.textContent = `Heap: ${Number.isFinite(heap) ? heap + "MB" : "-"}`;
+
+    const maxEl = document.getElementById("maxBadge");
+    if (maxEl)
+      maxEl.textContent = `Max: ${Number.isFinite(max) ? max + "MB" : "-"}`;
+
+    const zomEl = document.getElementById("zomBadge");
+    if (zomEl) zomEl.textContent = `Zom: ${Number.isFinite(zom) ? zom : "-"}`;
+
+    const rssEl = document.getElementById("rssBadge");
+    if (rssEl)
+      rssEl.textContent = `RSS: ${Number.isFinite(rss) ? rss + "MB" : "-"}`;
 
     if (D.configStartBtn) {
       D.configStartBtn.textContent = gameRunning

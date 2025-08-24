@@ -28,6 +28,17 @@ const processManager = {
   gameServer: {
     gameVersion: null,
     onlinePlayers: null,
+    fps: null,
+    heapMB: null,
+    maxMB: null,
+    chunks: null,
+    cgo: null,
+    ent: null,
+    entSub: null,
+    items: null,
+    co: null,
+    zom: null,
+    rssMB: null,
     get isRunning() {
       return gameServer.isRunning;
     },
@@ -62,6 +73,17 @@ const status = (function () {
         pid: null,
         gameVersion: null,
         onlinePlayers: "",
+        fps: null,
+        heapMB: null,
+        maxMB: null,
+        chunks: null,
+        cgo: null,
+        ent: null,
+        entSub: null,
+        items: null,
+        co: null,
+        zom: null,
+        rssMB: null,
       },
     },
     lastUpdated: 0,
@@ -91,6 +113,50 @@ const status = (function () {
               processManager.gameServer.onlinePlayers != null
                 ? processManager.gameServer.onlinePlayers
                 : "",
+            fps:
+              processManager.gameServer.fps != null
+                ? processManager.gameServer.fps
+                : null,
+            heapMB:
+              processManager.gameServer.heapMB != null
+                ? processManager.gameServer.heapMB
+                : null,
+            maxMB:
+              processManager.gameServer.maxMB != null
+                ? processManager.gameServer.maxMB
+                : null,
+            chunks:
+              processManager.gameServer.chunks != null
+                ? processManager.gameServer.chunks
+                : null,
+            cgo:
+              processManager.gameServer.cgo != null
+                ? processManager.gameServer.cgo
+                : null,
+            ent:
+              processManager.gameServer.ent != null
+                ? processManager.gameServer.ent
+                : null,
+            entSub:
+              processManager.gameServer.entSub != null
+                ? processManager.gameServer.entSub
+                : null,
+            items:
+              processManager.gameServer.items != null
+                ? processManager.gameServer.items
+                : null,
+            co:
+              processManager.gameServer.co != null
+                ? processManager.gameServer.co
+                : null,
+            zom:
+              processManager.gameServer.zom != null
+                ? processManager.gameServer.zom
+                : null,
+            rssMB:
+              processManager.gameServer.rssMB != null
+                ? processManager.gameServer.rssMB
+                : null,
           },
         },
         lastUpdated: Date.now(),
@@ -118,6 +184,17 @@ const status = (function () {
     resetVersion() {
       processManager.gameServer.gameVersion = null;
       processManager.gameServer.onlinePlayers = null;
+      processManager.gameServer.fps = null;
+      processManager.gameServer.heapMB = null;
+      processManager.gameServer.maxMB = null;
+      processManager.gameServer.chunks = null;
+      processManager.gameServer.cgo = null;
+      processManager.gameServer.ent = null;
+      processManager.gameServer.entSub = null;
+      processManager.gameServer.items = null;
+      processManager.gameServer.co = null;
+      processManager.gameServer.zom = null;
+      processManager.gameServer.rssMB = null;
     },
   };
 })();

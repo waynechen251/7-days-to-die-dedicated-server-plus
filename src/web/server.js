@@ -947,6 +947,14 @@ app.post("/api/start", async (req, res) => {
       switch (logData.kind) {
         case "status":
           processManager.gameServer.onlinePlayers = logData.data.ply;
+          processManager.gameServer.fps = logData.data.fps;
+          processManager.gameServer.heapMB = logData.data.heap;
+          processManager.gameServer.maxMB = logData.data.max;
+          processManager.gameServer.zom = logData.data.zom;
+          processManager.gameServer.rssMB = logData.data.rss;
+          try {
+            processManager.status?.refresh?.().catch(() => {});
+          } catch (_) {}
           break;
         case "version":
           processManager.gameServer.gameVersion = logData.data.version;

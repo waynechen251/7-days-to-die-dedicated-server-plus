@@ -1,5 +1,5 @@
 const reStatus =
-  /Time:\s*(?<time>\d+(?:\.\d+)?)m\s+FPS:\s*(?<fps>\d+(?:\.\d+)?)\s+.*?\bPly:\s*(?<ply>\d+)\s+.*?RSS:\s*(?<rss>\d+(?:\.\d+)?)MB/;
+  /Time:\s*(?<time>\d+(?:\.\d+)?)m\s+FPS:\s*(?<fps>\d+(?:\.\d+)?)[^\S\r\n]*Heap:\s*(?<heap>\d+(?:\.\d+)?)MB\s+Max:\s*(?<max>\d+(?:\.\d+)?)MB(?:[\s\S]*?Chunks:\s*(?<chunks>\d+))?(?:[\s\S]*?CGO:\s*(?<cgo>\d+))?(?:[\s\S]*?Ply:\s*(?<ply>\d+))?(?:[\s\S]*?Zom:\s*(?<zom>\d+))?(?:[\s\S]*?Ent:\s*(?<ent>\d+)(?:\s*\((?<entSub>\d+)\))?)?(?:[\s\S]*?Items:\s*(?<items>\d+))?(?:[\s\S]*?CO:\s*(?<co>\d+))?(?:[\s\S]*?RSS:\s*(?<rss>\d+(?:\.\d+)?))MB/i;
 
 const reVersion =
   /Version:\s*(?<version>V\s*[\d.]+\s*\(.*?\))\s+Compatibility Version:\s*(?<compat>[^,]+),\s*Build:\s*(?<build>.+)$/;
@@ -11,11 +11,40 @@ const reUserData = /UserDataFolder:\s*(?<path>.+)$/i;
 function parseServerStatus(line) {
   const m = line.match(reStatus);
   if (!m || !m.groups) return null;
+  const time = parseFloat(m.groups.time);
+  const fps = parseFloat(m.groups.fps);
+  const heap = parseFloat(m.groups.heap);
+  const max = parseFloat(m.groups.max);
+  const chunks = m.groups.chunks ? parseInt(m.groups.chunks, 10) : null;
+  const cgo = m.groups.cgo ? parseInt(m.groups.cgo, 10) : null;
+  const ent = m.groups.ent ? parseInt(m.groups.ent, 10) : null;
+  const entSub = m.groups.entSub ? parseInt(m.groups.entSub, 10) : null;
+  const items = m.groups.items ? parseInt(m.groups.items, 10) : null;
+  const co = m.groups.co ? parseInt(m.groups.co, 10) : null;
+  const ply = m.groups.ply ? parseInt(m.groups.ply, 10) : null;
+  const zom = m.groups.zom ? parseInt(m.groups.zom, 10) : null;
+  const rss = m.groups.rss ? parseFloat(m.groups.rss) : null;
+
   return {
-    time: parseFloat(m.groups.time),
-    fps: parseFloat(m.groups.fps),
-    ply: parseInt(m.groups.ply, 10),
-    rss: parseFloat(m.groups.rss),
+    time,
+    fps,
+
+    heap: Number.isFinite(heap) ? heap : undefined,
+    max: Number.isFinite(max) ? max : undefined,
+    rss: Number.isFinite(rss) ? rss : undefined,
+
+    heapMB: Number.isFinite(heap) ? heap : undefined,
+    maxMB: Number.isFinite(max) ? max : undefined,
+    rssMB: Number.isFinite(rss) ? rss : undefined,
+
+    chunks,
+    cgo,
+    ent,
+    entSub,
+    items,
+    co,
+    ply,
+    zom,
   };
 }
 
