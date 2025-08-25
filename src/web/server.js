@@ -6,7 +6,6 @@ const net = require("net");
 const { format, ts } = require("./public/lib/time");
 const { log, error } = require("./public/lib/logger");
 const http = require("./public/lib/http");
-const { formatBytes } = require("./public/lib/bytes");
 const processManager = require("./public/lib/processManager");
 const archive = require("./public/lib/archive");
 const eventBus = require("./public/lib/eventBus");
@@ -14,7 +13,7 @@ const { tailFile } = require("./public/lib/tailer");
 const logParser = require("./public/lib/logParser");
 const serverConfigLib = require("./public/lib/serverConfig");
 const steamcmd = require("./public/lib/steamcmd");
-const { sendTelnetCommand, telnetStart } = require("./telnet");
+const { sendTelnetCommand, telnetStart } = require("./public/lib/telnet");
 
 if (process.platform === "win32") exec("chcp 65001 >NUL");
 
