@@ -12,6 +12,17 @@ function ensureDir(p) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 }
 
+function tsNow() {
+  const d = new Date();
+  const YYYY = String(d.getFullYear());
+  const MM = String(d.getMonth() + 1).padStart(2, "0");
+  const DD = String(d.getDate()).padStart(2, "0");
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  const ss = String(d.getSeconds()).padStart(2, "0");
+  return `${YYYY}${MM}${DD}${hh}${mm}${ss}`;
+}
+
 function wrapArchive(promise) {
   return promise.then(() => ({ stdout: "", stderr: "" }));
 }
@@ -118,6 +129,18 @@ function zipSavesRoot(savesRoot, outZip) {
   );
 }
 
+async function createBackup(savesRoot, backupsDir) {
+  if (!savesRoot || !fs.existsSync(savesRoot)) {
+    throw new Error("來源存檔根目錄不存在");
+  }
+  ensureDir(backupsDir);
+  const ts = tsNow();
+  const zipName = `Saves-${ts}.zip`;
+  const outPath = path.resolve(path.join(backupsDir, zipName));
+  await zipSavesRoot(savesRoot, outPath);
+  return zipName;
+}
+
 function zipSingleWorldGame(savesRoot, world, name, outZip) {
   const gameDir = path.resolve(savesRoot, world, name);
   if (!fs.existsSync(gameDir)) throw new Error("來源存檔不存在");
@@ -196,4 +219,5 @@ module.exports = {
   zipSingleWorldGame,
   unzipArchive,
   inspectZip,
+  createBackup,
 };
