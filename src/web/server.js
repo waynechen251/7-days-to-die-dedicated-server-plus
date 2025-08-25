@@ -771,7 +771,10 @@ app.post("/api/backup", async (req, res) => {
       return http.sendErr(req, res, msg);
     }
     ensureDir(BACKUP_SAVES_DIR);
-    const zipName = await archive.createBackup(savesRoot, BACKUP_SAVES_DIR);
+    const tsStr = format(new Date(), "YYYYMMDDHHmmss");
+    const zipName = `Saves-${tsStr}.zip`;
+    const outPath = path.join(BACKUP_SAVES_DIR, zipName);
+    await archive.zipSavesRoot(savesRoot, outPath);
     const line = `✅ 備份完成: ${zipName}`;
     log(line);
     eventBus.push("backup", { text: line });
