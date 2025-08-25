@@ -7,7 +7,6 @@ const { format, ts } = require("./public/lib/time");
 const { log, error } = require("./public/lib/logger");
 const http = require("./public/lib/http");
 const { formatBytes } = require("./public/lib/bytes");
-const { sendTelnetCommand } = require("./public/lib/telnet");
 const processManager = require("./public/lib/processManager");
 const archive = require("./public/lib/archive");
 const eventBus = require("./public/lib/eventBus");
@@ -15,7 +14,7 @@ const { tailFile } = require("./public/lib/tailer");
 const logParser = require("./public/lib/logParser");
 const serverConfigLib = require("./public/lib/serverConfig");
 const steamcmd = require("./public/lib/steamcmd");
-const { telnetStart } = require("./public/lib/telnet");
+const { sendTelnetCommand, telnetStart } = require("./telnet");
 
 if (process.platform === "win32") exec("chcp 65001 >NUL");
 
@@ -85,18 +84,6 @@ function resolveDirCaseInsensitive(root, want) {
     return path.join(root, hit ? hit.name : want);
   } catch (_) {
     return path.join(root, want);
-  }
-}
-
-function resolveFileCaseInsensitive(dir, file) {
-  try {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    const hit = entries.find(
-      (e) => e.isFile() && e.name.toLowerCase() === file.toLowerCase()
-    );
-    return hit ? path.join(dir, hit.name) : path.join(dir, file);
-  } catch (_) {
-    return path.join(dir, file);
   }
 }
 
@@ -232,51 +219,7 @@ function listGameSaves(root) {
   } catch (_) {}
   return result;
 }
-function copyDir(src, dst) {
-  if (!fs.existsSync(src)) return;
-  if (!fs.existsSync(dst)) fs.mkdirSync(dst, { recursive: true });
-  for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
-    const s = path.join(src, entry.name);
-    const d = path.join(dst, entry.name);
-    if (entry.isDirectory()) {
-      copyDir(s, d);
-    } else if (entry.isSymbolicLink()) {
-      try {
-        const link = fs.readlinkSync(s);
-        fs.symlinkSync(link, d);
-      } catch {
-        fs.copyFileSync(s, d);
-      }
-    } else if (entry.isFile()) {
-      fs.copyFileSync(s, d);
-    }
-  }
-}
-function detectBackupType(root) {
-  try {
-    const entries = fs.readdirSync(root, { withFileTypes: true });
-    const dirs = entries.filter((e) => e.isDirectory()).map((d) => d.name);
-    const lower = dirs.map((d) => d.toLowerCase());
-    if (lower.includes("saves")) {
-      const savesReal = dirs[lower.indexOf("saves")];
-      const savesDir = path.join(root, savesReal);
-      return { type: "full", savesDir };
-    }
-    if (dirs.length === 1) {
-      const world = dirs[0];
-      const worldPath = path.join(root, world);
-      try {
-        const inner = fs
-          .readdirSync(worldPath, { withFileTypes: true })
-          .filter((d) => d.isDirectory());
-        if (inner.length === 1) {
-          return { type: "world", world, name: inner[0].name };
-        }
-      } catch (_) {}
-    }
-  } catch (_) {}
-  return { type: "unknown" };
-}
+
 async function autoPreImportBackup(det) {
   try {
     const savesRoot = getSavesRoot();
@@ -535,23 +478,7 @@ app.get("/api/saves/list", (req, res) => {
     return http.respondJson(res, { ok: false, message: err.message }, 500);
   }
 });
-app.post("/api/view-saves", (req, res) => {
-  ensureDir(BACKUP_SAVES_DIR);
-  fs.readdir(BACKUP_SAVES_DIR, (err, files) => {
-    if (err) return http.sendErr(req, res, `❌ 讀取存檔失敗:\n${err}`);
-    const saves = files.filter((file) => file.endsWith(".zip"));
-    if (saves.length === 0)
-      return http.sendErr(req, res, "❌ 沒有找到任何存檔");
 
-    const details = saves.map((file) => {
-      const filePath = path.join(BACKUP_SAVES_DIR, file);
-      const stats = fs.statSync(filePath);
-      return `${file} (${formatBytes(stats.size)}, ${ts(stats.mtime)})`;
-    });
-
-    http.sendOk(req, res, `✅ 找到以下存檔:\n${details.join("\n")}`);
-  });
-});
 app.post("/api/saves/export-one", async (req, res) => {
   try {
     const savesRoot = getSavesRoot();
@@ -584,76 +511,7 @@ app.post("/api/saves/export-one", async (req, res) => {
     return http.sendErr(req, res, msg);
   }
 });
-app.post("/api/saves/export-all", async (req, res) => {
-  try {
-    const savesRoot = getSavesRoot();
-    if (!savesRoot || !fs.existsSync(savesRoot)) {
-      return http.sendErr(
-        req,
-        res,
-        "❌ 找不到遊戲存檔根目錄(CONFIG.game_server.UserDataFolder)"
-      );
-    }
-    ensureDir(BACKUP_SAVES_DIR);
-    const tsStr = format(new Date(), "YYYYMMDDHHmmss");
-    const zipName = `Saves-All-${tsStr}.zip`;
-    const outPath = path.join(BACKUP_SAVES_DIR, zipName);
-    await archive.zipSavesRoot(savesRoot, outPath);
-    const line = `✅ 完整備份完成: ${zipName}`;
-    log(line);
-    eventBus.push("backup", { text: line });
-    return http.sendOk(req, res, line);
-  } catch (err) {
-    const msg = `❌ 備份失敗: ${err?.message || err}`;
-    error(msg);
-    eventBus.push("backup", { level: "error", text: msg });
-    return http.sendErr(req, res, `${msg}`);
-  }
-});
-async function performPreImportBackup() {
-  try {
-    const src = getSavesRoot();
-    if (!src || !fs.existsSync(src))
-      return { ok: false, message: "找不到存檔資料夾" };
-    ensureDir(BACKUP_SAVES_DIR);
-    const timestamp = format(new Date(), "YYYYMMDDHHmmss");
-    const zipName = `Saves-${timestamp}.zip`;
-    const outPath = path.join(BACKUP_SAVES_DIR, zipName);
-    await archive.zipSavesRoot(src, outPath);
-    return { ok: true, zipName };
-  } catch (e) {
-    return { ok: false, message: e.message };
-  }
-}
-function isGameNameDir(p) {
-  try {
-    const st = fs.statSync(p);
-    if (!st.isDirectory()) return false;
-    if (fs.existsSync(path.join(p, "gamestate.dat"))) return true;
-    if (fs.existsSync(path.join(p, "GameState.dat"))) return true;
-    if (fs.existsSync(path.join(p, "region"))) return true;
-    return false;
-  } catch (_) {
-    return false;
-  }
-}
-function collectStructure(root) {
-  const map = new Map();
-  const worlds = fs
-    .readdirSync(root, { withFileTypes: true })
-    .filter((d) => d.isDirectory())
-    .map((d) => d.name);
-  for (const w of worlds) {
-    const wPath = path.join(root, w);
-    const names = fs
-      .readdirSync(wPath, { withFileTypes: true })
-      .filter((d) => d.isDirectory())
-      .map((d) => d.name)
-      .filter((n) => isGameNameDir(path.join(wPath, n)));
-    if (names.length) map.set(w, names);
-  }
-  return map;
-}
+
 app.post("/api/saves/import-one", async (req, res) => {
   try {
     const savesRoot = getSavesRoot();
@@ -1033,32 +891,6 @@ app.post("/api/telnet", async (req, res) => {
     const msg = `❌ Telnet 連線失敗: ${err.message}`;
     eventBus.push("telnet", { level: "stderr", text: msg });
     http.sendErr(req, res, `${msg}`);
-  }
-});
-
-app.post("/api/view-config", (req, res) => {
-  try {
-    const config = CONFIG;
-    http.sendOk(
-      req,
-      res,
-      `✅ 讀取管理後台設定成功:\n${JSON.stringify(config, null, 2)}`
-    );
-  } catch (err) {
-    http.sendErr(req, res, `❌ 讀取管理後台設定失敗:\n${err.message}`);
-  }
-});
-
-app.post("/api/server-status", async (req, res) => {
-  try {
-    await sendTelnetCommand("version");
-    return http.respondJson(res, { ok: true, status: "online" }, 200);
-  } catch (err) {
-    return http.respondJson(
-      res,
-      { ok: false, status: "telnet-fail", message: err.message },
-      200
-    );
   }
 });
 
