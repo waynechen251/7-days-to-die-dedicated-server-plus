@@ -303,39 +303,33 @@ app.get("/api/get-config", (req, res) => {
   return http.respondJson(res, { ok: true, data: CONFIG }, 200);
 });
 
-function tryBindOnce(port, host) {
+function tryConnectOnce(port, host, timeout = 500) {
   return new Promise((resolve) => {
-    const srv = net.createServer();
-    let finished = false;
-    const done = (inUse) => {
-      if (finished) return;
-      finished = true;
+    const sock = new net.Socket();
+    let resolved = false;
+    function done(inUse) {
+      if (resolved) return;
+      resolved = true;
       try {
-        srv.close();
+        sock.destroy();
       } catch (_) {}
       resolve({ host, inUse });
-    };
-    srv.once("error", (err) => {
-      if (err && (err.code === "EADDRINUSE" || err.code === "EACCES")) {
-        done(true);
-      } else {
-        done(false);
-      }
-    });
-    srv.once("listening", () => {
-      srv.close(() => done(false));
-    });
+    }
+    sock.setTimeout(timeout);
+    sock.once("connect", () => done(true));
+    sock.once("timeout", () => done(false));
+    sock.once("error", () => done(false));
     try {
-      srv.listen({ port, host });
+      sock.connect(port, host);
     } catch (_) {
-      done(true);
+      done(false);
     }
   });
 }
 
 async function checkPortInUse(port) {
   const hosts = ["127.0.0.1"];
-  const results = await Promise.all(hosts.map((h) => tryBindOnce(port, h)));
+  const results = await Promise.all(hosts.map((h) => tryConnectOnce(port, h)));
   return results.some((r) => r.inUse);
 }
 let dummyGamePortServer = null;
