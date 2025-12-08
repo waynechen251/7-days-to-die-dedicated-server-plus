@@ -61,6 +61,55 @@ Source: "{#WEBSRC}\server.sample.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#INNOSRC}\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Code]
+const
+  NET_FW_ACTION_ALLOW = 1;
+  NET_FW_RULE_DIR_IN  = 1;
+  NET_FW_IP_PROTOCOL_TCP = 6;
+  NET_FW_IP_PROTOCOL_UDP = 17;
+  NET_FW_PROFILE2_ALL = 2147483647;
+
+procedure AddAppFirewallRule(const RuleName, AppPath: string; const Protocol: Integer);
+var
+  Policy2, Rules, Rule: Variant;
+begin
+  try
+    Policy2 := CreateOleObject('HNetCfg.FwPolicy2');
+    Rules   := Policy2.Rules;
+
+    Rule := CreateOleObject('HNetCfg.FWRule');
+    Rule.Name            := RuleName;
+    Rule.Description     := 'Allow inbound for game server';
+    Rule.ApplicationName := AppPath;             // 針對程式的規則
+    Rule.Enabled         := True;
+    Rule.Direction       := NET_FW_RULE_DIR_IN;  // 入站
+    Rule.Action          := NET_FW_ACTION_ALLOW; // 允許
+    Rule.Protocol        := Protocol;            // TCP 或 UDP
+    Rule.Profiles        := NET_FW_PROFILE2_ALL; // 套用到全部 Profiles
+
+    // 對「程式」型規則，不必指定 LocalPorts → 等同全埠
+    Rules.Add(Rule);
+  except
+    // 忽略單次失敗；可改為日誌紀錄
+  end;
+end;
+
+procedure RemoveFirewallRuleByName(const RuleName: string);
+var
+  Policy2, Rules: Variant;
+begin
+  try
+    Policy2 := CreateOleObject('HNetCfg.FwPolicy2');
+    Rules   := Policy2.Rules;
+    try
+      Rules.Remove(RuleName);
+    except
+      // 規則不存在會丟例外；忽略
+    end;
+  except
+    // 忽略
+  end;
+end;
+
 procedure CurPageChanged(CurPageID: Integer);
 begin
 
@@ -83,6 +132,7 @@ end;
 procedure CurStepChanged(CurStep: TSetupStep);
 var
   ResultCode: Integer;
+  GameServerExePath: string;
 
 begin
 
@@ -149,7 +199,12 @@ begin
 
       // 註冊防火牆
       AddPortsInFirewall('{#AppServiceName}', WebPortInput.Text);
-
+      
+      GameServerExePath := ExpandConstant('{app}\7DaysToDieServer\7DaysToDieServer.exe');
+      // 建立兩條（TCP/UDP）
+      AddAppFirewallRule('7 Days To Die Server - TCP (All Ports)', GameServerExePath, NET_FW_IP_PROTOCOL_TCP);
+      AddAppFirewallRule('7 Days To Die Server - UDP (All Ports)', GameServerExePath, NET_FW_IP_PROTOCOL_UDP);
+      
       Exec('powershell.exe',
         '-ExecutionPolicy Bypass -File "' + ExpandConstant('{app}\scripts\json-helper.ps1') + '" ' +
         '-jsonPath "' + ExpandConstant('{app}\server.json') + '" ' +
@@ -191,6 +246,8 @@ begin
     Exec('cmd.exe', '/C net stop {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     Exec('cmd.exe', '/C sc delete {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     Exec(ExpandConstant('{sys}\netsh.exe'), 'advfirewall firewall delete rule name="' + ExpandConstant('{#AppServiceName}') + '"', ExpandConstant('{sys}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    RemoveFirewallRuleByName('7 Days To Die Server - TCP (All Ports)');
+    RemoveFirewallRuleByName('7 Days To Die Server - UDP (All Ports)');
     RegDeleteKeyIncludingSubkeys(HKLM, 'Software\7DTD-DS-P');
 
   end;
