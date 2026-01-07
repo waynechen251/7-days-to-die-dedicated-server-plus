@@ -30,9 +30,9 @@ if (Test-Path -LiteralPath $jsonPath) {
 if (-not $json) { $json = [pscustomobject]@{} }
 Add-PropIfMissing -Object $json -Name 'web'         -Value ([pscustomobject]@{})
 Add-PropIfMissing -Object $json -Name 'game_server' -Value ([pscustomobject]@{})
-if ($webPort) {
-  $json.web.port = [int]$webPort
+if ($null -ne $webPort -and $webPort -ne '') {
+  $json.web | Add-Member -NotePropertyName 'port' -NotePropertyValue ([int]$webPort) -Force
 }
-$json.web.installUser = $env:USERNAME
+$json.web | Add-Member -NotePropertyName 'installUser' -NotePropertyValue $env:USERNAME -Force
 $json | ConvertTo-Json -Depth 100 | Out-File -FilePath $jsonPath -Encoding utf8 -NoNewline
 Write-Host $jsonPath
