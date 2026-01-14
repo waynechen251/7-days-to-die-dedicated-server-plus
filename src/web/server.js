@@ -656,12 +656,14 @@ app.post("/api/install", (req, res) => {
       gameDirLocal,
       {
         onData: (data) => {
-          http.writeStamped(res, `[stdout] ${data}`);
-          eventBus.push("steamcmd", { level: "stdout", text: data });
+          let line = `[stdout] ${data}`;
+          http.writeStamped(res, line);
+          eventBus.push("steamcmd", { level: "stdout", text: line });
         },
         onError: (err) => {
-          http.writeStamped(res, `[stderr] ${err}`);
-          eventBus.push("steamcmd", { level: "stderr", text: err });
+          let line = `[stderr] ${err}`;
+          http.writeStamped(res, line);
+          eventBus.push("steamcmd", { level: "stderr", text: line });
         },
         onClose: (code) => {
           const line = `✅ 安裝 / 更新結束，Exit Code: ${code}`;
@@ -844,7 +846,7 @@ app.post("/api/start", async (req, res) => {
     const msg = `❌ 伺服器啟動失敗: ${err?.message || err}`;
     error(msg);
     eventBus.push("system", { level: "error", text: msg });
-    return http.sendErr(req, res, `❌ 啟動伺服器失敗:\n${err.message}`);
+    return http.sendErr(req, res, msg);
   }
 });
 
@@ -856,10 +858,10 @@ app.post("/api/stop", async (req, res) => {
         stopGameTail();
       } catch (_) {}
     stopGameTail = null;
-    const line = `✅ 關閉伺服器指令已發送`;
+    const line = `✅ 關閉伺服器指令已發送:\n${result}`;
     log(`${line}: ${result}`);
     eventBus.push("system", { text: line });
-    http.sendOk(req, res, `${line}:\n${result}`);
+    http.sendOk(req, res, `${line}`);
   } catch (err) {
     const msg = `❌ 關閉伺服器失敗: ${err.message}`;
     error(msg);
@@ -875,11 +877,12 @@ app.post("/api/telnet", async (req, res) => {
 
   try {
     const result = await sendTelnetCommand(command);
+    let line = `> ${command}\n${result}`;
     eventBus.push("telnet", {
       level: "stdout",
-      text: `> ${command}\n${result}`,
+      text: line,
     });
-    http.sendOk(req, res, `✅ 結果:\n${result}`);
+    http.sendOk(req, res, line);
   } catch (err) {
     const msg = `❌ Telnet 連線失敗: ${err.message}`;
     eventBus.push("telnet", { level: "stderr", text: msg });
