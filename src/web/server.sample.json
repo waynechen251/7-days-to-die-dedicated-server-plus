@@ -1,6 +1,6 @@
 {
   "game_server": {
-    "saves": "C:\\Windows\\system32\\config\\systemprofile\\AppData\\Roaming\\7DaysToDie"
+    "UserDataFolder": "C:\\Windows\\system32\\config\\systemprofile\\AppData\\Roaming\\7DaysToDie"
   },
   "web": {
     "port": 26901,

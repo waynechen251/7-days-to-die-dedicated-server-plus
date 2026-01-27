@@ -712,7 +712,8 @@
               try {
                 const localRes = await fetchJSON(`/api/check-port?port=${sp}`);
                 if (localRes?.ok) {
-                  if (localRes.data?.inUse) {
+                  // 當 isDummy 為 true 時，視為端口可用（啟動時會自動關閉 dummy）
+                  if (localRes.data?.inUse && !localRes.data?.isDummy) {
                     results.push({
                       ok: false,
                       text: `ServerPort 本機 ${sp} 已被佔用`,

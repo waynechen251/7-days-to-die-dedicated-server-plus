@@ -57,7 +57,6 @@ Source: "{#DEPENDENCIES}\VC_redist.x64.exe"; DestDir: "{app}\dependencies"; Flag
 Source: "{#SCRIPTSSRC}\*"; DestDir: "{app}\scripts"; Flags: ignoreversion recursesubdirs
 Source: "{#WEBSRC}\public\*"; DestDir: "{app}\public"; Flags: ignoreversion recursesubdirs
 Source: "{#WEBSRC}\server.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "{#WEBSRC}\server.sample.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#INNOSRC}\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 
 [Code]
@@ -136,8 +135,19 @@ begin
         '', SW_HIDE, ewWaitUntilTerminated, ResultCode
       );
       
+      // 啟用日誌輪替
       Exec(ExpandConstant('{app}\nssm.exe'),
-        'set {#AppName} AppRotateFiles 0',
+        'set {#AppName} AppRotateFiles 1',
+        '', SW_HIDE, ewWaitUntilTerminated, ResultCode
+      );
+      // 檔案超過 10MB 時輪替
+      Exec(ExpandConstant('{app}\nssm.exe'),
+        'set {#AppName} AppRotateBytes 10485760',
+        '', SW_HIDE, ewWaitUntilTerminated, ResultCode
+      );
+      // 允許線上輪替（服務運行時也能輪替）
+      Exec(ExpandConstant('{app}\nssm.exe'),
+        'set {#AppName} AppRotateOnline 1',
         '', SW_HIDE, ewWaitUntilTerminated, ResultCode
       );
 

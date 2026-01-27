@@ -1,5 +1,6 @@
-node_modules
-output
+.claude/
+node_modules/
+output/
 
 *.log
 *.tmp
