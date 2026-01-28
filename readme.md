@@ -95,11 +95,11 @@
 
 | 版本號 | 下載地址                                                                                                                                                                  | MD5                              | 發布時間   |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ---------- |
-| 1.0.4  | [GitHub](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/blob/Release/7DTD-DS-P-Setup(1.0.4).zip) | E543775B54B8DCDBC3486831B3546C0A | 2026-01-28 |
-| 1.0.3  | [GitHub](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/blob/Release/7DTD-DS-P-Setup(1.0.3).zip) | B4C4FBF2FCA9B5751B433E077AADAC2C | 2025-08-24 |
-| 1.0.2  | [GitHub](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/blob/Release/7DTD-DS-P-Setup(1.0.2).zip) | F6203D69C4CB8F9ED2A461C4D9DE9E5A | 2025-08-17 |
-| 1.0.1  | [GitHub](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/blob/Release/7DTD-DS-P-Setup(1.0.1).zip) | 88C5D42677B44C31B0C86E8BD3EF7B3F | 2025-08-12 |
-| 1.0.0  | [GitHub](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/blob/Release/7DTD-DS-P-Setup(1.0.0).zip) | A637F79C1AE04B58B3AD8C9E7F065F2F | 2025-08-10 |
+| 1.0.4  | [MediaFire](https://www.mediafire.com/file/3mfl7h41w9g6130/7DTD-DS-P-Setup(1.0.4).zip/file) | E543775B54B8DCDBC3486831B3546C0A | 2026-01-28 |
+| 1.0.3  | [MediaFire](https://www.mediafire.com/file/0mv8wqm0fsixnem/7DTD-DS-P-Setup(1.0.3).zip/file) | B4C4FBF2FCA9B5751B433E077AADAC2C | 2025-08-24 |
+| 1.0.2  | [MediaFire](https://www.mediafire.com/file/o8wu6zpppxpcfu9/7DTD-DS-P-Setup(1.0.2).zip/file) | F6203D69C4CB8F9ED2A461C4D9DE9E5A | 2025-08-17 |
+| 1.0.1  | [MediaFire](https://www.mediafire.com/file/8x04vqj5bee99pf/7DTD-DS-P-Setup(1.0.1).zip/file) | 88C5D42677B44C31B0C86E8BD3EF7B3F | 2025-08-12 |
+| 1.0.0  | [MediaFire](https://www.mediafire.com/file/7ndv20j4jmpug9w/7DTD-DS-P-Setup(1.0.0).zip/file) | A637F79C1AE04B58B3AD8C9E7F065F2F | 2025-08-10 |
 
 ---
 
