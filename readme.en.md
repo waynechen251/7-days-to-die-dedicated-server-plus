@@ -1,32 +1,61 @@
 # 7 Days to Die Dedicated Server Plus
 
+![Version](https://img.shields.io/badge/version-1.0.4-blue)
+![License](https://img.shields.io/badge/license-GPL--3.0-green)
+![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
+
 ### 📦 [Open Source Repository](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus.git) ｜ [GitHub Release](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/releases) ｜ [Bahamut Forum](https://forum.gamer.com.tw/Co.php?bsn=24608&sn=6631)
 
 ### 🌐 Documentation: [繁體中文](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/blob/main/readme.md) ｜ [English](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/blob/main/readme.en.md)
 
 ### 🌐 Installation Guide: [繁體中文](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/blob/main/docs/install.md) ｜ [English](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/blob/main/docs/install.en.md)
 
-## Released Versions
+---
 
-| Version | Download Links                                                                                                                                                            | MD5                              | Release Date |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------ |
-| 1.0.3   | [GoogleDrive](https://drive.google.com/file/d/1wfZofYVxu8UZBVO4353ZVWKB3u9Xee4x/view) / [MEGA](https://mega.nz/file/WAMGBIiT#cQFFSFwRtUiXIg0dtyu81Uog6JGKzw5ikA7YN7cHhuo) | B4C4FBF2FCA9B5751B433E077AADAC2C | 2025-08-24   |
-| 1.0.2   | [GoogleDrive](https://drive.google.com/file/d/1jZUoiq1JUw8f0PNUuTMRfAslME2b3_0w/view) / [MEGA](https://mega.nz/file/OVtQlSAS#pH5iiv6cwg6upR6hgNsrI83fI3tEG-R-24_SOpKtVwI) | F6203D69C4CB8F9ED2A461C4D9DE9E5A | 2025-08-17   |
-| 1.0.1   | [GoogleDrive](https://drive.google.com/file/d/1rtdseTAagd5p4YXTDjvwIklcCeqggs25/view) / [MEGA](https://mega.nz/file/HAsX3T4A#YtC4N163VSh7rv9MAOEH0dU4QuJcvNVbuPYD8F2VPlo) | 88C5D42677B44C31B0C86E8BD3EF7B3F | 2025-08-12   |
-| 1.0.0   | [GoogleDrive](https://drive.google.com/file/d/1H-lRoq2Xy35WPMZUeWU5E1R64IN_nQ5n/view) / [MEGA](https://mega.nz/file/aUNhnAxS#tnK-_t_AdD4M63KXluIpWQ2mMpNGQ8dEg5EGp5QHZqI) | A637F79C1AE04B58B3AD8C9E7F065F2F | 2025-08-10   |
+## About
+
+7 Days to Die Dedicated Server Plus is a server management tool designed specifically for Windows. With an intuitive web interface, you can easily install, update, configure, and manage your game server without complex command-line operations.
+
+### Key Features
+
+- **One-Click Install/Update** - Quickly deploy game servers via SteamCMD
+- **Web Interface Management** - Intuitive web interface for editing serverconfig.xml
+- **Real-Time Console Monitoring** - View server logs and status in real-time
+- **Save Backup & Restore** - Easily import and export server saves
+- **Windows Service** - Install as a system service for automatic startup
+
+### Screenshot
+
+![Management Panel](docs/images/image-11.png)
 
 ---
 
-# Feature List
+## Quick Start
 
-## Backend Management
+### Download
+
+Go to [GitHub Releases](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/releases) to download the latest installer.
+
+### Three Steps to Get Started
+
+1. **Run the Installer** - Follow the wizard to complete installation
+2. **Install the Game Server** - Click "Install / Update" in the management panel
+3. **Configure and Launch** - Set up serverconfig.xml and click "Save and Start"
+
+For detailed instructions, see the [Installation Guide](docs/install.en.md).
+
+---
+
+## Feature List
+
+### Backend Management
 
 | Feature                     | Description                   |
 | --------------------------- | ----------------------------- |
 | serverconfig.xml management | Web-based hosting and editing |
 | Logs integration            | Simplified troubleshooting    |
 
-## 7 Days to Die Dedicated Server & SteamCMD Integration
+### 7 Days to Die Dedicated Server & SteamCMD Integration
 
 | Feature                           | Description                       |
 | --------------------------------- | --------------------------------- |
@@ -38,7 +67,7 @@
 | View server status                | Player list and settings preview  |
 | Save list                         | Quick overview                    |
 
-## Save Management
+### Save Management
 
 | Feature              | Description                         |
 | -------------------- | ----------------------------------- |
@@ -51,45 +80,79 @@
 
 ---
 
-# 1.0.3 Planned Features
+## System Requirements
 
-## Backend Management
-
-| Feature                          | Description                |
-| -------------------------------- | -------------------------- |
-| serverconfig editor UI           | Further optimization       |
-| Remote access permission control | Enhanced security          |
-| Multi-language i18n              | English and more languages |
-| Backend version check            | Online update detection    |
-| Mobile compatibility             | Improved mobile experience |
-
-## Save Management
-
-| Feature            | Description              |
-| ------------------ | ------------------------ |
-| Saves download     | Direct download support  |
-| GameWorld download | Full world save download |
-
-## Mod Management
-
-| Feature             | Description              |
-| ------------------- | ------------------------ |
-| Import all mods     | Import all mods at once  |
-| Import specific mod | Import a single mod      |
-| Export all mods     | Batch export             |
-| Export specific mod | Single export            |
-| Download single mod | One mod download         |
-| Download all mods   | Batch download           |
-| Delete specific mod | Remove one mod           |
-| Delete all mods     | Clear all mods           |
-| Delete mod backups  | Selective backup removal |
-
-> ※ Client and server mods must match
+| Item             | Requirement                                      |
+| ---------------- | ------------------------------------------------ |
+| Operating System | Windows 10/11 (64-bit), Windows Server 2019/2022 |
+| Disk Space       | At least 20 GB (including game server and backups) |
+| Memory           | At least 16 GB RAM                               |
+| Network          | Stable network connection                        |
 
 ---
 
-## Language Translation
+## Released Versions
 
-| Language            | Status                                        |
-| ------------------- | --------------------------------------------- |
-| Traditional Chinese | Too many things to handle, will revisit later |
+| Version | Download Links                                                                                                                                                            | MD5                              | Release Date |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------ |
+| 1.0.3   | [GoogleDrive](https://drive.google.com/file/d/1wfZofYVxu8UZBVO4353ZVWKB3u9Xee4x/view) / [MEGA](https://mega.nz/file/WAMGBIiT#cQFFSFwRtUiXIg0dtyu81Uog6JGKzw5ikA7YN7cHhuo) | B4C4FBF2FCA9B5751B433E077AADAC2C | 2025-08-24   |
+| 1.0.2   | [GoogleDrive](https://drive.google.com/file/d/1jZUoiq1JUw8f0PNUuTMRfAslME2b3_0w/view) / [MEGA](https://mega.nz/file/OVtQlSAS#pH5iiv6cwg6upR6hgNsrI83fI3tEG-R-24_SOpKtVwI) | F6203D69C4CB8F9ED2A461C4D9DE9E5A | 2025-08-17   |
+| 1.0.1   | [GoogleDrive](https://drive.google.com/file/d/1rtdseTAagd5p4YXTDjvwIklcCeqggs25/view) / [MEGA](https://mega.nz/file/HAsX3T4A#YtC4N163VSh7rv9MAOEH0dU4QuJcvNVbuPYD8F2VPlo) | 88C5D42677B44C31B0C86E8BD3EF7B3F | 2025-08-12   |
+| 1.0.0   | [GoogleDrive](https://drive.google.com/file/d/1H-lRoq2Xy35WPMZUeWU5E1R64IN_nQ5n/view) / [MEGA](https://mega.nz/file/aUNhnAxS#tnK-_t_AdD4M63KXluIpWQ2mMpNGQ8dEg5EGp5QHZqI) | A637F79C1AE04B58B3AD8C9E7F065F2F | 2025-08-10   |
+
+---
+
+## Roadmap
+
+### Backend Management
+
+| Feature                          | Status  | Description                |
+| -------------------------------- | ------- | -------------------------- |
+| serverconfig editor UI           | Planned | Further optimization       |
+| Remote access permission control | Planned | Enhanced security          |
+| Multi-language i18n              | Planned | English and more languages |
+| Backend version check            | Planned | Online update detection    |
+| Mobile compatibility             | Planned | Improved mobile experience |
+
+### Save Management
+
+| Feature            | Status  | Description              |
+| ------------------ | ------- | ------------------------ |
+| Saves download     | Planned | Direct download support  |
+| GameWorld download | Planned | Full world save download |
+
+### Mod Management
+
+| Feature             | Status  | Description              |
+| ------------------- | ------- | ------------------------ |
+| Import all mods     | Planned | Import all mods at once  |
+| Import specific mod | Planned | Import a single mod      |
+| Export all mods     | Planned | Batch export             |
+| Export specific mod | Planned | Single export            |
+| Download single mod | Planned | One mod download         |
+| Download all mods   | Planned | Batch download           |
+| Delete specific mod | Planned | Remove one mod           |
+| Delete all mods     | Planned | Clear all mods           |
+| Delete mod backups  | Planned | Selective backup removal |
+
+> ※ Client and server mods must match
+
+### Language Translation
+
+| Language            | Status  | Description                                   |
+| ------------------- | ------- | --------------------------------------------- |
+| Traditional Chinese | Planned | Too many things to handle, will revisit later |
+
+---
+
+## License
+
+This project is licensed under [GPL-3.0](LICENSE).
+
+---
+
+## Related Links
+
+- [Installation Guide](docs/install.en.md)
+- [Bahamut Forum](https://forum.gamer.com.tw/Co.php?bsn=24608&sn=6631)
+- [Report Issues](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/issues)
