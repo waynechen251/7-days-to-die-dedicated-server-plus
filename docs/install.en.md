@@ -247,14 +247,6 @@ You can customize the installation path during setup. Recommendations:
 - Path should not contain spaces or special characters
 - Examples: `D:\7DTD-DS-P\` or `E:\GameServers\7DTD\`
 
-### Multiple Server Setup
-
-To run multiple servers on the same machine:
-1. Install multiple 7DTD-DS-P instances to different directories
-2. Each instance should use a different management panel port (e.g., 26901, 26902)
-3. Each server should use different `ServerPort` and `TelnetPort`
-4. Ensure no port conflicts
-
 ---
 
 ## FAQ
