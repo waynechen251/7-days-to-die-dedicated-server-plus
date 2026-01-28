@@ -214,6 +214,7 @@ require("./lib/routes/config")(app, routeContext);
 require("./lib/routes/saves")(app, routeContext);
 require("./lib/routes/game")(app, routeContext);
 require("./lib/routes/install")(app, routeContext);
+require("./lib/routes/versions")(app, routeContext);
 
 // SSE endpoint
 app.get("/api/stream", eventBus.sseHandler);

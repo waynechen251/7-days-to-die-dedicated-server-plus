@@ -6,7 +6,61 @@
   const D = App.dom;
   const S = App.state;
 
+  function setVersionSourceBadge(source) {
+    if (!D.versionSourceBadge) return;
+    const sourceLabels = {
+      api: "SteamCMD API",
+      cache: "SteamCMD API (快取)",
+      fallback: "靜態列表",
+    };
+    const sourceColors = {
+      api: "var(--c-ok)",
+      cache: "var(--c-ok)",
+      fallback: "var(--c-warn)",
+    };
+    D.versionSourceBadge.textContent = sourceLabels[source] || source;
+    D.versionSourceBadge.style.background = sourceColors[source] || "";
+  }
+
+  async function loadVersions() {
+    try {
+      const result = await fetchJSON("/api/versions");
+      if (result?.ok && Array.isArray(result.versions)) {
+        // Clear existing options
+        D.versionSelect.innerHTML = "";
+
+        // Add options from API
+        for (const ver of result.versions) {
+          const opt = document.createElement("option");
+          // Use empty string for "public" to match existing behavior
+          opt.value = ver.value === "public" ? "" : ver.value;
+          opt.textContent = ver.label;
+          D.versionSelect.appendChild(opt);
+        }
+
+        // Store version labels for later use
+        S.versionLabels = {};
+        for (const ver of result.versions) {
+          const key = ver.value === "public" ? "" : ver.value;
+          S.versionLabels[key] = ver.label;
+        }
+
+        // Update source badge
+        setVersionSourceBadge(result.source);
+
+        return true;
+      }
+    } catch (_) {
+      // Keep existing static options on failure
+      setVersionSourceBadge("fallback");
+    }
+    return false;
+  }
+
   async function initUI() {
+    // Load versions dynamically
+    await loadVersions();
+
     try {
       const cfg = await fetchJSON("/api/get-config");
       if (
@@ -14,11 +68,13 @@
         Object.prototype.hasOwnProperty.call(cfg.data.web, "lastInstallVersion")
       ) {
         const last = cfg.data.web.lastInstallVersion;
-        if (last && last !== "public") {
+        // Convert "public" to empty string for select value
+        const selectValue = last === "public" ? "" : last;
+        if (selectValue) {
           const opt = Array.from(D.versionSelect.options).find(
-            (o) => o.value === last
+            (o) => o.value === selectValue
           );
-          if (opt) D.versionSelect.value = last;
+          if (opt) D.versionSelect.value = selectValue;
         } else {
           D.versionSelect.value = "";
         }

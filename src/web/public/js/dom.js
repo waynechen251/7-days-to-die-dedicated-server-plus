@@ -10,6 +10,7 @@
       stopServerBtn: $("stopServerBtn"),
       killServerBtn: $("killServerBtn"),
       versionSelect: $("versionSelect"),
+      versionSourceBadge: $("versionSourceBadge"),
       telnetInput: $("telnetInput"),
       telnetSendBtn: $("telnetSendBtn"),
       telnetBtns: Array.from(
