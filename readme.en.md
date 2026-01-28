@@ -95,7 +95,7 @@ For detailed instructions, see the [Installation Guide](docs/install.en.md).
 
 | Version | Download Links                                                                                                                                                            | MD5                              | Release Date |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ------------ |
-| 1.0.4  | [MediaFire](https://www.mediafire.com/file/3mfl7h41w9g6130/7DTD-DS-P-Setup(1.0.4).zip/file) | E543775B54B8DCDBC3486831B3546C0A | 2026-01-28 |
+| 1.0.4  | [MediaFire](https://www.mediafire.com/file/q6rtmhe3zpzall3/7DTD-DS-P-Setup(1.0.4).zip/file) | E543775B54B8DCDBC3486831B3546C0A | 2026-01-28 |
 | 1.0.3  | [MediaFire](https://www.mediafire.com/file/0mv8wqm0fsixnem/7DTD-DS-P-Setup(1.0.3).zip/file) | B4C4FBF2FCA9B5751B433E077AADAC2C | 2025-08-24 |
 | 1.0.2  | [MediaFire](https://www.mediafire.com/file/o8wu6zpppxpcfu9/7DTD-DS-P-Setup(1.0.2).zip/file) | F6203D69C4CB8F9ED2A461C4D9DE9E5A | 2025-08-17 |
 | 1.0.1  | [MediaFire](https://www.mediafire.com/file/8x04vqj5bee99pf/7DTD-DS-P-Setup(1.0.1).zip/file) | 88C5D42677B44C31B0C86E8BD3EF7B3F | 2025-08-12 |
