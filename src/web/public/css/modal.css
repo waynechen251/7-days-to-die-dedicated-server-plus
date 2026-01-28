@@ -54,3 +54,29 @@
   color: #7a5200;
   border-bottom: 1px solid #f2d48a;
 }
+
+@media (max-width: 720px) {
+  .modal__panel {
+    margin: 16px auto;
+    width: calc(100% - 16px);
+    max-height: calc(100vh - 32px);
+    border-radius: 8px;
+  }
+  .modal__header {
+    padding: var(--space-2) var(--space-3);
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .modal__body {
+    padding: var(--space-3);
+  }
+  .modal__footer {
+    padding: var(--space-2) var(--space-3);
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .modal__footer button {
+    flex: 1 1 auto;
+    min-width: 80px;
+  }
+}

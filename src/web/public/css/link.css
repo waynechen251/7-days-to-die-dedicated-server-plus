@@ -13,21 +13,9 @@
   background: rgba(255, 255, 255, 0.08);
 }
 @media (max-width: 720px) {
-  .topbar {
-    flex-wrap: wrap;
-  }
   .github-link {
-    order: 2;
-  }
-  .topbar .status-inline {
-    order: 3;
-    width: 100%;
-    margin-left: 0;
-    gap: var(--space-1);
-    padding-top: var(--space-1);
-  }
-  .topbar .status-inline .badge {
-    font-size: 0.6rem;
-    padding: 0.25rem 0.5rem;
+    padding: var(--space-1) var(--space-2);
+    font-size: 0.8rem;
+    flex-shrink: 0;
   }
 }

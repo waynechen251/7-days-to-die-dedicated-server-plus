@@ -192,9 +192,15 @@ body.has-dock-open {
 }
 @media (max-width: 720px) {
   :root {
-    --console-dock-height: 45vh;
+    --console-dock-height: 35vh;
   }
-  .console-dock .console {
-    font-size: 0.68rem;
+  .console-dock .console,
+  .pane-console .console {
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+  .console-dock .resize-grip {
+    height: 12px;
+    touch-action: none;
   }
 }

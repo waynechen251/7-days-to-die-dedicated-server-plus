@@ -58,3 +58,17 @@ select:focus {
     color: var(--c-text);
   }
 }
+
+.field--version-select {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: min(220px, 100%);
+}
+
+@media (max-width: 720px) {
+  .field--version-select {
+    min-width: 0;
+    width: 100%;
+  }
+}
