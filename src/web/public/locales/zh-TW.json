@@ -1,0 +1,364 @@
+{
+  "meta": {
+    "name": "繁體中文",
+    "code": "zh-TW"
+  },
+  "common": {
+    "confirm": "繼續",
+    "cancel": "取消",
+    "close": "關閉",
+    "save": "保存",
+    "refresh": "重新整理",
+    "loading": "載入中...",
+    "none": "(無)",
+    "noBackup": "(沒有備份)",
+    "selectExisting": "(選擇現有)",
+    "notSet": "(未設定)",
+    "custom": "(自訂)"
+  },
+  "topbar": {
+    "brand": "7 Days To Die Dedicated Server Plus 管理後台 1.0.4"
+  },
+  "mask": {
+    "connectionLost": "無法與管理後台取得連線，請檢查服務狀態或稍候…"
+  },
+  "noscript": {
+    "title": "需要 JavaScript",
+    "message": "請啟用瀏覽器的 JavaScript 後重新整理。"
+  },
+  "console": {
+    "tabSystem": "管理後台",
+    "tabSteamcmd": "SteamCMD",
+    "tabGame": "7DaysToDieServer",
+    "tabTelnet": "Telnet",
+    "tabBackup": "存檔管理"
+  },
+  "splitResizer": {
+    "title": "拖曳調整高度"
+  },
+  "card": {
+    "dsp": {
+      "title": "管理後台",
+      "viewConfig": "查看管理後台設定檔"
+    },
+    "game": {
+      "title": "7 Days To Die Dedicated Server",
+      "badgeSteam": "SteamCMD",
+      "badgeGame": "7DaysToDieServer",
+      "badgeTelnet": "Telnet",
+      "versionSelectLabel": "伺服器版本選擇",
+      "versionSourceLoading": "載入中",
+      "lastInstallVersion": "上次安裝版本:",
+      "lastInstallVersionNone": "上次安裝版本: 無",
+      "lastInstallVersionNoRecord": "上次安裝版本: 無紀錄",
+      "installUpdate": "安裝 / 更新",
+      "abortInstall": "中斷安裝 / 更新",
+      "serverManagement": "七日殺伺服器管理",
+      "version": "版本:",
+      "onlinePlayers": "線上玩家數:",
+      "fps": "FPS:",
+      "heap": "Heap:",
+      "max": "Max:",
+      "zombies": "Zom:",
+      "rss": "RSS:",
+      "startServer": "啟動伺服器",
+      "viewServerconfig": "檢視 serverconfig.xml",
+      "stopServer": "正常結束",
+      "killServer": "強制結束",
+      "telnetPlaceholder": "輸入 Telnet 指令…",
+      "telnetSend": "送出",
+      "telnetSettings": "設定"
+    },
+    "saves": {
+      "title": "存檔管理",
+      "refreshTitle": "重新整理存檔/備份清單",
+      "refresh": "重新整理",
+      "serverSaves": "七日殺伺服器存檔",
+      "gameWorld": "GameWorld",
+      "gameName": "GameName",
+      "export": "匯出",
+      "exportGameNameOnly": "僅匯出所選 GameName",
+      "exportGameNameTitle": "匯出目前選擇的 GameWorld / GameName",
+      "exportFullSaves": "匯出完整 Saves",
+      "exportFullSavesTitle": "完整匯出整個 Saves 目錄",
+      "deleteGameName": "刪除所選 GameName",
+      "deleteGameNameTitle": "刪除所選 GameName",
+      "backupManagement": "管理後台備份存檔",
+      "selectBackup": "選擇備份檔",
+      "importFromBackup": "從備份匯入",
+      "deleteBackup": "刪除備份檔",
+      "deleteBackupTitle": "刪除所選備份檔",
+      "importUpload": "匯入 (自行上傳 ZIP 結構可參考匯出之 ZIP 檔)",
+      "selectZip": "選擇 ZIP",
+      "uploadAndImport": "上傳並匯入"
+    }
+  },
+  "modal": {
+    "dspConfig": {
+      "title": "管理後台設定 (server.json)",
+      "ariaLabel": "管理後台設定檔",
+      "reload": "重新讀取",
+      "copy": "複製"
+    },
+    "serverconfig": {
+      "title": "serverconfig.xml 設定",
+      "ariaLabel": "serverconfig.xml 設定",
+      "lockBanner": "伺服器運行中，禁止修改 serverconfig.xml",
+      "loadAdminConfig": "載入上次保存設定",
+      "loadAdminConfigTitle": "從 server.json 載入 game_server 設定",
+      "saveAndStart": "保存後啟動",
+      "preStartCheck": "啟動前檢查",
+      "noDescription": "無說明"
+    }
+  },
+  "confirm": {
+    "title": "請確認操作",
+    "defaultMessage": "確定要執行這個操作嗎？",
+    "installServer": "是否確定安裝 / 更新伺服器?\nserverconfig.xml 將被重置",
+    "abortInstall": "是否確定中斷安裝 / 更新?\n將不會正常退出，可能導致檔案損毀，請重新執行安裝 / 更新!",
+    "stopServer": "是否正常結束伺服器?\n將會正常關閉並寫入存檔。",
+    "killServer": "是否強制結束遊戲伺服器?\n強制結束遊戲伺服器將不會正常保存，可能引發存檔異常，非必要請勿使用!",
+    "deleteGameName": "是否確定刪除所選存檔?\n刪除前會自動備份。",
+    "importFromBackup": "是否確定從備份匯入?",
+    "deleteBackup": "是否確定刪除此備份檔?\n此動作無法復原。",
+    "uploadAndImport": "是否確定上傳並匯入?",
+    "loadAdminConfig": "是否確定載入後台管理設定?\n此動作將覆蓋目前編輯器中的值",
+    "loadAfterInstall": "偵測到剛完成安裝。是否載入上次保存的 game_server 設定?\n(選擇『載入設定』將覆蓋目前編輯器中的值)",
+    "loadAfterInstallTitle": "載入上次保存設定",
+    "loadConfigBtn": "載入設定",
+    "skipBtn": "略過",
+    "changesSummaryTitle": "即將寫入的設定變更",
+    "saveAndStartAction": "保存並啟動"
+  },
+  "status": {
+    "backend": "管理後台",
+    "versionSourceApi": "SteamCMD API",
+    "versionSourceCache": "SteamCMD API (快取)",
+    "versionSourceFallback": "靜態列表"
+  },
+  "messages": {
+    "selectWorldName": "請選擇 GameWorld / GameName",
+    "selectBackup": "請選擇備份檔",
+    "selectZipFile": "請選擇要上傳的 ZIP 檔",
+    "loadSavesFailed": "讀取存檔清單失敗: {error}",
+    "loadingConfig": "讀取中...",
+    "loadFragmentFailed": "載入片段失敗: {key} ({error})",
+    "streamInitFailed": "串流初始化失敗",
+    "configModalNotReady": "設定視窗尚未載入，請稍候再試或重新整理頁面。",
+    "loadConfigFailed": "讀取設定失敗",
+    "readServerconfigFailed": "讀取 serverconfig.xml 失敗: {error}",
+    "serverRunningCannotLoad": "伺服器運行中，禁止載入上次保存設定",
+    "missingGameServer": "缺少 game_server",
+    "loadedAdminConfig": "已載入上次保存設定到編輯器 (尚未保存)",
+    "loadAdminConfigFailed": "載入上次保存設定失敗: {error}",
+    "appliedAdminConfig": "已套用後台設定 ({count} 項) (尚未保存)",
+    "noApplicableProps": "載入後台設定: 無可套用的屬性 (server.json 中的 game_server 可能尚未保存或屬性名稱不相符)",
+    "skippedLoadConfig": "已略過載入上次保存設定",
+    "initLoadPromptFailed": "初始載入提示失敗: {error}",
+    "versionNotInstalled": "目前選擇的版本尚未安裝，請先安裝。",
+    "cannotStartCheckFailed": "無法啟動: 請先修正啟動前未通過項目。",
+    "cancelledBySave": "已取消保存 (使用者取消)",
+    "generateSummaryFailed": "生成變更摘要失敗: {error} (將直接保存)",
+    "writeServerconfigFailed": "寫入 serverconfig.xml 失敗: {error}",
+    "noChanges": "無任何參數變更。"
+  },
+  "checks": {
+    "serverPortNotSet": "ServerPort 未設定或格式錯誤",
+    "telnetDisabled": "TelnetEnabled 已停用 (啟動需要 Telnet)",
+    "telnetMustBeTrue": "TelnetEnabled 必須為 true",
+    "telnetEnabled": "TelnetEnabled 已啟用",
+    "telnetPortDisabled": "TelnetPort 已停用",
+    "telnetPortInvalid": "TelnetPort 未設定或格式錯誤",
+    "telnetPasswordDisabled": "TelnetPassword 已停用",
+    "telnetPasswordEmpty": "TelnetPassword 不可為空",
+    "telnetPasswordSet": "TelnetPassword 已設定",
+    "eacDisabled": "EACEnabled 已停用(註解)",
+    "eacEnabledWarn": "EACEnabled=true: 啟用 EAC 時無法使用模組",
+    "eacDisabledOk": "EACEnabled=false",
+    "portConflictWithConsole": "{name} 不可與控制台埠 {port} 相同(避免衝突)",
+    "portConflictSame": "{nameA} 與 {nameB} 不可使用相同埠 ({port})",
+    "serverPortLocalInUse": "ServerPort 本機 {port} 已被佔用",
+    "serverPortLocalFree": "ServerPort 本機 {port} 未被佔用",
+    "serverPortLocalCheckFailed": "ServerPort 本機檢查失敗: {error}",
+    "serverPortLocalCheckException": "ServerPort 本機檢查例外: {error}",
+    "serverPortNoPublicIp": "ServerPort 檢查異常: 無法取得公網 IP",
+    "serverPortForwardOk": "ServerPort 轉發正常：{ip}:{port} 可從公網連線",
+    "serverPortForwardServiceFailed": "ServerPort 轉發檢查服務失敗：{error}",
+    "serverPortForwardFailed": "ServerPort 轉發測試未通：{ip}:{port}(請稍後再試或確認 NAT/防火牆)",
+    "serverPortForwardError": "ServerPort 轉發檢查錯誤: {error}",
+    "serverPortCheckException": "ServerPort 檢查異常: {error}",
+    "telnetPortInUse": "TelnetPort {port} 已被佔用",
+    "telnetPortAvailable": "TelnetPort {port} 可用",
+    "telnetPortCheckFailed": "TelnetPort 檢查失敗",
+    "crossplayCompatible": "跨平台連線相容: (MaxPlayer≤8, AllowCrossplay=true, EAC=true, IgnoreEOSSanctions=false)",
+    "crossplayIncompatible": "跨平台連線不相容: {conditions} (不會出現在跨平台搜尋)",
+    "disabledCommented": "{name} 已停用(註解)"
+  },
+  "enum": {
+    "Region": {
+      "NorthAmericaEast": "北美東部",
+      "NorthAmericaWest": "北美西部",
+      "CentralAmerica": "中美洲",
+      "SouthAmerica": "南美洲",
+      "Europe": "歐洲",
+      "Russia": "俄羅斯",
+      "Asia": "亞洲",
+      "MiddleEast": "中東",
+      "Africa": "非洲",
+      "Oceania": "大洋洲"
+    },
+    "ServerVisibility": {
+      "0": "0 - 隱藏伺服器",
+      "1": "1 - 僅好友可見 (Steam 好友)",
+      "2": "2 - 公開伺服器"
+    },
+    "ServerDisabledNetworkProtocols": {
+      "LiteNetLib": "LiteNetLib(已設定 NAT 或 Port-forward 建議使用)",
+      "SteamNetworking": "SteamNetworking"
+    },
+    "WebDashboardEnabled": {
+      "true": "啟用 Web 控制台",
+      "false": "停用 Web 控制台"
+    },
+    "EnableMapRendering": {
+      "true": "啟用 Web 地圖渲染",
+      "false": "停用 Web 地圖渲染"
+    },
+    "TelnetEnabled": {
+      "true": "啟用 Telnet 遠端控制",
+      "false": "停用 Telnet 遠端控制"
+    },
+    "TerminalWindowEnabled": {
+      "true": "顯示伺服器終端視窗",
+      "false": "不顯示伺服器終端視窗"
+    },
+    "ServerAllowCrossplay": {
+      "true": "允許跨平台連線",
+      "false": "不允許跨平台連線"
+    },
+    "EACEnabled": {
+      "true": "啟用 EAC 反作弊",
+      "false": "停用 EAC 反作弊"
+    },
+    "IgnoreEOSSanctions": {
+      "true": "忽略 EOS 封禁 (允許被封玩家)",
+      "false": "遵循 EOS 封禁 (建議)"
+    },
+    "PersistentPlayerProfiles": {
+      "true": "保留玩家角色設定",
+      "false": "不保留玩家角色設定"
+    },
+    "GameDifficulty": {
+      "0": "0 - 採集者 (最簡單)",
+      "1": "1 - 冒險者 (預設)",
+      "2": "2 - 偵查者",
+      "3": "3 - 生存者",
+      "4": "4 - 求生專家",
+      "5": "5 - 瘋狂 (最困難)"
+    },
+    "BuildCreate": {
+      "true": "啟用創造模式 (作弊)",
+      "false": "停用創造模式"
+    },
+    "BiomeProgression": {
+      "true": "啟用生物群落進程",
+      "false": "停用生物群落進程"
+    },
+    "DeathPenalty": {
+      "0": "0 - 無懲罰",
+      "1": "1 - 經典 (失去經驗)",
+      "2": "2 - 傷害懲罰",
+      "3": "3 - 永久死亡 (硬核)"
+    },
+    "DropOnDeath": {
+      "0": "0 - 無掉落",
+      "1": "1 - 掉落全部物品",
+      "2": "2 - 僅掉落工具欄",
+      "3": "3 - 僅掉落背包",
+      "4": "4 - 物品直接刪除"
+    },
+    "DropOnQuit": {
+      "0": "0 - 無掉落",
+      "1": "1 - 掉落全部物品",
+      "2": "2 - 僅掉落工具欄",
+      "3": "3 - 僅掉落背包"
+    },
+    "AllowSpawnNearFriend": {
+      "0": "0 - 禁止在好友附近重生",
+      "1": "1 - 允許 (任何地點)",
+      "2": "2 - 僅允許在森林生物群落"
+    },
+    "EnemySpawnMode": {
+      "true": "啟用殭屍生成",
+      "false": "停用殭屍生成"
+    },
+    "EnemyDifficulty": {
+      "0": "0 - 普通",
+      "1": "1 - 狂暴"
+    },
+    "ZombieMove": {
+      "0": "0 - 白天步行",
+      "1": "1 - 白天慢跑",
+      "2": "2 - 白天奔跑",
+      "3": "3 - 白天衝刺",
+      "4": "4 - 白天夢魘"
+    },
+    "ZombieMoveNight": {
+      "0": "0 - 夜晚步行",
+      "1": "1 - 夜晚慢跑",
+      "2": "2 - 夜晚奔跑",
+      "3": "3 - 夜晚衝刺",
+      "4": "4 - 夜晚夢魘"
+    },
+    "ZombieFeralMove": {
+      "0": "0 - 發狂步行",
+      "1": "1 - 發狂慢跑",
+      "2": "2 - 發狂奔跑",
+      "3": "3 - 發狂衝刺",
+      "4": "4 - 發狂夢魘"
+    },
+    "ZombieBMMove": {
+      "0": "0 - 血月步行",
+      "1": "1 - 血月慢跑",
+      "2": "2 - 血月奔跑",
+      "3": "3 - 血月衝刺",
+      "4": "4 - 血月夢魘"
+    },
+    "AirDropMarker": {
+      "true": "顯示空投標記",
+      "false": "不顯示空投標記"
+    },
+    "PartyKillingMode": {
+      "0": "0 - 禁止 PvP",
+      "1": "1 - 允許隊友互相攻擊",
+      "2": "2 - 僅陌生人可互攻",
+      "3": "3 - 全部玩家可互攻"
+    },
+    "LandClaimDecayMode": {
+      "0": "0 - 緩慢衰減",
+      "1": "1 - 快速衰減",
+      "2": "2 - 永久保護 (直到過期)"
+    },
+    "DynamicMeshEnabled": {
+      "true": "啟用動態網格",
+      "false": "停用動態網格"
+    },
+    "DynamicMeshLandClaimOnly": {
+      "true": "僅在領地範圍啟用",
+      "false": "所有區域啟用"
+    },
+    "TwitchBloodMoonAllowed": {
+      "true": "允許 Twitch 血月事件",
+      "false": "不允許 Twitch 血月事件"
+    }
+  },
+  "changeSummary": {
+    "enabled": "(啟用)",
+    "disabled": "(停用)",
+    "from": "=>",
+    "notSetValue": "(未設定)",
+    "enabledState": "啟用",
+    "disabledState": "停用",
+    "confirmSaveStart": "{summary}\n\n是否確定{action}?"
+  }
+}

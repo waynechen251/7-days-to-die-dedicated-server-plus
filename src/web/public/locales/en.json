@@ -1,0 +1,364 @@
+{
+  "meta": {
+    "name": "English",
+    "code": "en"
+  },
+  "common": {
+    "confirm": "Continue",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "refresh": "Refresh",
+    "loading": "Loading...",
+    "none": "(None)",
+    "noBackup": "(No backups)",
+    "selectExisting": "(Select existing)",
+    "notSet": "(Not set)",
+    "custom": "(Custom)"
+  },
+  "topbar": {
+    "brand": "7 Days To Die Dedicated Server Plus Admin Panel 1.0.4"
+  },
+  "mask": {
+    "connectionLost": "Unable to connect to admin panel. Please check service status or wait..."
+  },
+  "noscript": {
+    "title": "JavaScript Required",
+    "message": "Please enable JavaScript in your browser and refresh the page."
+  },
+  "console": {
+    "tabSystem": "System",
+    "tabSteamcmd": "SteamCMD",
+    "tabGame": "7DaysToDieServer",
+    "tabTelnet": "Telnet",
+    "tabBackup": "Saves"
+  },
+  "splitResizer": {
+    "title": "Drag to resize"
+  },
+  "card": {
+    "dsp": {
+      "title": "Admin Panel",
+      "viewConfig": "View Admin Config"
+    },
+    "game": {
+      "title": "7 Days To Die Dedicated Server",
+      "badgeSteam": "SteamCMD",
+      "badgeGame": "7DaysToDieServer",
+      "badgeTelnet": "Telnet",
+      "versionSelectLabel": "Server Version",
+      "versionSourceLoading": "Loading",
+      "lastInstallVersion": "Last installed:",
+      "lastInstallVersionNone": "Last installed: None",
+      "lastInstallVersionNoRecord": "Last installed: No record",
+      "installUpdate": "Install / Update",
+      "abortInstall": "Abort Install / Update",
+      "serverManagement": "Server Management",
+      "version": "Version:",
+      "onlinePlayers": "Online Players:",
+      "fps": "FPS:",
+      "heap": "Heap:",
+      "max": "Max:",
+      "zombies": "Zom:",
+      "rss": "RSS:",
+      "startServer": "Start Server",
+      "viewServerconfig": "View serverconfig.xml",
+      "stopServer": "Stop Gracefully",
+      "killServer": "Force Kill",
+      "telnetPlaceholder": "Enter Telnet command...",
+      "telnetSend": "Send",
+      "telnetSettings": "Settings"
+    },
+    "saves": {
+      "title": "Save Management",
+      "refreshTitle": "Refresh saves/backups list",
+      "refresh": "Refresh",
+      "serverSaves": "Server Saves",
+      "gameWorld": "GameWorld",
+      "gameName": "GameName",
+      "export": "Export",
+      "exportGameNameOnly": "Export Selected GameName",
+      "exportGameNameTitle": "Export selected GameWorld / GameName",
+      "exportFullSaves": "Export Full Saves",
+      "exportFullSavesTitle": "Export entire Saves directory",
+      "deleteGameName": "Delete Selected GameName",
+      "deleteGameNameTitle": "Delete selected GameName",
+      "backupManagement": "Backup Management",
+      "selectBackup": "Select Backup",
+      "importFromBackup": "Import from Backup",
+      "deleteBackup": "Delete Backup",
+      "deleteBackupTitle": "Delete selected backup",
+      "importUpload": "Import (Upload ZIP - refer to exported ZIP for structure)",
+      "selectZip": "Select ZIP",
+      "uploadAndImport": "Upload & Import"
+    }
+  },
+  "modal": {
+    "dspConfig": {
+      "title": "Admin Config (server.json)",
+      "ariaLabel": "Admin configuration file",
+      "reload": "Reload",
+      "copy": "Copy"
+    },
+    "serverconfig": {
+      "title": "serverconfig.xml Settings",
+      "ariaLabel": "serverconfig.xml settings",
+      "lockBanner": "Server is running. Cannot modify serverconfig.xml",
+      "loadAdminConfig": "Load Last Saved Config",
+      "loadAdminConfigTitle": "Load game_server settings from server.json",
+      "saveAndStart": "Save & Start",
+      "preStartCheck": "Pre-start Checks",
+      "noDescription": "No description"
+    }
+  },
+  "confirm": {
+    "title": "Please Confirm",
+    "defaultMessage": "Are you sure you want to perform this action?",
+    "installServer": "Are you sure you want to install / update the server?\nserverconfig.xml will be reset",
+    "abortInstall": "Are you sure you want to abort the installation / update?\nThis may cause file corruption. Please re-run install / update!",
+    "stopServer": "Stop the server gracefully?\nThe server will shut down properly and save data.",
+    "killServer": "Force kill the game server?\nThis will not save properly and may cause save corruption. Use only when necessary!",
+    "deleteGameName": "Are you sure you want to delete the selected save?\nA backup will be created automatically.",
+    "importFromBackup": "Are you sure you want to import from backup?",
+    "deleteBackup": "Are you sure you want to delete this backup?\nThis action cannot be undone.",
+    "uploadAndImport": "Are you sure you want to upload and import?",
+    "loadAdminConfig": "Are you sure you want to load admin config?\nThis will overwrite current editor values",
+    "loadAfterInstall": "Installation detected. Load last saved game_server settings?\n(Selecting 'Load' will overwrite current editor values)",
+    "loadAfterInstallTitle": "Load Last Saved Settings",
+    "loadConfigBtn": "Load",
+    "skipBtn": "Skip",
+    "changesSummaryTitle": "Configuration Changes to Write",
+    "saveAndStartAction": "Save & Start"
+  },
+  "status": {
+    "backend": "Backend",
+    "versionSourceApi": "SteamCMD API",
+    "versionSourceCache": "SteamCMD API (cached)",
+    "versionSourceFallback": "Static list"
+  },
+  "messages": {
+    "selectWorldName": "Please select GameWorld / GameName",
+    "selectBackup": "Please select a backup",
+    "selectZipFile": "Please select a ZIP file to upload",
+    "loadSavesFailed": "Failed to load saves list: {error}",
+    "loadingConfig": "Loading...",
+    "loadFragmentFailed": "Failed to load fragment: {key} ({error})",
+    "streamInitFailed": "Stream initialization failed",
+    "configModalNotReady": "Config window not loaded yet. Please try again or refresh the page.",
+    "loadConfigFailed": "Failed to load config",
+    "readServerconfigFailed": "Failed to read serverconfig.xml: {error}",
+    "serverRunningCannotLoad": "Server is running. Cannot load last saved settings",
+    "missingGameServer": "Missing game_server",
+    "loadedAdminConfig": "Loaded last saved settings to editor (not saved yet)",
+    "loadAdminConfigFailed": "Failed to load last saved settings: {error}",
+    "appliedAdminConfig": "Applied admin config ({count} items) (not saved yet)",
+    "noApplicableProps": "Load admin config: No applicable properties (game_server in server.json may not be saved or property names don't match)",
+    "skippedLoadConfig": "Skipped loading last saved settings",
+    "initLoadPromptFailed": "Initial load prompt failed: {error}",
+    "versionNotInstalled": "Selected version is not installed. Please install first.",
+    "cannotStartCheckFailed": "Cannot start: Please fix failed pre-start checks first.",
+    "cancelledBySave": "Save cancelled (user cancelled)",
+    "generateSummaryFailed": "Failed to generate change summary: {error} (will save directly)",
+    "writeServerconfigFailed": "Failed to write serverconfig.xml: {error}",
+    "noChanges": "No changes."
+  },
+  "checks": {
+    "serverPortNotSet": "ServerPort not set or invalid format",
+    "telnetDisabled": "TelnetEnabled is disabled (Telnet required for startup)",
+    "telnetMustBeTrue": "TelnetEnabled must be true",
+    "telnetEnabled": "TelnetEnabled is enabled",
+    "telnetPortDisabled": "TelnetPort is disabled",
+    "telnetPortInvalid": "TelnetPort not set or invalid format",
+    "telnetPasswordDisabled": "TelnetPassword is disabled",
+    "telnetPasswordEmpty": "TelnetPassword cannot be empty",
+    "telnetPasswordSet": "TelnetPassword is set",
+    "eacDisabled": "EACEnabled is disabled (commented)",
+    "eacEnabledWarn": "EACEnabled=true: Mods cannot be used when EAC is enabled",
+    "eacDisabledOk": "EACEnabled=false",
+    "portConflictWithConsole": "{name} cannot use the same port {port} as admin console",
+    "portConflictSame": "{nameA} and {nameB} cannot use the same port ({port})",
+    "serverPortLocalInUse": "ServerPort {port} is already in use locally",
+    "serverPortLocalFree": "ServerPort {port} is available locally",
+    "serverPortLocalCheckFailed": "ServerPort local check failed: {error}",
+    "serverPortLocalCheckException": "ServerPort local check exception: {error}",
+    "serverPortNoPublicIp": "ServerPort check error: Unable to get public IP",
+    "serverPortForwardOk": "ServerPort forwarding OK: {ip}:{port} accessible from internet",
+    "serverPortForwardServiceFailed": "ServerPort forwarding check service failed: {error}",
+    "serverPortForwardFailed": "ServerPort forwarding test failed: {ip}:{port} (try later or check NAT/firewall)",
+    "serverPortForwardError": "ServerPort forwarding check error: {error}",
+    "serverPortCheckException": "ServerPort check exception: {error}",
+    "telnetPortInUse": "TelnetPort {port} is already in use",
+    "telnetPortAvailable": "TelnetPort {port} is available",
+    "telnetPortCheckFailed": "TelnetPort check failed",
+    "crossplayCompatible": "Crossplay compatible: (MaxPlayer<=8, AllowCrossplay=true, EAC=true, IgnoreEOSSanctions=false)",
+    "crossplayIncompatible": "Crossplay incompatible: {conditions} (won't appear in crossplay search)",
+    "disabledCommented": "{name} is disabled (commented)"
+  },
+  "enum": {
+    "Region": {
+      "NorthAmericaEast": "North America East",
+      "NorthAmericaWest": "North America West",
+      "CentralAmerica": "Central America",
+      "SouthAmerica": "South America",
+      "Europe": "Europe",
+      "Russia": "Russia",
+      "Asia": "Asia",
+      "MiddleEast": "Middle East",
+      "Africa": "Africa",
+      "Oceania": "Oceania"
+    },
+    "ServerVisibility": {
+      "0": "0 - Hidden Server",
+      "1": "1 - Friends Only (Steam Friends)",
+      "2": "2 - Public Server"
+    },
+    "ServerDisabledNetworkProtocols": {
+      "LiteNetLib": "LiteNetLib (Recommended if NAT or Port-forward configured)",
+      "SteamNetworking": "SteamNetworking"
+    },
+    "WebDashboardEnabled": {
+      "true": "Enable Web Dashboard",
+      "false": "Disable Web Dashboard"
+    },
+    "EnableMapRendering": {
+      "true": "Enable Web Map Rendering",
+      "false": "Disable Web Map Rendering"
+    },
+    "TelnetEnabled": {
+      "true": "Enable Telnet Remote Control",
+      "false": "Disable Telnet Remote Control"
+    },
+    "TerminalWindowEnabled": {
+      "true": "Show Server Terminal Window",
+      "false": "Hide Server Terminal Window"
+    },
+    "ServerAllowCrossplay": {
+      "true": "Allow Crossplay",
+      "false": "Disallow Crossplay"
+    },
+    "EACEnabled": {
+      "true": "Enable EAC Anti-cheat",
+      "false": "Disable EAC Anti-cheat"
+    },
+    "IgnoreEOSSanctions": {
+      "true": "Ignore EOS Sanctions (Allow banned players)",
+      "false": "Follow EOS Sanctions (Recommended)"
+    },
+    "PersistentPlayerProfiles": {
+      "true": "Keep Player Profiles",
+      "false": "Don't Keep Player Profiles"
+    },
+    "GameDifficulty": {
+      "0": "0 - Scavenger (Easiest)",
+      "1": "1 - Adventurer (Default)",
+      "2": "2 - Nomad",
+      "3": "3 - Warrior",
+      "4": "4 - Survivalist",
+      "5": "5 - Insane (Hardest)"
+    },
+    "BuildCreate": {
+      "true": "Enable Creative Mode (Cheat)",
+      "false": "Disable Creative Mode"
+    },
+    "BiomeProgression": {
+      "true": "Enable Biome Progression",
+      "false": "Disable Biome Progression"
+    },
+    "DeathPenalty": {
+      "0": "0 - None",
+      "1": "1 - Classic (Lose XP)",
+      "2": "2 - Injured",
+      "3": "3 - Permanent Death (Hardcore)"
+    },
+    "DropOnDeath": {
+      "0": "0 - Nothing",
+      "1": "1 - Everything",
+      "2": "2 - Toolbelt Only",
+      "3": "3 - Backpack Only",
+      "4": "4 - Delete All"
+    },
+    "DropOnQuit": {
+      "0": "0 - Nothing",
+      "1": "1 - Everything",
+      "2": "2 - Toolbelt Only",
+      "3": "3 - Backpack Only"
+    },
+    "AllowSpawnNearFriend": {
+      "0": "0 - Disabled",
+      "1": "1 - Anywhere",
+      "2": "2 - Forest Biome Only"
+    },
+    "EnemySpawnMode": {
+      "true": "Enable Zombie Spawning",
+      "false": "Disable Zombie Spawning"
+    },
+    "EnemyDifficulty": {
+      "0": "0 - Normal",
+      "1": "1 - Feral"
+    },
+    "ZombieMove": {
+      "0": "0 - Walk (Day)",
+      "1": "1 - Jog (Day)",
+      "2": "2 - Run (Day)",
+      "3": "3 - Sprint (Day)",
+      "4": "4 - Nightmare (Day)"
+    },
+    "ZombieMoveNight": {
+      "0": "0 - Walk (Night)",
+      "1": "1 - Jog (Night)",
+      "2": "2 - Run (Night)",
+      "3": "3 - Sprint (Night)",
+      "4": "4 - Nightmare (Night)"
+    },
+    "ZombieFeralMove": {
+      "0": "0 - Walk (Feral)",
+      "1": "1 - Jog (Feral)",
+      "2": "2 - Run (Feral)",
+      "3": "3 - Sprint (Feral)",
+      "4": "4 - Nightmare (Feral)"
+    },
+    "ZombieBMMove": {
+      "0": "0 - Walk (Blood Moon)",
+      "1": "1 - Jog (Blood Moon)",
+      "2": "2 - Run (Blood Moon)",
+      "3": "3 - Sprint (Blood Moon)",
+      "4": "4 - Nightmare (Blood Moon)"
+    },
+    "AirDropMarker": {
+      "true": "Show Airdrop Marker",
+      "false": "Hide Airdrop Marker"
+    },
+    "PartyKillingMode": {
+      "0": "0 - No PvP",
+      "1": "1 - Allow Party Killing",
+      "2": "2 - Strangers Only",
+      "3": "3 - Everyone"
+    },
+    "LandClaimDecayMode": {
+      "0": "0 - Slow",
+      "1": "1 - Fast",
+      "2": "2 - None (Until Expired)"
+    },
+    "DynamicMeshEnabled": {
+      "true": "Enable Dynamic Mesh",
+      "false": "Disable Dynamic Mesh"
+    },
+    "DynamicMeshLandClaimOnly": {
+      "true": "Land Claim Only",
+      "false": "All Areas"
+    },
+    "TwitchBloodMoonAllowed": {
+      "true": "Allow Twitch Blood Moon",
+      "false": "Disallow Twitch Blood Moon"
+    }
+  },
+  "changeSummary": {
+    "enabled": "(enabled)",
+    "disabled": "(disabled)",
+    "from": "=>",
+    "notSetValue": "(not set)",
+    "enabledState": "enabled",
+    "disabledState": "disabled",
+    "confirmSaveStart": "{summary}\n\nAre you sure you want to {action}?"
+  }
+}

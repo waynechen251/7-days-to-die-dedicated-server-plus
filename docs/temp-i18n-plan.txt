@@ -1,0 +1,157 @@
+﻿╭────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Plan to implement                                                                                  │
+│                                                                                                    │
+│ DSP 管理後台多語系功能實現計劃                                                                     │
+│                                                                                                    │
+│ 概述                                                                                               │
+│                                                                                                    │
+│ 為 7 Days To Die Dedicated Server Plus 管理後台添加多語系 (i18n) 功能，透過外掛 JSON               │
+│ 語系檔案實現，並在首頁頂部添加語言選單。                                                           │
+│                                                                                                    │
+│ 技術方案                                                                                           │
+│                                                                                                    │
+│ JSON 語系檔案結構                                                                                  │
+│                                                                                                    │
+│ 使用混合式結構（分類巢狀 + 扁平 key）：                                                            │
+│ {                                                                                                  │
+│   "meta": { "name": "繁體中文", "code": "zh-TW" },                                                 │
+│   "common": { "confirm": "繼續", "cancel": "取消" },                                               │
+│   "card.game.title": "7 Days To Die Dedicated Server",                                             │
+│   "messages.selectWorldName": "請選擇 GameWorld / GameName"                                        │
+│ }                                                                                                  │
+│                                                                                                    │
+│ i18n 核心模塊功能                                                                                  │
+│                                                                                                    │
+│ - t(key, params) - 翻譯函數，支援插值 {name}                                                       │
+│ - setLanguage(lang) - 切換語言並更新 DOM                                                           │
+│ - updateDOM() - 掃描 data-i18n 屬性並翻譯                                                          │
+│ - LocalStorage 儲存語言偏好                                                                        │
+│ - 瀏覽器語言自動檢測                                                                               │
+│                                                                                                    │
+│ ---                                                                                                │
+│ 需要建立的新檔案                                                                                   │
+│                                                                                                    │
+│ 1. src/web/public/js/i18n.js (i18n 核心模塊)                                                       │
+│                                                                                                    │
+│ 2. src/web/public/locales/zh-TW.json (繁體中文)                                                    │
+│                                                                                                    │
+│ 3. src/web/public/locales/en.json (英文)                                                           │
+│                                                                                                    │
+│ 4. src/web/public/locales/zh-CN.json (簡體中文)                                                    │
+│                                                                                                    │
+│ ---                                                                                                │
+│ 需要修改的檔案                                                                                     │
+│                                                                                                    │
+│ 1. src/web/public/index.html                                                                       │
+│                                                                                                    │
+│ - 添加 i18n.js 腳本引用（在 utils.js 後）                                                          │
+│ - 在 topbar 添加語言選單 <select id="langSelect">                                                  │
+│ - 為靜態文本添加 data-i18n 屬性                                                                    │
+│                                                                                                    │
+│ 2. src/web/public/js/bootstrap.js                                                                  │
+│                                                                                                    │
+│ - 在 realBoot() 中初始化 i18n                                                                      │
+│ - 添加語言選單事件監聽                                                                             │
+│ - 將硬編碼中文改為 App.i18n.t()                                                                    │
+│                                                                                                    │
+│ 3. src/web/public/js/fragments-loader.js                                                           │
+│                                                                                                    │
+│ - 片段載入後呼叫 App.i18n.updateDOM()                                                              │
+│                                                                                                    │
+│ 4. src/web/public/fragments/*.html (4 個檔案)                                                      │
+│                                                                                                    │
+│ - card-dsp.html                                                                                    │
+│ - card-game.html                                                                                   │
+│ - card-saves.html                                                                                  │
+│ - card-dsp-modal.html / card-game-serverconfig-modal.html                                          │
+│                                                                                                    │
+│ 5. JavaScript 模塊 (動態文本)                                                                      │
+│                                                                                                    │
+│ - status.js - 狀態徽章文字                                                                         │
+│ - actions.js - 錯誤訊息                                                                            │
+│ - saves.js - 錯誤訊息                                                                              │
+│ - confirm.js - 預設按鈕文字                                                                        │
+│ - card-game-serverconfig-modal.js - ENUM_OPTIONS 和檢查訊息                                        │
+│                                                                                                    │
+│ 6. src/web/public/css/layout.css                                                                   │
+│                                                                                                    │
+│ - 添加 .lang-selector 和 .lang-select 樣式                                                         │
+│                                                                                                    │
+│ ---                                                                                                │
+│ 實現步驟                                                                                           │
+│                                                                                                    │
+│ 階段 1: 基礎架構                                                                                   │
+│                                                                                                    │
+│ 1. 建立 locales/ 目錄                                                                              │
+│ 2. 建立 i18n.js 核心模塊                                                                           │
+│ 3. 建立 zh-TW.json 語系檔（從現有中文提取）                                                        │
+│ 4. 修改 index.html 引入 i18n.js                                                                    │
+│                                                                                                    │
+│ 階段 2: UI 整合                                                                                    │
+│                                                                                                    │
+│ 5. 在 topbar 添加語言選單 HTML                                                                     │
+│ 6. 添加語言選單 CSS 樣式                                                                           │
+│ 7. 修改 bootstrap.js 整合 i18n 初始化                                                              │
+│ 8. 修改 fragments-loader.js 觸發翻譯更新                                                           │
+│                                                                                                    │
+│ 階段 3: HTML 翻譯標記                                                                              │
+│                                                                                                    │
+│ 9. 修改 index.html 靜態文本 (data-i18n)                                                            │
+│ 10. 修改各 fragment HTML 檔案                                                                      │
+│                                                                                                    │
+│ 階段 4: JavaScript 翻譯                                                                            │
+│                                                                                                    │
+│ 11. 修改 JS 模塊中的動態生成文本                                                                   │
+│ 12. 處理 ENUM_OPTIONS 選項標籤                                                                     │
+│ 13. 處理確認對話框訊息                                                                             │
+│                                                                                                    │
+│ 階段 5: 其他語言                                                                                   │
+│                                                                                                    │
+│ 14. 建立 en.json 英文語系檔                                                                        │
+│ 15. 建立 zh-CN.json 簡體中文語系檔                                                                 │
+│                                                                                                    │
+│ ---                                                                                                │
+│ 關鍵實現細節                                                                                       │
+│                                                                                                    │
+│ HTML 標記方式                                                                                      │
+│                                                                                                    │
+│ <!-- 純文本 -->                                                                                    │
+│ <h2 data-i18n="card.game.title">7 Days To Die Dedicated Server</h2>                                │
+│                                                                                                    │
+│ <!-- placeholder -->                                                                               │
+│ <input data-i18n-placeholder="card.game.telnetPlaceholder" placeholder="輸入 Telnet 指令…">        │
+│                                                                                                    │
+│ <!-- 確認對話框 -->                                                                                │
+│ <button data-i18n="card.game.installUpdate"                                                        │
+│         data-danger-i18n="confirm.installServer"                                                   │
+│         data-cancel-i18n="common.cancel"                                                           │
+│         data-continue-i18n="common.confirm">                                                       │
+│   安裝 / 更新                                                                                      │
+│ </button>                                                                                          │
+│                                                                                                    │
+│ JavaScript 使用方式                                                                                │
+│                                                                                                    │
+│ const { t } = App.i18n;                                                                            │
+│ gvEl.textContent = `${t("card.game.version")} ${gameVersion || "-"}`;                              │
+│                                                                                                    │
+│ // 帶參數                                                                                          │
+│ t("messages.loadSavesFailed", { error: e.message })                                                │
+│                                                                                                    │
+│ 腳本載入順序                                                                                       │
+│                                                                                                    │
+│ <script defer src="js/fragments-loader.js"></script>                                               │
+│ <script defer src="js/utils.js"></script>                                                          │
+│ <script defer src="js/i18n.js"></script>  <!-- 新增 -->                                            │
+│ <script defer src="js/dom.js"></script>                                                            │
+│ ...                                                                                                │
+│                                                                                                    │
+│ ---                                                                                                │
+│ 驗證方式                                                                                           │
+│                                                                                                    │
+│ 1. 語言切換測試: 選擇不同語言，確認所有文本正確切換                                                │
+│ 2. 持久化測試: 重新整理頁面後語言偏好保持                                                          │
+│ 3. 瀏覽器檢測測試: 清除 LocalStorage 後使用不同瀏覽器語言設定                                      │
+│ 4. 動態文本測試: 操作各功能確認動態生成的訊息已翻譯                                                │
+│ 5. 確認對話框測試: 點擊各按鈕確認對話框文字已翻譯                                                  │
+│ 6. Fallback 測試: 缺少翻譯 key 時顯示原始 key（不報錯）                                            │
+╰────────────────────────────────────────────────────────────────────────────────────────────────────╯
