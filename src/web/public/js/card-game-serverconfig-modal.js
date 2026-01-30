@@ -5,6 +5,8 @@
   let D = App.dom;
   const S = App.state;
 
+  const t = (key, def, params) => (App.i18n ? App.i18n.t(key, params) : def || key);
+
   function ensureDom() {
     if (!D.cfgBody || !D.cfgModal) {
       App.dom.refresh();
@@ -50,7 +52,7 @@
     D.cfgModal?.setAttribute("aria-hidden", "false");
     if (D.cfgBody)
       D.cfgBody.innerHTML =
-        "<div style='padding:8px;font-size:0.75rem;'>讀取中...</div>";
+        `<div style='padding:8px;font-size:0.75rem;'>${t("common.loading", "讀取中...")}</div>`;
 
     try {
       const [procRes, cfgRes, savesRes, appCfgRes] = await Promise.all([
@@ -60,7 +62,7 @@
         fetchJSON("/api/get-config").catch(() => null),
       ]);
       ensureDom();
-      if (!cfgRes.ok) throw new Error(cfgRes.message || "讀取設定失敗");
+      if (!cfgRes.ok) throw new Error(cfgRes.message || t("messages.loadConfigFailed", "讀取設定失敗"));
 
       const saves = savesRes?.data?.saves || [];
       S.cfg.worldList = Array.isArray(saves) ? saves.slice() : [];
@@ -108,11 +110,11 @@
         try {
           const proceed = await (window.DangerConfirm
             ? window.DangerConfirm.showConfirm(
-                "偵測到剛完成安裝。是否載入上次保存的 game_server 設定?\n(選擇『載入設定』將覆蓋目前編輯器中的值)",
+                t("confirm.loadAfterInstall", "偵測到剛完成安裝。是否載入上次保存的 game_server 設定?\n(選擇『載入設定』將覆蓋目前編輯器中的值)"),
                 {
-                  title: "載入上次保存設定",
-                  continueText: "載入設定",
-                  cancelText: "略過",
+                  title: t("confirm.loadAfterInstallTitle", "載入上次保存設定"),
+                  continueText: t("confirm.loadConfigBtn", "載入設定"),
+                  cancelText: t("confirm.skipBtn", "略過"),
                 }
               )
             : Promise.resolve(window.confirm("是否載入上次保存設定?")));
@@ -128,14 +130,14 @@
           } else {
             App.console.appendLog(
               "system",
-              "ℹ️ 已略過載入上次保存設定",
+              `ℹ️ ${t("messages.skippedLoadConfig", "已略過載入上次保存設定")}`,
               Date.now()
             );
           }
         } catch (e) {
           App.console.appendLog(
             "system",
-            `⚠️ 初始載入提示失敗: ${e.message}`,
+            `⚠️ ${t("messages.initLoadPromptFailed", { error: e.message })}`,
             Date.now()
           );
         }
@@ -151,7 +153,7 @@
     } catch (e) {
       App.console.appendLog(
         "system",
-        `❌ 讀取 serverconfig.xml 失敗: ${e.message}`,
+        `❌ ${t("messages.readServerconfigFailed", { error: e.message })}`,
         Date.now()
       );
     }
@@ -442,7 +444,7 @@
 
       const hint = document.createElement("span");
       hint.textContent = " [?]";
-      hint.title = (item.comment || item.doc || "無說明").toString();
+      hint.title = (item.comment || item.doc || t("modal.serverconfig.noDescription", "無說明")).toString();
       hint.style.cursor = "help";
       hint.style.userSelect = "none";
       lab.appendChild(hint);
@@ -454,7 +456,7 @@
         wrap.className = "cfg-combo";
         const sel = document.createElement("select");
         sel.innerHTML =
-          `<option value="">(選擇現有)</option>` +
+          `<option value="">${t("common.selectExisting", "(選擇現有)")}</option>` +
           worldValues
             .map(
               (w) =>
@@ -488,7 +490,7 @@
         ];
         const sel = document.createElement("select");
         sel.innerHTML =
-          `<option value="">(選擇現有)</option>` +
+          `<option value="">${t("common.selectExisting", "(選擇現有)")}</option>` +
           candidates
             .map(
               (n) =>
@@ -527,21 +529,21 @@
         const hasCurrent = enumList.some((o) => o.value === current);
 
         sel.innerHTML =
-          `<option value="">(未設定 / 預設${
-            defVal ? `=${escapeHTML(defVal)}` : ""
-          })</option>` +
+          `<option value="">${t("common.notSet", "(未設定)")}${ 
+            defVal ? ` / ${t("common.default", "預設")}=${escapeHTML(defVal)}` : ""
+          }</option>` +
           enumList
             .map(
               (o) =>
                 `<option value="${escapeHTML(o.value)}"${
                   o.value === current ? " selected" : ""
-                }>${escapeHTML(o.label)}</option>`
+                }>${escapeHTML(t(`enum.${name}.${o.value}`, o.label))}</option>`
             )
             .join("") +
           (!hasCurrent && current
             ? `<option value="${escapeHTML(
                 current
-              )}" selected>(自訂) ${escapeHTML(current)}</option>`
+              )}" selected>${t("common.custom", "(自訂)")} ${escapeHTML(current)}</option>`
             : "");
 
         sel.addEventListener("change", rerunChecks);
@@ -621,7 +623,7 @@
       if (!enables[name]) {
         results.push({
           ok: failMsgIfDisabled ? false : true,
-          text: `${name} 已停用(註解)`,
+          text: t("checks.disabledCommented", `${name} 已停用(註解)`, { name }),
         });
         return;
       }
@@ -631,41 +633,41 @@
     needEnabled("ServerPort", false, () => {
       const sp = parseInt(values.ServerPort, 10);
       if (!Number.isFinite(sp) || sp <= 0 || sp > 65535) {
-        results.push({ ok: false, text: "ServerPort 未設定或格式錯誤" });
+        results.push({ ok: false, text: t("checks.serverPortNotSet", "ServerPort 未設定或格式錯誤") });
       }
     });
 
     if (!enables.TelnetEnabled)
       results.push({
         ok: false,
-        text: "TelnetEnabled 已停用 (啟動需要 Telnet)",
+        text: t("checks.telnetDisabled", "TelnetEnabled 已停用 (啟動需要 Telnet)"),
       });
     else if (!/^(true)$/i.test(values.TelnetEnabled))
-      results.push({ ok: false, text: "TelnetEnabled 必須為 true" });
-    else results.push({ ok: true, text: "TelnetEnabled 已啟用" });
+      results.push({ ok: false, text: t("checks.telnetMustBeTrue", "TelnetEnabled 必須為 true") });
+    else results.push({ ok: true, text: t("checks.telnetEnabled", "TelnetEnabled 已啟用") });
 
     if (!enables.TelnetPort)
-      results.push({ ok: false, text: "TelnetPort 已停用" });
+      results.push({ ok: false, text: t("checks.telnetPortDisabled", "TelnetPort 已停用") });
     else {
       const tp = parseInt(values.TelnetPort, 10);
       if (!Number.isFinite(tp) || tp <= 0 || tp > 65535)
-        results.push({ ok: false, text: "TelnetPort 未設定或格式錯誤" });
+        results.push({ ok: false, text: t("checks.telnetPortInvalid", "TelnetPort 未設定或格式錯誤") });
     }
 
     if (!enables.TelnetPassword)
-      results.push({ ok: false, text: "TelnetPassword 已停用" });
+      results.push({ ok: false, text: t("checks.telnetPasswordDisabled", "TelnetPassword 已停用") });
     else if (!String(values.TelnetPassword).trim())
-      results.push({ ok: false, text: "TelnetPassword 不可為空" });
-    else results.push({ ok: true, text: "TelnetPassword 已設定" });
+      results.push({ ok: false, text: t("checks.telnetPasswordEmpty", "TelnetPassword 不可為空") });
+    else results.push({ ok: true, text: t("checks.telnetPasswordSet", "TelnetPassword 已設定") });
 
     if (!enables.EACEnabled)
-      results.push({ ok: true, text: "EACEnabled 已停用(註解)" });
+      results.push({ ok: true, text: t("checks.eacDisabled", "EACEnabled 已停用(註解)") });
     else if (/^true$/i.test(values.EACEnabled))
       results.push({
         ok: "warn",
-        text: "EACEnabled=true: 啟用 EAC 時無法使用模組",
+        text: t("checks.eacEnabledWarn", "EACEnabled=true: 啟用 EAC 時無法使用模組"),
       });
-    else results.push({ ok: true, text: "EACEnabled=false" });
+    else results.push({ ok: true, text: t("checks.eacDisabledOk", "EACEnabled=false") });
 
     (function equalPortGuards() {
       const portEntries = [];
@@ -682,7 +684,7 @@
           if (pe.port === webPort) {
             results.push({
               ok: false,
-              text: `${pe.name} 不可與控制台埠 ${webPort} 相同(避免衝突)`,
+              text: t("checks.portConflictWithConsole", `${pe.name} 不可與控制台埠 ${webPort} 相同(避免衝突)`, { name: pe.name, port: webPort }),
             });
           }
         }
@@ -695,7 +697,7 @@
           if (a.port === b.port) {
             results.push({
               ok: false,
-              text: `${a.name} 與 ${b.name} 不可使用相同埠 (${a.port})`,
+              text: t("checks.portConflictSame", `${a.name} 與 ${b.name} 不可使用相同埠 (${a.port})`, { nameA: a.name, nameB: b.name, port: a.port }),
             });
           }
         }
@@ -716,26 +718,24 @@
                   if (localRes.data?.inUse && !localRes.data?.isDummy) {
                     results.push({
                       ok: false,
-                      text: `ServerPort 本機 ${sp} 已被佔用`,
+                      text: t("checks.serverPortLocalInUse", `ServerPort 本機 ${sp} 已被佔用`, { port: sp }),
                     });
                   } else {
                     results.push({
                       ok: true,
-                      text: `ServerPort 本機 ${sp} 未被佔用`,
+                      text: t("checks.serverPortLocalFree", `ServerPort 本機 ${sp} 未被佔用`, { port: sp }),
                     });
                   }
                 } else {
                   results.push({
                     ok: "warn",
-                    text: `ServerPort 本機檢查失敗: ${
-                      localRes?.message || "未知錯誤"
-                    }`,
+                    text: t("checks.serverPortLocalCheckFailed", `ServerPort 本機檢查失敗: ${localRes?.message || "未知錯誤"}`, { error: localRes?.message || "未知錯誤" }),
                   });
                 }
               } catch (e) {
                 results.push({
                   ok: "warn",
-                  text: `ServerPort 本機檢查例外: ${e.message}`,
+                  text: t("checks.serverPortLocalCheckException", `ServerPort 本機檢查例外: ${e.message}`, { error: e.message }),
                 });
               }
 
@@ -744,7 +744,7 @@
               if (!pubIp) {
                 results.push({
                   ok: "warn",
-                  text: "ServerPort 檢查異常: 無法取得公網 IP",
+                  text: t("checks.serverPortNoPublicIp", "ServerPort 檢查異常: 無法取得公網 IP"),
                 });
                 return;
               }
@@ -758,31 +758,29 @@
                 if (pfRes.data?.open === true) {
                   results.push({
                     ok: true,
-                    text: `ServerPort 轉發正常：${pubIp}:${sp} 可從公網連線`,
+                    text: t("checks.serverPortForwardOk", `ServerPort 轉發正常：${pubIp}:${sp} 可從公網連線`, { ip: pubIp, port: sp }),
                   });
                 } else if (svcErr) {
                   results.push({
                     ok: "warn",
-                    text: `ServerPort 轉發檢查服務失敗：${pfRes.data.error}`,
+                    text: t("checks.serverPortForwardServiceFailed", `ServerPort 轉發檢查服務失敗：${pfRes.data.error}`, { error: pfRes.data.error }),
                   });
                 } else {
                   results.push({
                     ok: "warn",
-                    text: `ServerPort 轉發測試未通：${pubIp}:${sp}(請稍後再試或確認 NAT/防火牆)`,
+                    text: t("checks.serverPortForwardFailed", `ServerPort 轉發測試未通：${pubIp}:${sp}(請稍後再試或確認 NAT/防火牆)`, { ip: pubIp, port: sp }),
                   });
                 }
               } else {
                 results.push({
                   ok: "warn",
-                  text: `ServerPort 轉發檢查錯誤: ${
-                    pfRes.message || "未知錯誤"
-                  }`,
+                  text: t("checks.serverPortForwardError", `ServerPort 轉發檢查錯誤: ${pfRes.message || "未知錯誤"}`, { error: pfRes.message || "未知錯誤" }),
                 });
               }
             } catch (e) {
               results.push({
                 ok: "warn",
-                text: `ServerPort 檢查異常: ${e.message}`,
+                text: t("checks.serverPortCheckException", `ServerPort 檢查異常: ${e.message}`, { error: e.message }),
               });
             }
           })()
@@ -798,12 +796,12 @@
               const inUse = !!r?.data?.inUse;
               results.push(
                 inUse
-                  ? { ok: false, text: `TelnetPort ${tp} 已被佔用` }
-                  : { ok: true, text: `TelnetPort ${tp} 可用` }
+                  ? { ok: false, text: t("checks.telnetPortInUse", `TelnetPort ${tp} 已被佔用`, { port: tp }) }
+                  : { ok: true, text: t("checks.telnetPortAvailable", `TelnetPort ${tp} 可用`, { port: tp }) }
               );
             })
             .catch(() =>
-              results.push({ ok: false, text: "TelnetPort 檢查失敗" })
+              results.push({ ok: false, text: t("checks.telnetPortCheckFailed", "TelnetPort 檢查失敗") })
             )
         );
       }
@@ -828,15 +826,12 @@
       if (condsMissing.length === 0) {
         results.push({
           ok: true,
-          text: "跨平台連線相容: (MaxPlayer≤8, AllowCrossplay=true, EAC=true, IgnoreEOSSanctions=false)",
+          text: t("checks.crossplayCompatible", "跨平台連線相容: (MaxPlayer≤8, AllowCrossplay=true, EAC=true, IgnoreEOSSanctions=false)"),
         });
       } else {
         results.push({
           ok: "warn",
-          text:
-            "跨平台連線不相容: " +
-            condsMissing.join(", ") +
-            " (不會出現在跨平台搜尋)",
+          text: t("checks.crossplayIncompatible", "跨平台連線不相容: {conditions} (不會出現在跨平台搜尋)", { conditions: condsMissing.join(", ") }),
         });
       }
     })();
@@ -846,7 +841,7 @@
     const passAll = results.every((x) => x.ok === true || x.ok === "warn");
     const icon = (ok) => (ok === true ? "✅" : ok === "warn" ? "⚠️" : "❌");
     D.cfgChecks.innerHTML =
-      `<div style="margin-bottom:8px;font-weight:600">啟動前檢查</div>` +
+      `<div style="margin-bottom:8px;font-weight:600">${t("modal.serverconfig.preStartCheck", "啟動前檢查")}</div>` +
       `<ul style="margin:0;padding-left:18px">${results
         .map((r) => `<li>${icon(r.ok)} ${r.text}</li>`)
         .join("")}</ul>`;
@@ -881,12 +876,12 @@
         const nowEnabled = !!enables[name];
         let tag = "";
         if (wasEnabled !== nowEnabled) {
-          tag = nowEnabled ? " (啟用)" : " (停用)";
+          tag = nowEnabled ? ` (${t("changeSummary.enabledState", " 啟用")})` : ` (${t("changeSummary.disabledState", "停用")})`;
         }
         lines.push(
-          `• ${name}${tag}: "${
-            oldVal === undefined ? "(未設定)" : oldVal
-          }"  =>  "${newVal}"`
+          `• ${name}${tag}: "` +
+            (oldVal === undefined ? t("changeSummary.notSetValue", "(未設定)") : oldVal) +
+            `"  =>  "${newVal}"`
         );
       }
     });
@@ -896,14 +891,13 @@
       const wasEnabled = !(commentedOrig.get(name) === true);
       if (wasEnabled !== nowEnabled) {
         lines.push(
-          `• ${name}: ${wasEnabled ? "啟用" : "停用"}  =>  ${
-            nowEnabled ? "啟用" : "停用"
-          }`
+          `• ${name}: ${wasEnabled ? t("changeSummary.enabledState", "啟用") : t("changeSummary.disabledState", "停用")}  =>  ` +
+            (nowEnabled ? t("changeSummary.enabledState", "啟用") : t("changeSummary.disabledState", "停用"))
         );
       }
     });
 
-    if (!lines.length) return "無任何參數變更。";
+    if (!lines.length) return t("messages.noChanges", "無任何參數變更。");
     return lines.join("\n");
   }
 
@@ -916,7 +910,7 @@
     if (startAfter && S.versionNeedsInstall) {
       App.console.appendLog(
         "system",
-        "❌ 目前選擇的版本尚未安裝，請先安裝。",
+        `❌ ${t("messages.versionNotInstalled", "目前選擇的版本尚未安裝，請先安裝。")}`,
         Date.now()
       );
       return;
@@ -926,7 +920,7 @@
       if (!checkNow.passAll) {
         App.console.appendLog(
           "system",
-          "❌ 無法啟動: 請先修正啟動前未通過項目。",
+          `❌ ${t("messages.cannotStartCheckFailed", "無法啟動: 請先修正啟動前未通過項目。")}`,
           Date.now()
         );
         return;
@@ -968,21 +962,21 @@
           toggles,
           enables,
         });
-        const actionLabel = startAfter ? "保存並啟動" : "保存";
+        const actionLabel = startAfter ? t("confirm.saveAndStartAction", "保存並啟動") : t("common.save", "保存");
         const proceed = await (window.DangerConfirm
           ? window.DangerConfirm.showConfirm(
-              `${summary}\n\n是否確定${actionLabel}?`,
+              t("changeSummary.confirmSaveStart", "{summary}\n\n是否確定{action}?", { summary, action: actionLabel }),
               {
-                title: "即將寫入的設定變更",
+                title: t("confirm.changesSummaryTitle", "即將寫入的設定變更"),
                 continueText: actionLabel,
-                cancelText: "取消",
+                cancelText: t("common.cancel", "取消"),
               }
             )
           : Promise.resolve(true));
         if (!proceed) {
           App.console.appendLog(
             "system",
-            "ℹ️ 已取消保存 (使用者取消)",
+            `ℹ️ ${t("messages.cancelledBySave", "已取消保存 (使用者取消)")}`,
             Date.now()
           );
           return;
@@ -991,7 +985,7 @@
     } catch (e) {
       App.console.appendLog(
         "system",
-        `⚠️ 生成變更摘要失敗: ${e.message} (將直接保存)`,
+        `⚠️ ${t("messages.generateSummaryFailed", { error: e.message })} (將直接保存)`,
         Date.now()
       );
     }
@@ -1018,7 +1012,7 @@
     } catch (e) {
       App.console.appendLog(
         "system",
-        `❌ 寫入 serverconfig.xml 失敗: ${e.message}`,
+        `❌ ${t("messages.writeServerconfigFailed", { error: e.message }) }`,
         Date.now()
       );
       return;
@@ -1035,7 +1029,7 @@
     if (S.cfg.locked) {
       App.console.appendLog(
         "system",
-        "❌ 伺服器運行中，禁止載入上次保存設定",
+        `❌ ${t("messages.serverRunningCannotLoad", "伺服器運行中，禁止載入上次保存設定")}`,
         Date.now()
       );
       return;
@@ -1043,17 +1037,17 @@
     try {
       const cfg = await fetchJSON("/api/get-config");
       const gs = cfg?.data?.game_server || {};
-      if (!gs || typeof gs !== "object") throw new Error("缺少 game_server");
+      if (!gs || typeof gs !== "object") throw new Error(t("messages.missingGameServer", "缺少 game_server"));
       applyGameServerValuesToEditor(gs);
       App.console.appendLog(
         "system",
-        "✅ 已載入上次保存設定到編輯器 (尚未保存)",
+        `✅ ${t("messages.loadedAdminConfig", "已載入上次保存設定到編輯器 (尚未保存)")}`,
         Date.now()
       );
     } catch (e) {
       App.console.appendLog(
         "system",
-        `❌ 載入上次保存設定失敗: ${e.message}`,
+        `❌ ${t("messages.loadAdminConfigFailed", { error: e.message }) }`,
         Date.now()
       );
     }
@@ -1116,13 +1110,13 @@
     if (applied === 0) {
       App.console.appendLog(
         "system",
-        "ℹ️ 載入後台設定: 無可套用的屬性 (server.json 中的 game_server 可能尚未保存或屬性名稱不相符)",
+        `ℹ️ ${t("messages.noApplicableProps", "載入後台設定: 無可套用的屬性 (server.json 中的 game_server 可能尚未保存或屬性名稱不相符)")}`,
         Date.now()
       );
     } else {
       App.console.appendLog(
         "system",
-        `✅ 已套用後台設定 (${applied} 項) (尚未保存)`,
+        `✅ ${t("messages.appliedAdminConfig", "已套用後台設定 ({count} 項) (尚未保存)", { count: applied }) }`,
         Date.now()
       );
     }

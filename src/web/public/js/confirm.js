@@ -33,28 +33,32 @@
 
   function showConfirm(
     message,
-    { continueText = "繼續", cancelText = "取消", title = "請確認操作" } = {}
+    { continueText = null, cancelText = null, title = null } = {}
   ) {
     return new Promise((resolve) => {
       const m = ensureMask();
       if (!m) return resolve(false);
 
-      const safeMsg = escapeHTML(
-        normalizeNewlines(message || "確定要執行這個操作嗎？")
-      );
+      const t = App.i18n ? App.i18n.t : (k) => k;
+      const finalTitle = title || t("confirm.title");
+      const finalContinue = continueText || t("common.confirm");
+      const finalCancel = cancelText || t("common.cancel");
+      const finalMsg = message || t("confirm.defaultMessage");
+
+      const safeMsg = escapeHTML(normalizeNewlines(finalMsg));
 
       m.innerHTML = `
         <div class="app-mask__panel" role="dialog" aria-modal="true" aria-live="assertive">
           <div style="display:flex;flex-direction:column;align-items:center;gap:8px;max-width:360px">
             <div class="app-mask__icon" aria-hidden="true">⚠️</div>
-            <h3 style="margin:0;font-size:1rem;">${escapeHTML(title)}</h3>
+            <h3 style="margin:0;font-size:1rem;">${escapeHTML(finalTitle)}</h3>
             <div class="app-mask__message">${safeMsg}</div>
             <div class="app-mask__actions">
               <button type="button" class="btn btn--ghost" data-act="cancel">${escapeHTML(
-                cancelText
+                finalCancel
               )}</button>
               <button type="button" class="btn btn--danger" data-act="continue">${escapeHTML(
-                continueText
+                finalContinue
               )}</button>
             </div>
           </div>
@@ -115,11 +119,11 @@
       e.preventDefault();
       e.stopImmediatePropagation();
 
-      const msg = btn.getAttribute("data-danger") || "確定要執行這個操作嗎？";
+      const msg = btn.getAttribute("data-danger");
       const ok = await showConfirm(msg, {
-        continueText: btn.getAttribute("data-continue-text") || "繼續",
-        cancelText: btn.getAttribute("data-cancel-text") || "取消",
-        title: btn.getAttribute("data-danger-title") || "請確認操作",
+        continueText: btn.getAttribute("data-continue-text"),
+        cancelText: btn.getAttribute("data-cancel-text"),
+        title: btn.getAttribute("data-danger-title"),
       });
 
       if (ok) {

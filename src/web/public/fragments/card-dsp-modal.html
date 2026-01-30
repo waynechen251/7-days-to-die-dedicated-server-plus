@@ -5,18 +5,19 @@
     role="dialog"
     aria-modal="true"
     aria-label="管理後台設定檔"
+    data-i18n-aria-label="modal.dspConfig.ariaLabel"
   >
     <div class="modal__header">
-      <h3>管理後台設定 (server.json)</h3>
-      <button id="adminCfgCloseBtn" class="modal__close">✖</button>
+      <h3 data-i18n="modal.dspConfig.title">管理後台設定 (server.json)</h3>
+      <button id="adminCfgCloseBtn" class="modal__close" data-i18n="common.close">✖</button>
     </div>
     <div class="modal__body">
       <div
         class="modal__toolbar"
         style="margin-bottom: 8px; display: flex; gap: 8px; flex-wrap: wrap"
       >
-        <button id="adminCfgRefreshBtn" title="重新讀取">🔄 重新讀取</button>
-        <button id="adminCfgCopyBtn" title="複製 JSON">📋 複製</button>
+        <button id="adminCfgRefreshBtn" title="重新讀取" data-i18n="modal.dspConfig.reload">🔄 重新讀取</button>
+        <button id="adminCfgCopyBtn" title="複製 JSON" data-i18n="modal.dspConfig.copy">📋 複製</button>
         <span id="adminCfgStatus" style="font-size: 12px; color: #888"></span>
       </div>
       <pre
@@ -26,7 +27,7 @@
       ></pre>
     </div>
     <div class="modal__footer">
-      <button id="adminCfgCloseBtn2" class="btn">關閉</button>
+      <button id="adminCfgCloseBtn2" class="btn" data-i18n="common.close">關閉</button>
     </div>
   </div>
 </div>

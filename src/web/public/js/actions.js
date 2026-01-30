@@ -42,7 +42,7 @@
 
       fetch("/api/install", { method: "POST", body, headers })
         .then((res) => {
-          if (!res.body) throw new Error("串流初始化失敗");
+          if (!res.body) throw new Error(App.i18n ? App.i18n.t("messages.streamInitFailed") : "串流初始化失敗");
           applyUIState({
             backendUp: true,
             steamRunning: true,
@@ -85,7 +85,7 @@
           App.configModal.openConfigModal();
         } else {
           console.error("configModal 仍未就緒");
-          alert("設定視窗尚未載入，請稍候再試或重新整理頁面。");
+          alert(App.i18n ? App.i18n.t("messages.configModalNotReady") : "設定視窗尚未載入，請稍候再試或重新整理頁面。");
         }
       }, 300);
     });
@@ -141,7 +141,7 @@
       const world = D.gwSelect.value || "";
       const name = D.gnSelect.value || "";
       if (!world || !name) {
-        appendLog("backup", "❌ 請選擇 GameWorld / GameName", Date.now());
+        appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectWorldName") : "請選擇 GameWorld / GameName"}`, Date.now());
         return;
       }
       switchTab("backup");
@@ -166,7 +166,7 @@
     on(D.importBackupBtn, "click", async () => {
       const file = D.backupSelect.value || "";
       if (!file) {
-        appendLog("backup", "❌ 請選擇備份檔", Date.now());
+        appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectBackup") : "請選擇備份檔"}`, Date.now());
         return;
       }
       switchTab("backup");
@@ -186,7 +186,7 @@
     on(D.importUploadBtn, "click", async () => {
       const f = D.importUploadFile?.files?.[0];
       if (!f) {
-        appendLog("backup", "❌ 請選擇要上傳的 ZIP 檔", Date.now());
+        appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectZipFile") : "請選擇要上傳的 ZIP 檔"}`, Date.now());
         return;
       }
       switchTab("backup");
@@ -228,7 +228,7 @@
       const world = D.gwSelect.value || "";
       const name = D.gnSelect.value || "";
       if (!world || !name) {
-        appendLog("backup", "❌ 請選擇 GameWorld / GameName", Date.now());
+        appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectWorldName") : "請選擇 GameWorld / GameName"}`, Date.now());
         return;
       }
       switchTab("backup");
@@ -252,7 +252,7 @@
       }
       const file = D.backupSelect.value || "";
       if (!file) {
-        appendLog("backup", "❌ 請選擇備份檔", Date.now());
+        appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectBackup") : "請選擇備份檔"}`, Date.now());
         return;
       }
       switchTab("backup");

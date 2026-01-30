@@ -4,6 +4,8 @@
   const D = App.dom;
   const S = App.state;
 
+  const t = (key, def) => (App.i18n ? App.i18n.t(key) : def || key);
+
   function applyUIState({
     backendUp,
     steamRunning,
@@ -74,24 +76,24 @@
       setDisabled(savesControls, !!lockBecauseBackup);
 
       if (D.installServerBtn) {
-        D.installServerBtn.textContent = "❌ 中斷安裝 / 更新";
+        D.installServerBtn.textContent = "❌ " + t("card.game.abortInstall", "中斷安裝 / 更新");
         D.installServerBtn.setAttribute(
           "data-danger",
-          "是否確定中斷安裝 / 更新?\n將不會正常退出，可能導致檔案損毀，請重新執行安裝 / 更新!"
+          t("confirm.abortInstall", "是否確定中斷安裝 / 更新?\n將不會正常退出，可能導致檔案損毀，請重新執行安裝 / 更新!")
         );
-        D.installServerBtn.setAttribute("data-cancel-text", "取消");
-        D.installServerBtn.setAttribute("data-continue-text", "繼續");
+        D.installServerBtn.setAttribute("data-cancel-text", t("common.cancel", "取消"));
+        D.installServerBtn.setAttribute("data-continue-text", t("common.confirm", "繼續"));
       }
       return;
     } else {
       if (D.installServerBtn) {
-        D.installServerBtn.textContent = "📥 安裝 / 更新";
+        D.installServerBtn.textContent = "📥 " + t("card.game.installUpdate", "安裝 / 更新");
         D.installServerBtn.setAttribute(
           "data-danger",
-          "是否確定安裝 / 更新伺服器?\nserverconfig.xml 將被重置"
+          t("confirm.installServer", "是否確定安裝 / 更新伺服器?\nserverconfig.xml 將被重置")
         );
-        D.installServerBtn.setAttribute("data-cancel-text", "取消");
-        D.installServerBtn.setAttribute("data-continue-text", "繼續");
+        D.installServerBtn.setAttribute("data-cancel-text", t("common.cancel", "取消"));
+        D.installServerBtn.setAttribute("data-continue-text", t("common.confirm", "繼續"));
       }
     }
 
@@ -136,40 +138,40 @@
 
     const gvEl = document.getElementById("gameVersionBadge");
     if (gvEl) {
-      gvEl.textContent = `版本: ${
+      gvEl.textContent = `${t("card.game.version", "版本:")} ${ 
         gameVersion ? gameVersion : gameRunning ? "-" : "-"
       }`;
     }
 
     const opEl = document.getElementById("onlinePlayersBadge");
     if (opEl) {
-      opEl.textContent = `線上玩家數: ${
+      opEl.textContent = `${t("card.game.onlinePlayers", "線上玩家數:")} ${ 
         onlinePlayers !== "" ? onlinePlayers : gameRunning ? "-" : "-"
       }`;
     }
 
     const fpsEl = document.getElementById("fpsBadge");
-    if (fpsEl) fpsEl.textContent = `FPS: ${Number.isFinite(fps) ? fps : "-"}`;
+    if (fpsEl) fpsEl.textContent = `${t("card.game.fps", "FPS:")} ${Number.isFinite(fps) ? fps : "-"}`;
 
     const heapEl = document.getElementById("heapBadge");
     if (heapEl)
-      heapEl.textContent = `Heap: ${Number.isFinite(heap) ? heap + "MB" : "-"}`;
+      heapEl.textContent = `${t("card.game.heap", "Heap:")} ${Number.isFinite(heap) ? heap + "MB" : "-"}`;
 
     const maxEl = document.getElementById("maxBadge");
     if (maxEl)
-      maxEl.textContent = `Max: ${Number.isFinite(max) ? max + "MB" : "-"}`;
+      maxEl.textContent = `${t("card.game.max", "Max:")} ${Number.isFinite(max) ? max + "MB" : "-"}`;
 
     const zomEl = document.getElementById("zomBadge");
-    if (zomEl) zomEl.textContent = `Zom: ${Number.isFinite(zom) ? zom : "-"}`;
+    if (zomEl) zomEl.textContent = `${t("card.game.zombies", "Zombies:")} ${Number.isFinite(zom) ? zom : "-"}`;
 
     const rssEl = document.getElementById("rssBadge");
     if (rssEl)
-      rssEl.textContent = `RSS: ${Number.isFinite(rss) ? rss + "MB" : "-"}`;
+      rssEl.textContent = `${t("card.game.rss", "RSS:")} ${Number.isFinite(rss) ? rss + "MB" : "-"}`;
 
     if (D.configStartBtn) {
       D.configStartBtn.textContent = gameRunning
-        ? "📝 檢視 serverconfig.xml"
-        : "🛠 啟動伺服器";
+        ? "📝 " + t("card.game.viewServerconfig", "檢視 serverconfig.xml")
+        : "🛠 " + t("card.game.startServer", "啟動伺服器");
     }
   }
 
@@ -219,9 +221,9 @@
     if (badgeEl) {
       const installed = S.installedVersion;
       if (installed) {
-        badgeEl.textContent = "上次安裝版本: " + versionLabel(installed);
+        badgeEl.textContent = t("card.game.lastInstallVersion", "上次安裝版本:") + " " + versionLabel(installed);
       } else {
-        badgeEl.textContent = "上次安裝版本: 無";
+        badgeEl.textContent = t("card.game.lastInstallVersionNone", "上次安裝版本: 無");
       }
       if (!D.gameSelectedVersionBadge) D.gameSelectedVersionBadge = badgeEl;
     }

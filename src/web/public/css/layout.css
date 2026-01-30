@@ -101,6 +101,24 @@ main.grid > [data-fragment] > .card {
   border-color: #b91c1c;
   color: #fff;
 }
+.lang-selector {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+.lang-select {
+  background: #374151;
+  color: #e2e8f0;
+  border: 1px solid #475569;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.85rem;
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+.lang-select:focus {
+  border-color: #60a5fa;
+}
 .app-split.resizing .pane-main,
 .app-split.resizing .pane-console {
   transition: none !important;
@@ -128,6 +146,10 @@ main.grid > [data-fragment] > .card {
   .topbar .status-inline .badge {
     font-size: 0.7rem;
     padding: 0.3rem 0.55rem;
+  }
+  .lang-selector {
+    margin-left: 0;
+    order: 2;
   }
   .app-split {
     height: auto;

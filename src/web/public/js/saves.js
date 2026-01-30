@@ -20,7 +20,7 @@
     if (names.length === 0) {
       const opt = document.createElement("option");
       opt.value = "";
-      opt.textContent = "(無)";
+      opt.textContent = App.i18n ? App.i18n.t("common.none") : "(無)";
       D.gnSelect.appendChild(opt);
     }
   }
@@ -40,7 +40,7 @@
     if (worlds.length === 0) {
       const opt = document.createElement("option");
       opt.value = "";
-      opt.textContent = "(無)";
+      opt.textContent = App.i18n ? App.i18n.t("common.none") : "(無)";
       D.gwSelect.appendChild(opt);
     }
     if (worlds.includes(prevWorld)) D.gwSelect.value = prevWorld;
@@ -86,7 +86,7 @@
       if (backups.length === 0) {
         const opt = document.createElement("option");
         opt.value = "";
-        opt.textContent = "(沒有備份)";
+        opt.textContent = App.i18n ? App.i18n.t("common.noBackup") : "(沒有備份)";
         D.backupSelect.appendChild(opt);
       } else {
         backups.forEach((b) => {
@@ -98,11 +98,10 @@
         });
       }
     } catch (e) {
-      App.console.appendLog(
-        "backup",
-        `❌ 讀取存檔清單失敗: ${e.message}`,
-        Date.now()
-      );
+      const msg = App.i18n
+        ? App.i18n.t("messages.loadSavesFailed", { error: e.message })
+        : `讀取存檔清單失敗: ${e.message}`;
+      App.console.appendLog("backup", `❌ ${msg}`, Date.now());
     }
   }
 

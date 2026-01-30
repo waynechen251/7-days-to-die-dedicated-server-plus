@@ -22,14 +22,14 @@
     <div id="appMask" class="app-mask">
       <div class="app-mask__panel">
         <div class="app-mask__spinner" aria-hidden="true"></div>
-        <div>無法與管理後台取得連線，請檢查服務狀態或稍候…</div>
+        <div data-i18n="mask.connectionLost">無法與管理後台取得連線，請檢查服務狀態或稍候…</div>
       </div>
     </div>
 
     <div id="confirmMask" class="app-mask hidden" aria-hidden="true"></div>
 
     <header class="topbar">
-      <div class="brand">
+      <div class="brand" data-i18n="topbar.brand">
         7 Days To Die Dedicated Server Plus 管理後台 1.0.4
       </div>
       <a
@@ -46,6 +46,13 @@
         class="github-link"
         >🌐 巴哈姆特</a
       >
+      <div class="lang-selector">
+        <select id="langSelect" class="lang-select">
+          <option value="zh-TW">繁體中文</option>
+          <option value="en">English</option>
+          <option value="zh-CN">简体中文</option>
+        </select>
+      </div>
     </header>
 
     <div class="app-split">
@@ -63,17 +70,17 @@
         </main>
       </div>
 
-      <div id="splitResizer" class="split-resizer" title="拖曳調整高度"></div>
+      <div id="splitResizer" class="split-resizer" title="拖曳調整高度" data-i18n-title="splitResizer.title"></div>
 
       <div class="pane pane-console">
         <div class="console-shell">
           <div class="console-bar">
             <div class="console-tabs">
-              <button data-tab="system" class="active">管理後台</button>
-              <button data-tab="steamcmd">SteamCMD</button>
-              <button data-tab="game">7DaysToDieServer</button>
-              <button data-tab="telnet">Telnet</button>
-              <button data-tab="backup">存檔管理</button>
+              <button data-tab="system" class="active" data-i18n="console.tabSystem">管理後台</button>
+              <button data-tab="steamcmd" data-i18n="console.tabSteamcmd">SteamCMD</button>
+              <button data-tab="game" data-i18n="console.tabGame">7DaysToDieServer</button>
+              <button data-tab="telnet" data-i18n="console.tabTelnet">Telnet</button>
+              <button data-tab="backup" data-i18n="console.tabBackup">存檔管理</button>
             </div>
           </div>
           <div class="console-panes">
@@ -97,14 +104,15 @@
       <div class="modal" style="display: block">
         <div class="modal__backdrop"></div>
         <div class="modal__panel">
-          <div class="modal__header"><h3>需要 JavaScript</h3></div>
-          <div class="modal__body">請啟用瀏覽器的 JavaScript 後重新整理。</div>
+          <div class="modal__header"><h3 data-i18n="noscript.title">需要 JavaScript</h3></div>
+          <div class="modal__body" data-i18n="noscript.message">請啟用瀏覽器的 JavaScript 後重新整理。</div>
         </div>
       </div>
     </noscript>
 
     <script defer src="js/fragments-loader.js"></script>
     <script defer src="js/utils.js"></script>
+    <script defer src="js/i18n.js"></script>
     <script defer src="js/dom.js"></script>
     <script defer src="js/state.js"></script>
     <script defer src="js/api.js"></script>

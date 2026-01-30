@@ -167,6 +167,17 @@
 
   (async function boot() {
     async function realBoot() {
+      if (App.i18n) {
+        const lang = await App.i18n.init();
+        const select = document.getElementById("langSelect");
+        if (select) {
+          select.value = lang;
+          select.addEventListener("change", (e) => {
+            App.i18n.setLanguage(e.target.value);
+          });
+        }
+      }
+
       await initUI();
       App.console.switchTab(S.activeTab);
       App.mask.updateMask();

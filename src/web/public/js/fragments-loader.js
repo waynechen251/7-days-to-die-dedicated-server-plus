@@ -16,6 +16,9 @@
 
   async function loadAll() {
     await Promise.all(placeholders.map(loadOne));
+    if (window.App && window.App.i18n) {
+      window.App.i18n.updateDOM();
+    }
     window.__fragmentsReady = true;
     window.dispatchEvent(new Event("fragments:ready"));
   }

@@ -1,10 +1,12 @@
 <section class="card card-saves">
   <header class="card-header">
-    <h2 class="card-title">存檔管理</h2>
+    <h2 class="card-title" data-i18n="card.saves.title">存檔管理</h2>
     <div class="btn-bar">
       <button
         id="refreshSavesBtn"
         class="btn btn--ghost"
+        data-i18n="card.saves.refresh"
+        data-i18n-title="card.saves.refreshTitle"
         title="重新整理存檔/備份清單"
       >
         🔄 重新整理
@@ -13,25 +15,27 @@
   </header>
 
   <section class="saves-group">
-    <h3 class="field__label">七日殺伺服器存檔</h3>
+    <h3 class="field__label" data-i18n="card.saves.serverSaves">七日殺伺服器存檔</h3>
     <div class="form-grid">
       <label class="field">
-        <span class="field__label">GameWorld</span>
+        <span class="field__label" data-i18n="card.saves.gameWorld">GameWorld</span>
         <select id="gwSelect" class="field__control"></select>
       </label>
       <label class="field">
-        <span class="field__label">GameName</span>
+        <span class="field__label" data-i18n="card.saves.gameName">GameName</span>
         <select id="gnSelect" class="field__control"></select>
       </label>
     </div>
   </section>
 
   <section class="saves-group">
-    <h3 class="field__label">匯出</h3>
+    <h3 class="field__label" data-i18n="card.saves.export">匯出</h3>
     <div class="btn-row wrap">
       <button
         id="exportGameNameBtn"
         class="btn"
+        data-i18n="card.saves.exportGameNameOnly"
+        data-i18n-title="card.saves.exportGameNameTitle"
         title="匯出目前選擇的 GameWorld / GameName"
       >
         📤 僅匯出所選 GameName
@@ -39,6 +43,8 @@
       <button
         id="exportSavesBtn"
         class="btn-row wrap"
+        data-i18n="card.saves.exportFullSaves"
+        data-i18n-title="card.saves.exportFullSavesTitle"
         title="完整匯出整個 Saves 目錄"
       >
         💾 匯出完整 Saves
@@ -47,9 +53,11 @@
         id="deleteGameNameBtn"
         class="btn-row wrap"
         title="刪除所選 GameName"
-        data-danger="是否確定刪除所選存檔?\n刪除前會自動備份。"
-        data-cancel-text="取消"
-        data-continue-text="繼續"
+        data-i18n="card.saves.deleteGameName"
+        data-i18n-title="card.saves.deleteGameNameTitle"
+        data-danger-i18n="confirm.deleteGameName"
+        data-cancel-i18n="common.cancel"
+        data-continue-i18n="common.confirm"
       >
         ❌ 刪除所選 GameName
       </button>
@@ -57,33 +65,36 @@
   </section>
 
   <section class="saves-group">
-    <h3 class="field__label">管理後台備份存檔</h3>
+    <h3 class="field__label" data-i18n="card.saves.backupManagement">管理後台備份存檔</h3>
     <div class="form-grid backup-grid">
       <label class="field span-2">
-        <span class="field__label">選擇備份檔</span>
+        <span class="field__label" data-i18n="card.saves.selectBackup">選擇備份檔</span>
         <select id="backupSelect" class="field__control"></select>
       </label>
       <div class="field">
-        <span class="field__label sr-only">執行匯入</span>
+        <span class="field__label sr-only" data-i18n="card.saves.importFromBackup">執行匯入</span>
         <button
           id="importBackupBtn"
           class="btn btn--accent full"
-          data-danger="是否確定從備份匯入?"
-          data-cancel-text="取消"
-          data-continue-text="繼續"
+          data-i18n="card.saves.importFromBackup"
+          data-danger-i18n="confirm.importFromBackup"
+          data-cancel-i18n="common.cancel"
+          data-continue-i18n="common.confirm"
         >
           📥 從備份匯入
         </button>
       </div>
       <div class="field">
-        <span class="field__label sr-only">刪除備份</span>
+        <span class="field__label sr-only" data-i18n="card.saves.deleteBackup">刪除備份</span>
         <button
           id="deleteBackupBtn"
           class="btn btn--danger full"
           title="刪除所選備份檔"
-          data-danger="是否確定刪除此備份檔?\n此動作無法復原。"
-          data-cancel-text="取消"
-          data-continue-text="繼續"
+          data-i18n="card.saves.deleteBackup"
+          data-i18n-title="card.saves.deleteBackupTitle"
+          data-danger-i18n="confirm.deleteBackup"
+          data-cancel-i18n="common.cancel"
+          data-continue-i18n="common.confirm"
         >
           🗑️ 刪除備份檔
         </button>
@@ -92,10 +103,10 @@
   </section>
 
   <section class="saves-group">
-    <h3 class="field__label">匯入 (自行上傳 ZIP 結構可參考匯出之 ZIP 檔)</h3>
+    <h3 class="field__label" data-i18n="card.saves.importUpload">匯入 (自行上傳 ZIP 結構可參考匯出之 ZIP 檔)</h3>
     <div class="form-grid">
       <label class="field">
-        <span class="field__label">選擇 ZIP</span>
+        <span class="field__label" data-i18n="card.saves.selectZip">選擇 ZIP</span>
         <input
           id="importUploadFile"
           type="file"
@@ -104,13 +115,14 @@
         />
       </label>
       <div class="field">
-        <span class="field__label sr-only">上傳並匯入</span>
+        <span class="field__label sr-only" data-i18n="card.saves.uploadAndImport">上傳並匯入</span>
         <button
           id="importUploadBtn"
           class="btn full"
-          data-danger="是否確定上傳並匯入?"
-          data-cancel-text="取消"
-          data-continue-text="繼續"
+          data-i18n="card.saves.uploadAndImport"
+          data-danger-i18n="confirm.uploadAndImport"
+          data-cancel-i18n="common.cancel"
+          data-continue-i18n="common.confirm"
         >
           📤 上傳並匯入
         </button>

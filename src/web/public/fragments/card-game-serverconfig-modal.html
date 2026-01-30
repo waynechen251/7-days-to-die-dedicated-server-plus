@@ -5,13 +5,14 @@
     role="dialog"
     aria-modal="true"
     aria-label="serverconfig.xml 設定"
+    data-i18n-aria-label="modal.serverconfig.ariaLabel"
   >
     <div class="modal__header">
-      <h3>serverconfig.xml 設定</h3>
-      <div id="cfgLockBanner" class="cfg-lock-banner hidden">
+      <h3 data-i18n="modal.serverconfig.title">serverconfig.xml 設定</h3>
+      <div id="cfgLockBanner" class="cfg-lock-banner hidden" data-i18n="modal.serverconfig.lockBanner">
         🔒 伺服器運行中，禁止修改 serverconfig.xml
       </div>
-      <button id="cfgCloseBtn" class="modal__close" title="關閉">✖</button>
+      <button id="cfgCloseBtn" class="modal__close" title="關閉" data-i18n-title="common.close">✖</button>
     </div>
     <div class="modal__body">
       <div id="cfgChecks" class="cfg-checks"></div>
@@ -21,15 +22,17 @@
       <button
         id="cfgLoadAdminBtn"
         title="從 server.json 載入 game_server 設定"
-        data-danger="是否確定載入後台管理設定?\n此動作將覆蓋目前編輯器中的值"
-        data-cancel-text="取消"
-        data-continue-text="繼續"
+        data-i18n="modal.serverconfig.loadAdminConfig"
+        data-i18n-title="modal.serverconfig.loadAdminConfigTitle"
+        data-danger-i18n="confirm.loadAdminConfig"
+        data-cancel-i18n="common.cancel"
+        data-continue-i18n="common.confirm"
       >
         📥 載入上次保存設定
       </button>
-      <button id="cfgCancelBtn" class="btn">關閉</button>
-      <button id="cfgSaveBtn" class="btn">保存</button>
-      <button id="cfgSaveStartBtn" class="btn btn--accent">保存後啟動</button>
+      <button id="cfgCancelBtn" class="btn" data-i18n="common.close">關閉</button>
+      <button id="cfgSaveBtn" class="btn" data-i18n="common.save">保存</button>
+      <button id="cfgSaveStartBtn" class="btn btn--accent" data-i18n="modal.serverconfig.saveAndStart">保存後啟動</button>
     </div>
   </div>
 </div>
