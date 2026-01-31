@@ -1,0 +1,132 @@
+# Cursor AI Rules - 7DTD Dedicated Server Plus
+
+## 專案概述
+
+這是一個 Windows 平台的七日殺 (7 Days to Die) 伺服器管理工具，使用 Node.js + Express 後端和原生 JavaScript 前端。
+
+## 技術棧
+
+- **後端**: Node.js + Express
+- **前端**: 原生 JavaScript (無框架)
+- **打包**: pkg (編譯為單一執行檔)
+- **平台**: Windows 10/11, Windows Server
+
+## 代碼風格
+
+### JavaScript (後端)
+
+- 使用 CommonJS 模組系統 (`require`/`module.exports`)
+- 2 空格縮排
+- 使用 `const` 和 `let`，避免 `var`
+- 字串使用雙引號 `"`
+- 日誌使用 `log()` 和 `error()` 函數
+
+```javascript
+const express = require("express");
+const { log, error } = require("./lib/logger");
+
+function example() {
+  const value = "example";
+  return value;
+}
+
+module.exports = example;
+```
+
+### JavaScript (前端)
+
+- 使用 IIFE 模式封裝模組
+- 掛載到 `window.App` 命名空間
+- 2 空格縮排
+- 不使用 ES6 模組 (需相容舊瀏覽器)
+
+```javascript
+(function (w) {
+  const App = (w.App = w.App || {});
+
+  function init() {
+    // 初始化
+  }
+
+  App.moduleName = { init };
+})(window);
+```
+
+### HTML
+
+- 使用 `data-i18n` 屬性進行多語系
+- 2 空格縮排
+
+### CSS
+
+- 2 空格縮排
+- 使用 BEM 命名或語義化命名
+
+## 目錄結構
+
+```
+src/
+└── web/
+    ├── server.js           # 主程式入口
+    ├── lib/                # 後端模組
+    │   ├── processManager.js
+    │   ├── eventBus.js
+    │   └── routes/         # API 路由
+    └── public/             # 前端資源
+        ├── index.html
+        ├── css/
+        ├── js/
+        └── locales/        # i18n 翻譯檔
+```
+
+## 關鍵模組
+
+| 模組 | 路徑 | 用途 |
+|------|------|------|
+| server.js | `src/web/server.js` | Express 主程式 |
+| processManager | `src/web/lib/processManager.js` | 進程狀態管理 |
+| eventBus | `src/web/lib/eventBus.js` | SSE 事件推送 |
+| i18n.js | `src/web/public/js/i18n.js` | 前端多語系 |
+
+## i18n 使用
+
+### HTML
+```html
+<span data-i18n="key.path"></span>
+<input data-i18n-placeholder="key.path">
+<button data-i18n-title="key.path">
+```
+
+### JavaScript
+```javascript
+const text = App.i18n.t("key.path");
+const textWithParams = App.i18n.t("key.path", { name: "value" });
+```
+
+### 翻譯檔案
+- `src/web/public/locales/zh-TW.json` (繁體中文 - 預設)
+- `src/web/public/locales/en.json` (英文)
+- `src/web/public/locales/zh-CN.json` (簡體中文)
+
+## API 設計
+
+- RESTful 風格
+- 路徑前綴: `/api/`
+- 成功回傳: `{ ok: true, data: ... }`
+- 失敗回傳: `{ ok: false, error: "..." }`
+
+## 注意事項
+
+1. 這是 Windows 專案，路徑使用反斜線或正斜線皆可
+2. 編碼統一使用 UTF-8
+3. 進程管理需考慮 Windows 特性 (taskkill, wmic 等)
+4. 不要引入前端框架 (React, Vue 等)
+5. 保持輕量化，減少外部依賴
+
+## 分工協作
+
+本專案使用 Claude + Gemini 分工模式：
+- **Claude**: 需求分析、架構設計、產出計畫文件
+- **Gemini**: 按照計畫執行代碼變更
+
+計畫文件存放於: `docs/plans/`

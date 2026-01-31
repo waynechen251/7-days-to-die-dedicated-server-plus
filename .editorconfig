@@ -1,0 +1,45 @@
+# EditorConfig - 7DTD Dedicated Server Plus
+# https://editorconfig.org
+
+root = true
+
+# 所有檔案的預設設定
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 2
+
+# JavaScript 檔案
+[*.js]
+indent_size = 2
+
+# JSON 檔案
+[*.json]
+indent_size = 2
+
+# HTML 檔案
+[*.html]
+indent_size = 2
+
+# CSS 檔案
+[*.css]
+indent_size = 2
+
+# Markdown 檔案
+[*.md]
+trim_trailing_whitespace = false
+
+# YAML 檔案
+[*.{yml,yaml}]
+indent_size = 2
+
+# XML 檔案 (serverconfig.xml)
+[*.xml]
+indent_size = 2
+
+# Batch/PowerShell 腳本 (Windows)
+[*.{bat,cmd,ps1}]
+end_of_line = crlf
