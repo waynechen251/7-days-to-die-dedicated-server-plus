@@ -17,7 +17,8 @@
     "custom": "(自訂)"
   },
   "topbar": {
-    "brand": "7 Days To Die Dedicated Server Plus 管理後台"
+    "brand": "7 Days To Die Dedicated Server Plus 管理後台",
+    "langSelectLabel": "顯示語言："
   },
   "mask": {
     "connectionLost": "無法與管理後台取得連線，請檢查服務狀態或稍候…"

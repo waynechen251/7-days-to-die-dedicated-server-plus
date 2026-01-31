@@ -17,7 +17,8 @@
     "custom": "(Custom)"
   },
   "topbar": {
-    "brand": "7 Days To Die Dedicated Server Plus Admin Panel"
+    "brand": "7 Days To Die Dedicated Server Plus Admin Panel",
+    "langSelectLabel": "Display Language: "
   },
   "mask": {
     "connectionLost": "Unable to connect to admin panel. Please check service status or wait..."

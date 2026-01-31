@@ -105,6 +105,8 @@ main.grid > [data-fragment] > .card {
   margin-left: auto;
   display: flex;
   align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .lang-select {
   background: #374151;
