@@ -149,6 +149,7 @@
     if (lang !== DEFAULT_LANG) await loadLang(lang);
     currentLang = loadedLangs.has(lang) ? lang : DEFAULT_LANG;
     document.documentElement.lang = currentLang;
+    updateDOM();
     return currentLang;
   }
 
