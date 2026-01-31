@@ -392,3 +392,4 @@ IpInvalid=IP 地址無效。
 PortEmpty=通訊埠不能為空。
 PortInvalid=通訊埠無效。
 PortRangeInvalid=通訊埠範圍無效。
+OpenWebInterface=開啟管理後台

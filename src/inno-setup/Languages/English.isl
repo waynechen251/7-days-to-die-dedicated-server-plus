@@ -391,3 +391,4 @@ IpInvalid=IP address is invalid.
 PortEmpty=Port cannot be empty.
 PortInvalid=Port is invalid.
 PortRangeInvalid=Port range is invalid.
+OpenWebInterface=Open Web Interface

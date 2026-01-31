@@ -59,6 +59,10 @@ Source: "{#WEBSRC}\public\*"; DestDir: "{app}\public"; Flags: ignoreversion recu
 Source: "{#WEBSRC}\server.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#INNOSRC}\LICENSE.txt"; DestDir: "{app}"; Flags: ignoreversion
 
+[Run]
+Filename: "http://localhost:{code:GetWebPort}"; Description: "{cm:OpenWebInterface}"; Flags: postinstall shellexec runasoriginaluser nowait
+
+
 [Code]
 procedure CurPageChanged(CurPageID: Integer);
 begin
@@ -179,9 +183,6 @@ begin
 
       // 啟動服務(如果需要安裝完成後直接啟動)
       Exec('cmd.exe', '/C net start {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
-
-      // 開啟瀏覽器
-      Exec('cmd.exe', '/C start http://localhost:' + WebPortInput.Text, '', SW_HIDE, ewNoWait, ResultCode);
 
     end;
 

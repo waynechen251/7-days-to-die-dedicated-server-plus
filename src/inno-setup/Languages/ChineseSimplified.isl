@@ -402,3 +402,4 @@ IpInvalid=IP 地址无效。
 PortEmpty=端口不能为空。
 PortInvalid=端口无效。
 PortRangeInvalid=端口范围无效。
+OpenWebInterface=打开管理后台

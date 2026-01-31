@@ -57,3 +57,8 @@ begin
   end;
 
 end;
+
+function GetWebPort(Param: String): String;
+begin
+  Result := WebPortInput.Text;
+end;
