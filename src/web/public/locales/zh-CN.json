@@ -17,7 +17,7 @@
     "custom": "(自定义)"
   },
   "topbar": {
-    "brand": "7 Days To Die Dedicated Server Plus 管理后台 1.0.4"
+    "brand": "7 Days To Die Dedicated Server Plus 管理后台"
   },
   "mask": {
     "connectionLost": "无法与管理后台取得连接，请检查服务状态或稍候…"
