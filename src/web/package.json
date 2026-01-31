@@ -11,8 +11,8 @@
     "release": "npm run pack && npm run setup"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "waynechen251",
+  "license": "GPL-3.0-only",
   "dependencies": {
     "archiver": "^6.0.2",
     "dayjs": "^1.11.13",
