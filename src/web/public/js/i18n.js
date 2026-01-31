@@ -3,7 +3,10 @@
 
   const STORAGE_KEY = "dsp-lang";
   const DEFAULT_LANG = "zh-TW";
-  const SUPPORTED_LANGS = ["zh-TW", "en", "zh-CN"];
+  
+  // SUPPORTED_LANGS will be populated from locales/manifest.json
+  let SUPPORTED_LANGS = ["zh-TW"]; 
+  let langManifest = [];
 
   let currentLang = DEFAULT_LANG;
   let translations = {};
@@ -38,6 +41,36 @@
     } catch (_) {}
   }
 
+  async function loadManifest() {
+    try {
+      const res = await fetch("locales/manifest.json", { cache: "no-cache" });
+      if (!res.ok) throw new Error(res.status + " " + res.statusText);
+      langManifest = await res.json();
+      SUPPORTED_LANGS = langManifest.map(item => item.code);
+    } catch (e) {
+      console.error("[i18n] Failed to load manifest:", e);
+      // Fallback to default if manifest fails
+      SUPPORTED_LANGS = [DEFAULT_LANG];
+      langManifest = [{ code: DEFAULT_LANG, name: "Default" }];
+    }
+  }
+
+  function renderLanguageOptions() {
+    const select = document.getElementById("langSelect");
+    if (!select) return;
+    
+    select.innerHTML = "";
+    langManifest.forEach(lang => {
+      const option = document.createElement("option");
+      option.value = lang.code;
+      option.textContent = lang.name;
+      if (lang.code === currentLang) {
+        option.selected = true;
+      }
+      select.appendChild(option);
+    });
+  }
+
   async function loadLang(lang) {
     if (loadedLangs.has(lang)) return true;
     try {
@@ -70,9 +103,12 @@
   function t(key, params) {
     const langData = translations[currentLang] || {};
     let text = langData[key];
-    if (text === undefined) {
-      const fallback = translations[DEFAULT_LANG] || {};
-      text = fallback[key];
+    // Fallback to default language if translation missing
+    if (text === undefined && currentLang !== DEFAULT_LANG) {
+      const fallback = translations[DEFAULT_LANG];
+      if (fallback) {
+        text = fallback[key];
+      }
     }
     if (text === undefined) return key;
     if (params && typeof params === "object") {
@@ -119,6 +155,11 @@
   }
 
   async function setLanguage(lang) {
+    // Always ensure default language is loaded for fallback
+    if (!loadedLangs.has(DEFAULT_LANG)) {
+      await loadLang(DEFAULT_LANG);
+    }
+
     if (!SUPPORTED_LANGS.includes(lang)) lang = DEFAULT_LANG;
     const loaded = await loadLang(lang);
     if (!loaded && lang !== DEFAULT_LANG) {
@@ -129,8 +170,11 @@
     saveLang(lang);
     document.documentElement.lang = lang;
     updateDOM();
+    
+    // Update select value if exists
     const select = document.getElementById("langSelect");
     if (select && select.value !== lang) select.value = lang;
+    
     window.dispatchEvent(new CustomEvent("i18n:changed", { detail: { lang } }));
   }
 
@@ -143,13 +187,29 @@
   }
 
   async function init() {
+    // 1. Load Manifest first
+    await loadManifest();
+    
+    // 2. Render options immediately so users can see list even if loading translations takes time
+    renderLanguageOptions();
+
+    // 3. Detect & Load Language
     const saved = getSavedLang();
     const lang = saved || detectBrowserLang();
+    
     await loadLang(DEFAULT_LANG);
     if (lang !== DEFAULT_LANG) await loadLang(lang);
+    
     currentLang = loadedLangs.has(lang) ? lang : DEFAULT_LANG;
     document.documentElement.lang = currentLang;
+    
+    // 4. Update UI
     updateDOM();
+    
+    // Sync select value
+    const select = document.getElementById("langSelect");
+    if (select && select.value !== currentLang) select.value = currentLang;
+
     return currentLang;
   }
 

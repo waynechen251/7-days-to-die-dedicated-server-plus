@@ -156,10 +156,11 @@ eventBus.push("game", { text: "遊戲日誌" });
 
 ### i18n.js (前端)
 
-多語系模組，使用 `data-i18n` 屬性和 `t()` 函數：
+多語系模組，支援動態載入語言清單 (`locales/manifest.json`)。
 
 ```javascript
-App.i18n.t("key.path")              // 取得翻譯
+App.i18n.init()                    // 初始化 (載入 manifest & 語言檔)
+App.i18n.t("key.path")             // 取得翻譯
 App.i18n.t("key", { name: "值" })  // 帶參數
 App.i18n.setLanguage("en")         // 切換語言
 App.i18n.updateDOM()               // 更新 DOM

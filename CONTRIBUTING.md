@@ -180,10 +180,18 @@ UI 變更請附截圖
 
 ## i18n 翻譯貢獻
 
+### 新增語言 (New Language)
+
+1. 在 `src/web/public/locales/` 新增語言檔 (例如 `ja.json`)
+2. 在 `src/web/public/locales/manifest.json` 加入新語言設定：
+   ```json
+   { "code": "ja", "name": "日本語" }
+   ```
+
 ### 新增翻譯 Key
 
 1. 先在 `src/web/public/locales/zh-TW.json` 新增 key
-2. 同步更新 `en.json` 和 `zh-CN.json`
+2. 同步更新其他語言的 json 檔
 
 ### 翻譯檔案結構
 
