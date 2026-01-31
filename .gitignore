@@ -1,7 +1,7 @@
-.claude/
 node_modules/
 output/
 
+.claude/settings.local.json
 *.log
 *.tmp
 server.json
