@@ -88,9 +88,7 @@ module.exports = example;
 | 分支 | 用途 |
 |------|------|
 | `main` | 穩定版本，用於發布 |
-| `dev` | 開發分支，新功能在此整合 |
-| `feature/*` | 功能分支 |
-| `bugfix/*` | 修復分支 |
+| `dev` | 開發分支 |
 
 ### 開發流程
 
@@ -208,50 +206,6 @@ UI 變更請附截圖
 ```html
 <span data-i18n="section.key"></span>
 ```
-
----
-
-## AI 輔助開發 (Claude + Gemini 模式)
-
-本專案支援使用 AI 輔助開發的工作流：
-
-### Claude 的角色
-- 需求分析
-- 架構設計
-- 產出執行計畫文件 (`docs/plans/`)
-
-### Gemini 的角色
-- 按照計畫執行代碼變更
-
-### 計畫文件
-
-位置: `docs/plans/YYYYMMDD-任務名稱.md`
-模板: `docs/plans/TEMPLATE.md`
-
-如果您使用 AI 輔助，請遵循此工作流以確保變更的可追蹤性。
-
----
-
-## 問題回報
-
-### Bug 回報
-
-請使用 [GitHub Issues](https://github.com/waynechen251/7-days-to-die-dedicated-server-plus/issues) 並包含：
-
-1. **環境資訊**: Windows 版本、Node.js 版本
-2. **重現步驟**: 詳細的操作步驟
-3. **預期行為**: 您期望發生什麼
-4. **實際行為**: 實際發生什麼
-5. **錯誤訊息**: Console 錯誤或日誌 (如有)
-6. **截圖**: UI 問題請附截圖
-
-### 功能建議
-
-歡迎在 Issues 提出功能建議，請說明：
-
-1. **使用場景**: 為什麼需要這個功能
-2. **預期行為**: 功能應該如何運作
-3. **替代方案**: 是否有其他解決方法
 
 ---
 
