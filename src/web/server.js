@@ -15,6 +15,14 @@ const steamcmd = require("./lib/steamcmd");
 const { sendTelnetCommand, telnetStart } = require("./lib/telnet");
 const auth = require("./lib/auth");
 
+const APP_VERSION = (() => {
+  try {
+    return require("./package.json").version;
+  } catch {
+    return "unknown";
+  }
+})();
+
 if (process.platform === "win32") exec("chcp 65001 >NUL");
 
 const isPkg = typeof process.pkg !== "undefined";
@@ -185,6 +193,7 @@ const routeContext = {
     stopGameTail = fn;
   },
   closeDummyGamePort: null, // Will be set by network routes
+  appVersion: APP_VERSION,
 };
 
 // Auth 路由（公開，不需驗證）
@@ -227,6 +236,7 @@ require("./lib/routes/saves")(app, routeContext);
 require("./lib/routes/game")(app, routeContext);
 require("./lib/routes/install")(app, routeContext);
 require("./lib/routes/versions")(app, routeContext);
+require("./lib/routes/updates")(app, routeContext);
 
 // SSE endpoint
 app.get("/api/stream", eventBus.sseHandler);

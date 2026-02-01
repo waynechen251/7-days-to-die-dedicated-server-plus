@@ -387,5 +387,8 @@
     "btnConfirm": "确认",
     "errUsernameTooShort": "账户名称太短",
     "errPasswordTooShort": "密码太短"
+  },
+  "update": {
+    "newVersion": "新版本可用"
   }
 }

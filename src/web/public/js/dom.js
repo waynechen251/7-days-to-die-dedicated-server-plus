@@ -62,6 +62,7 @@
       })(),
 
       deleteBackupBtn: document.getElementById("deleteBackupBtn"),
+      updateBadge: $("updateBadge"),
     };
   }
 

@@ -165,6 +165,18 @@
 
   let booted = false;
 
+  async function checkForUpdate() {
+    try {
+      const result = await fetchJSON("/api/update-check");
+      if (result?.hasUpdate && D.updateBadge) {
+        D.updateBadge.href = result.releaseUrl || "#";
+        D.updateBadge.classList.remove("hidden");
+      }
+    } catch (_) {
+      // 靜默失敗，更新提示保持隱藏
+    }
+  }
+
   async function realBoot() {
     if (booted) return;
     booted = true;
@@ -186,6 +198,7 @@
 
     // 更新 UI (權限相關)
     if (App.auth?.updateUI) App.auth.updateUI();
+    checkForUpdate();
   }
 
   (async function boot() {

@@ -387,5 +387,8 @@
     "btnConfirm": "Confirm",
     "errUsernameTooShort": "Username too short",
     "errPasswordTooShort": "Password too short"
+  },
+  "update": {
+    "newVersion": "New version available"
   }
 }
