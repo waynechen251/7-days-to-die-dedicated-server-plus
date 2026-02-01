@@ -163,36 +163,67 @@
     }
   }
 
-  App.bootstrap = { refreshStatus, setState };
+  let booted = false;
 
-  (async function boot() {
-    async function realBoot() {
-      if (App.i18n) {
-        const lang = await App.i18n.init();
-        const select = document.getElementById("langSelect");
-        if (select) {
-          select.value = lang;
-          select.addEventListener("change", (e) => {
-            App.i18n.setLanguage(e.target.value);
-          });
-        }
-      }
+  async function realBoot() {
+    if (booted) return;
+    booted = true;
 
-      await initUI();
-      App.console.switchTab(S.activeTab);
-      App.mask.updateMask();
-      App.sse.connectSSE();
-      refreshStatus();
+    // 語言選擇器（i18n 已在 boot 中初始化）
+    const select = document.getElementById("langSelect");
+    if (select && App.i18n) {
+      select.value = App.i18n.getCurrentLang();
+      select.addEventListener("change", (e) => {
+        App.i18n.setLanguage(e.target.value);
+      });
     }
 
+    await initUI();
+    App.console.switchTab(S.activeTab);
+    App.mask.updateMask();
+    App.sse.connectSSE();
+    refreshStatus();
+
+    // 更新 UI (權限相關)
+    if (App.auth?.updateUI) App.auth.updateUI();
+  }
+
+  (async function boot() {
+    const onFragmentsReady = async () => {
+      // 1. 初始化 i18n（登入頁面也需要翻譯）
+      if (App.i18n) await App.i18n.init();
+
+      // 2. 綁定 Auth 表單事件
+      App.auth?.bindEvents();
+
+      // 3. 檢查首次設定
+      const setupRequired = await App.auth?.checkSetup();
+      if (setupRequired) {
+        App.auth.showSetupScreen();
+        return;
+      }
+
+      // 4. 檢查認證狀態
+      const authenticated = await App.auth?.checkAuth();
+      if (!authenticated) {
+        App.auth.showLoginScreen();
+        return;
+      }
+
+      // 5. 已認證，啟動主界面
+      await realBoot();
+    };
+
     if (window.__fragmentsReady) {
-      realBoot();
+      onFragmentsReady();
     } else {
-      window.addEventListener("fragments:ready", () => realBoot(), {
+      window.addEventListener("fragments:ready", () => onFragmentsReady(), {
         once: true,
       });
     }
   })();
+
+  App.bootstrap = { refreshStatus, setState, realBoot };
 
   w.setState = setState;
 })(window);

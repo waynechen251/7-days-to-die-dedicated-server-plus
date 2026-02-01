@@ -141,4 +141,6 @@
   );
 
   window.DangerConfirm = { showConfirm };
+  const App = (window.App = window.App || {});
+  App.confirm = showConfirm;
 })();

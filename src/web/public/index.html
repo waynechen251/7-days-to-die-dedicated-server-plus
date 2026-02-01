@@ -2,7 +2,7 @@
 <html lang="zh-TW">
   <head>
     <meta charset="UTF-8" />
-    <title>7DTD-DS-P 管理後台 1.0.4</title>
+    <title>7DTD-DS-P 管理後台 1.0.5</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="stylesheet" href="css/base.css" />
     <link rel="stylesheet" href="css/layout.css" />
@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="css/cfg-modal.css" />
     <link rel="stylesheet" href="css/utilities.css" />
     <link rel="stylesheet" href="css/theme-dark.css" />
+    <link rel="stylesheet" href="css/auth.css" />
   </head>
   <body>
     <div id="appMask" class="app-mask">
@@ -28,12 +29,56 @@
 
     <div id="confirmMask" class="app-mask hidden" aria-hidden="true"></div>
 
+    <!-- 登入頁面 -->
+    <div id="loginScreen" class="auth-screen hidden">
+      <div class="auth-panel">
+        <div class="auth-logo">7DTD-DS-P</div>
+        <h2 class="auth-title" data-i18n="auth.loginTitle">登入管理後台</h2>
+        <div class="auth-error" id="authError"></div>
+        <form id="loginForm" autocomplete="off">
+          <div class="field">
+            <label class="field__label" data-i18n="auth.username">帳戶名稱</label>
+            <input type="text" id="authUsername" class="field__control" autocomplete="username" required />
+          </div>
+          <div class="field">
+            <label class="field__label" data-i18n="auth.password">密碼</label>
+            <input type="password" id="authPassword" class="field__control" autocomplete="current-password" required />
+          </div>
+          <button type="submit" class="btn--primary" data-i18n="auth.login">登入</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 首次設定頁面 -->
+    <div id="setupScreen" class="auth-screen hidden">
+      <div class="auth-panel">
+        <div class="auth-logo">7DTD-DS-P</div>
+        <h2 class="auth-title" data-i18n="auth.setupTitle">建立首個管理者帳戶</h2>
+        <div class="auth-error" id="setupError"></div>
+        <form id="setupForm" autocomplete="off">
+          <div class="field">
+            <label class="field__label" data-i18n="auth.username">帳戶名稱</label>
+            <input type="text" id="setupUsername" class="field__control" autocomplete="off" required />
+          </div>
+          <div class="field">
+            <label class="field__label" data-i18n="auth.password">密碼</label>
+            <input type="password" id="setupPassword" class="field__control" autocomplete="off" required />
+          </div>
+          <div class="field">
+            <label class="field__label" data-i18n="auth.confirmPassword">確認密碼</label>
+            <input type="password" id="setupConfirmPassword" class="field__control" autocomplete="off" required />
+          </div>
+          <button type="submit" class="btn--primary" data-i18n="auth.setupBtn">建立帳戶</button>
+        </form>
+      </div>
+    </div>
+
     <header class="topbar">
       <div class="brand" data-i18n="topbar.brand">
         7 Days To Die Dedicated Server Plus 管理後台
       </div>
       <div class="brand">
-        1.0.4
+        1.0.5
       </div>
       <a
         href="https://github.com/waynechen251/7-days-to-die-dedicated-server-plus.git"
@@ -49,12 +94,15 @@
         class="github-link"
         >🌐 巴哈姆特</a
       >
-      <div class="lang-selector">
-        <div data-i18n="topbar.langSelectLabel" style="margin-right: 0.5rem">
-          顯示語言：
+      <div class="topbar__actions">
+        <div id="topbarUser" class="topbar__user"></div>
+        <div class="lang-selector">
+          <div data-i18n="topbar.langSelectLabel" style="margin-right: 0.5rem">
+            顯示語言：
+          </div>
+          <select id="langSelect" class="lang-select">
+          </select>
         </div>
-        <select id="langSelect" class="lang-select">
-        </select>
       </div>
     </header>
 
@@ -122,6 +170,7 @@
     <script defer src="js/console.js"></script>
     <script defer src="js/mask.js"></script>
     <script defer src="js/confirm.js"></script>
+    <script defer src="js/prompt.js"></script>
     <script defer src="js/status.js"></script>
     <script defer src="js/sse.js"></script>
     <script defer src="js/saves.js"></script>
@@ -129,6 +178,7 @@
     <script defer src="js/card-game-serverconfig-modal.js"></script>
     <script defer src="js/card-dsp-modal.js"></script>
     <script defer src="js/actions.js"></script>
+    <script defer src="js/auth.js"></script>
     <script defer src="js/bootstrap.js"></script>
   </body>
 </html>

@@ -13,6 +13,7 @@ const logParser = require("./lib/logParser");
 const serverConfigLib = require("./lib/serverConfig");
 const steamcmd = require("./lib/steamcmd");
 const { sendTelnetCommand, telnetStart } = require("./lib/telnet");
+const auth = require("./lib/auth");
 
 if (process.platform === "win32") exec("chcp 65001 >NUL");
 
@@ -107,29 +108,7 @@ processManager.initStatus({
   sendTelnetCommand,
 });
 
-processManager.registerRoutes(app, {
-  eventBus,
-  http,
-  getStopGameTail: () => stopGameTail,
-  clearStopGameTail: () => {
-    if (stopGameTail) {
-      try {
-        stopGameTail();
-      } catch (_) {}
-    }
-    stopGameTail = null;
-  },
-});
-
-serverConfigLib.registerRoutes(app, {
-  http,
-  processManager,
-  eventBus,
-  baseDir,
-  GAME_DIR,
-  getConfig: () => CONFIG,
-  saveConfig,
-});
+auth.initAuth(baseDir);
 
 function loadConfig() {
   try {
@@ -207,6 +186,39 @@ const routeContext = {
   },
   closeDummyGamePort: null, // Will be set by network routes
 };
+
+// Auth 路由（公開，不需驗證）
+require("./lib/routes/auth")(app, { ...routeContext, auth });
+
+// 對 /api 套用認證 + 許可中間件
+app.use("/api", auth.requireAuth);
+app.use("/api", auth.checkPermission);
+
+// 進程管理路由（移至此處，確保受認證保護）
+processManager.registerRoutes(app, {
+  eventBus,
+  http,
+  getStopGameTail: () => stopGameTail,
+  clearStopGameTail: () => {
+    if (stopGameTail) {
+      try {
+        stopGameTail();
+      } catch (_) {}
+    }
+    stopGameTail = null;
+  },
+});
+
+// 伺服器設定路由（移至此處，確保受認證保護）
+serverConfigLib.registerRoutes(app, {
+  http,
+  processManager,
+  eventBus,
+  baseDir,
+  GAME_DIR,
+  getConfig: () => CONFIG,
+  saveConfig,
+});
 
 // Register route modules
 require("./lib/routes/network")(app, routeContext);

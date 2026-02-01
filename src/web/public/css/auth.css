@@ -1,0 +1,157 @@
+/* ─── 認證頁面（登入 / 首次設定） ─── */
+.auth-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--c-bg);
+}
+.auth-screen.hidden {
+  display: none;
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 400px;
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  background: var(--c-surface);
+  border-radius: var(--radius-m);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--c-border);
+}
+
+.auth-logo {
+  text-align: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--c-primary);
+  margin-bottom: var(--space-2);
+  letter-spacing: 0.5px;
+}
+
+.auth-title {
+  text-align: center;
+  font-size: 1.05rem;
+  color: var(--c-text-sec);
+  margin-bottom: var(--space-4);
+  font-weight: 500;
+}
+
+.auth-error {
+  display: none;
+  color: var(--c-danger);
+  font-size: 0.82rem;
+  text-align: center;
+  margin-bottom: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: #fef2f2;
+  border-radius: var(--radius-s);
+}
+.auth-error.visible {
+  display: block;
+}
+
+.auth-panel .field {
+  margin-bottom: var(--space-3);
+}
+.auth-panel button.btn--primary {
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+/* ─── 帳戶列表 ─── */
+.users-list {
+  margin-top: var(--space-3);
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--c-border-soft);
+}
+.user-row:last-child {
+  border-bottom: none;
+}
+
+.user-row__info {
+  flex: 1;
+}
+.user-row__name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--c-text);
+}
+.user-row__meta {
+  font-size: 0.75rem;
+  color: var(--c-text-sec);
+}
+
+.user-row__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.user-row__actions select {
+  font-size: 0.78rem;
+  padding: 0.3rem 0.5rem;
+  min-height: auto;
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-s);
+  background: var(--c-surface-alt);
+  color: var(--c-text);
+  cursor: pointer;
+}
+.user-row__actions button {
+  font-size: 0.72rem;
+  padding: 0.3rem 0.55rem;
+  min-height: auto;
+}
+
+/* ─── Topbar 使用者 ─── */
+.topbar__user {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 0.85rem;
+  color: #e2e8f0;
+}
+.topbar__user .badge {
+  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  background: #475569;
+  border: 1px solid #64748b;
+  color: #fff;
+  border-radius: 4px;
+}
+.topbar__user .btn-logout {
+  background: #374151;
+  color: #e2e8f0;
+  border: 1px solid #475569;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.topbar__user .btn-logout:hover {
+  background: #4b5563;
+  border-color: #60a5fa;
+}
+
+/* ─── 帳戶管理區塊 ─── */
+.account-section {
+  margin-top: var(--space-5);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--c-border);
+}
+
+@media (max-width: 720px) {
+  .auth-panel {
+    margin: var(--space-4);
+    padding: var(--space-4);
+  }
+}

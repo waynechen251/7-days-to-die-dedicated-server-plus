@@ -361,5 +361,31 @@
     "enabledState": "enabled",
     "disabledState": "disabled",
     "confirmSaveStart": "{summary}\n\nAre you sure you want to {action}?"
+  },
+  "auth": {
+    "loginTitle": "Sign in to Admin Panel",
+    "setupTitle": "Create First Admin Account",
+    "username": "Username",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "login": "Sign In",
+    "setupBtn": "Create Account",
+    "logout": "Logout",
+    "usersTitle": "User Management",
+    "addUser": "+ Add User",
+    "roleAdmin": "Admin",
+    "roleOperator": "Operator",
+    "roleViewer": "Viewer",
+    "selfLabel": "(You)",
+    "addUserTitle": "Add User",
+    "changePwdTitle": "Change Password",
+    "labelUsernameFull": "Username (2-32 chars)",
+    "labelRole": "Role",
+    "labelPasswordFull": "Password (min 4 chars)",
+    "btnCancel": "Cancel",
+    "btnCreate": "Create",
+    "btnConfirm": "Confirm",
+    "errUsernameTooShort": "Username too short",
+    "errPasswordTooShort": "Password too short"
   }
 }

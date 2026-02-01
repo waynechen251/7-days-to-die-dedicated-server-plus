@@ -101,11 +101,16 @@ main.grid > [data-fragment] > .card {
   border-color: #b91c1c;
   color: #fff;
 }
-.lang-selector {
+.topbar__actions {
   margin-left: auto;
   display: flex;
   align-items: center;
+  gap: var(--space-4);
   flex-shrink: 0;
+}
+.lang-selector {
+  display: flex;
+  align-items: center;
   white-space: nowrap;
 }
 .lang-select {

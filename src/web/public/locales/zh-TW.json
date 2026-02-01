@@ -361,5 +361,31 @@
     "enabledState": "啟用",
     "disabledState": "停用",
     "confirmSaveStart": "{summary}\n\n是否確定{action}?"
+  },
+  "auth": {
+    "loginTitle": "登入管理後台",
+    "setupTitle": "建立首個管理者帳戶",
+    "username": "帳戶名稱",
+    "password": "密碼",
+    "confirmPassword": "確認密碼",
+    "login": "登入",
+    "setupBtn": "建立帳戶",
+    "logout": "退出",
+    "usersTitle": "帳戶管理",
+    "addUser": "+ 新增帳戶",
+    "roleAdmin": "管理者",
+    "roleOperator": "操作員",
+    "roleViewer": "觀察者",
+    "selfLabel": "(你)",
+    "addUserTitle": "新增帳戶",
+    "changePwdTitle": "修改密碼",
+    "labelUsernameFull": "帳戶名稱 (2-32 字元)",
+    "labelRole": "角色",
+    "labelPasswordFull": "密碼 (至少 4 字元)",
+    "btnCancel": "取消",
+    "btnCreate": "建立",
+    "btnConfirm": "確認",
+    "errUsernameTooShort": "帳戶名稱太短",
+    "errPasswordTooShort": "密碼太短"
   }
 }

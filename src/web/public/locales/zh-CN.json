@@ -361,5 +361,31 @@
     "enabledState": "启用",
     "disabledState": "停用",
     "confirmSaveStart": "{summary}\n\n是否确定{action}?"
+  },
+  "auth": {
+    "loginTitle": "登入管理后台",
+    "setupTitle": "创建首个管理者账户",
+    "username": "账户名称",
+    "password": "密码",
+    "confirmPassword": "确认密码",
+    "login": "登入",
+    "setupBtn": "创建账户",
+    "logout": "退出",
+    "usersTitle": "账户管理",
+    "addUser": "+ 新增账户",
+    "roleAdmin": "管理者",
+    "roleOperator": "操作员",
+    "roleViewer": "观察者",
+    "selfLabel": "(你)",
+    "addUserTitle": "新增账户",
+    "changePwdTitle": "修改密码",
+    "labelUsernameFull": "账户名称 (2-32 字符)",
+    "labelRole": "角色",
+    "labelPasswordFull": "密码 (至少 4 字符)",
+    "btnCancel": "取消",
+    "btnCreate": "创建",
+    "btnConfirm": "确认",
+    "errUsernameTooShort": "账户名称太短",
+    "errPasswordTooShort": "密码太短"
   }
 }

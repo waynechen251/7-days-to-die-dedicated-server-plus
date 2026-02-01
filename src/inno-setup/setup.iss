@@ -9,7 +9,7 @@
 #define AppServiceName "7 Days To Die Dedicated Server Plus"
 #define AppName "7DTD-DS-P"
 #define AppType "Setup"
-#define AppVersion "1.0.4"
+#define AppVersion "1.0.5"
 #define AppPublisher "waynechen251"
 #define AppURL "https://github.com/waynechen251/7-days-to-die-dedicated-server-plus"
 
@@ -138,7 +138,7 @@ begin
         'set {#AppName} AppStderr "' + ExpandConstant('{app}\logs\stderr.log') + '"',
         '', SW_HIDE, ewWaitUntilTerminated, ResultCode
       );
-      
+
       // 啟用日誌輪替
       Exec(ExpandConstant('{app}\nssm.exe'),
         'set {#AppName} AppRotateFiles 1',
@@ -262,5 +262,5 @@ begin
     Result := False;
 
   end;
-    
+
 end;
