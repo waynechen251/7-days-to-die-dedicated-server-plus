@@ -149,7 +149,7 @@
     container.innerHTML =
       `<span class="badge">${roleLabel[currentUser.role] || currentUser.role}</span>` +
       `<span style="font-weight:500">${escapeHtml(currentUser.username)}</span>` +
-      `<button id="logoutBtn" class="btn-logout" data-i18n="auth.logout">退出</button>`;
+      `<button id="logoutBtn" class="btn-logout" data-i18n="auth.logout">${t("auth.logout", "退出")}</button>`;
     const logoutBtn = container.querySelector("#logoutBtn");
     if (logoutBtn) logoutBtn.addEventListener("click", () => logout());
   }
