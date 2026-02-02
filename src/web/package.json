@@ -7,8 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "pack": "pkg server.js --targets node18-win-x64 --output server.exe",
+    "genMD5": "node gen-md5.js",
     "setup": "cd /d ../inno-setup && iscc Setup.iss && start ../web/7DTD-DS-P-Setup(1.0.5).exe",
-    "release": "npm run pack && npm run setup"
+    "release": "npm run pack && npm run setup && npm run genMD5"
   },
   "keywords": [],
   "author": "waynechen251",
