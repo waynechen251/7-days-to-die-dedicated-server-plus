@@ -1,6 +1,6 @@
 # 7 Days to Die Dedicated Server Plus
 
-![Version](https://img.shields.io/badge/version-1.0.4-blue)
+![Version](https://img.shields.io/badge/version-1.0.5-blue)
 ![License](https://img.shields.io/badge/license-GPL--3.0-green)
 ![Platform](https://img.shields.io/badge/platform-Windows-lightgrey)
 
@@ -95,6 +95,7 @@
 
 | 版本號 | 下載地址                                                                                                                                                                  | MD5                              | 發布時間   |
 | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- | ---------- |
+| 1.0.5  | [MediaFire](https://www.mediafire.com/file/oyltf6szv2glbtv/7DTD-DS-P-Setup(1.0.5).zip/file) | 6EEE7DE87318F471795C653AE64B56DE | 2026-02-03 |
 | 1.0.4  | [MediaFire](https://www.mediafire.com/file/q6rtmhe3zpzall3/7DTD-DS-P-Setup(1.0.4).zip/file) | E543775B54B8DCDBC3486831B3546C0A | 2026-01-28 |
 | 1.0.3  | [MediaFire](https://www.mediafire.com/file/0mv8wqm0fsixnem/7DTD-DS-P-Setup(1.0.3).zip/file) | B4C4FBF2FCA9B5751B433E077AADAC2C | 2025-08-24 |
 | 1.0.2  | [MediaFire](https://www.mediafire.com/file/o8wu6zpppxpcfu9/7DTD-DS-P-Setup(1.0.2).zip/file) | F6203D69C4CB8F9ED2A461C4D9DE9E5A | 2025-08-17 |
