@@ -2,6 +2,8 @@
   const App = (w.App = w.App || {});
   const { fetchJSON } = App.api;
 
+  const t = (key, def, props) => (App.i18n ? App.i18n.t(key, props) : def || key);
+
   let currentUser = null;
 
   // ─── 屏幕切換 ────────────────────────────────────
@@ -36,6 +38,18 @@
     }
   }
 
+  function restrictInput(input) {
+    if (!input) return;
+    input.addEventListener("input", (e) => {
+      const val = e.target.value;
+      // Allow only ASCII printable characters (32-126)
+      const clean = val.replace(/[^\x20-\x7E]/g, "");
+      if (clean !== val) {
+        e.target.value = clean;
+      }
+    });
+  }
+
   // ─── UI 更新 ─────────────────────────────────────
   function updateUI() {
     updateTopbar();
@@ -48,6 +62,10 @@
       renderUserList();
     } else {
       usersSection?.classList.add("hidden");
+    }
+
+    if (App.status?.applyUIState) {
+      App.status.applyUIState(App.state?.current || {});
     }
   }
 
@@ -179,6 +197,8 @@
       const userIn = form.querySelector("[name=username]");
       const pwdIn = form.querySelector("[name=password]");
       
+      restrictInput(pwdIn);
+
       // Auto focus
       setTimeout(() => userIn.focus(), 50);
 
@@ -348,8 +368,8 @@
             `      <option value="operator" ${u.role === "operator" ? "selected" : ""}>${App.i18n?.t("auth.roleOperator") || "操作員"}</option>` +
             `      <option value="viewer" ${u.role === "viewer" ? "selected" : ""}>${App.i18n?.t("auth.roleViewer") || "觀察者"}</option>` +
             `    </select>` +
-            `    <button class="btn--ghost user-pwd-btn" data-user-id="${u.id}" ${disabledAttr(canChangePwd)}>密碼</button>` +
-            `    <button class="btn--danger user-del-btn" data-user-id="${u.id}" ${disabledAttr(canDelete)}>刪除</button>` +
+            `    <button class="btn--ghost user-pwd-btn" data-user-id="${u.id}" ${disabledAttr(canChangePwd)}>${t("auth.btnPassword", "密碼")}</button>` +
+            `    <button class="btn--danger user-del-btn" data-user-id="${u.id}" ${disabledAttr(canDelete)}>${t("auth.btnDelete", "刪除")}</button>` +
             `  </div>` +
             `</div>`;
         })
@@ -367,7 +387,7 @@
             });
             await renderUserList();
           } catch (err) {
-            await App.alert("更新失敗: " + err.message);
+            await App.alert(t("auth.updateFailed", "更新失敗: {error}", { error: err.message }));
             await renderUserList();
           }
         });
@@ -385,9 +405,9 @@
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ password: pwd }),
             });
-            await App.alert("密碼已更新");
+            await App.alert(t("auth.pwdUpdated", "密碼已更新"));
           } catch (err) {
-            await App.alert("更新失敗: " + err.message);
+            await App.alert(t("auth.updateFailed", "更新失敗: {error}", { error: err.message }));
           }
         });
       });
@@ -396,14 +416,14 @@
       container.querySelectorAll(".user-del-btn").forEach((btn) => {
         if (btn.disabled) return;
         btn.addEventListener("click", async () => {
-          if (!await App.confirm("確認刪除此帳戶？")) return;
+          if (!await App.confirm(t("auth.confirmDeleteUser", "確認刪除此帳戶？"))) return;
           try {
             await fetchJSON(`/api/auth/users/${btn.dataset.userId}`, {
               method: "DELETE",
             });
             await renderUserList();
           } catch (err) {
-            await App.alert("刪除失敗: " + err.message);
+            await App.alert(t("auth.deleteFailed", "刪除失敗: {error}", { error: err.message }));
           }
         });
       });
@@ -429,7 +449,7 @@
           hideAuthScreens();
           if (App.bootstrap?.realBoot) App.bootstrap.realBoot();
         } else {
-          showError("authError", "帳戶名稱或密碼錯誤");
+          showError("authError", t("auth.loginFailed", "帳戶名稱或密碼錯誤"));
         }
       });
     }
@@ -445,19 +465,19 @@
         const confirmPwd = document.getElementById("setupConfirmPassword").value;
 
         if (!username || !password) {
-          showError("setupError", "請填寫所有欄位");
+          showError("setupError", t("auth.errFillAll", "請填寫所有欄位"));
           return;
         }
         if (username.length < 2) {
-          showError("setupError", "帳戶名稱長度至少 2 字元");
+          showError("setupError", t("auth.errUsernameTooShort", "帳戶名稱太短"));
           return;
         }
         if (password.length < 4) {
-          showError("setupError", "密碼長度至少 4 字元");
+          showError("setupError", t("auth.errPasswordTooShort", "密碼太短"));
           return;
         }
         if (password !== confirmPwd) {
-          showError("setupError", "兩次輸入的密碼不一致");
+          showError("setupError", t("auth.errPasswordMismatch", "兩次輸入的密碼不一致"));
           return;
         }
 
@@ -466,7 +486,7 @@
           hideAuthScreens();
           if (App.bootstrap?.realBoot) App.bootstrap.realBoot();
         } else {
-          showError("setupError", "建立帳戶失敗");
+          showError("setupError", t("auth.errSetupFailed", "建立帳戶失敗"));
         }
       });
     }
@@ -503,5 +523,27 @@
     renderUserList,
     updateUI,
     bindEvents,
+
+    canWrite() {
+      const role = currentUser?.role;
+      return role === "admin" || role === "operator";
+    },
+
+    canClearInit() {
+      const role = currentUser?.role;
+      return role === "admin";
+    },
+
+    isViewer() {
+      return currentUser?.role === "viewer";
+    },
+
+    isOperator() {
+      return currentUser?.role === "operator";
+    },
+
+    isAdmin() {
+      return currentUser?.role === "admin";
+    },
   };
 })(window);

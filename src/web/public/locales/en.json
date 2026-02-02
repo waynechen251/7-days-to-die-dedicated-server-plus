@@ -386,7 +386,19 @@
     "btnCreate": "Create",
     "btnConfirm": "Confirm",
     "errUsernameTooShort": "Username too short",
-    "errPasswordTooShort": "Password too short"
+    "errPasswordTooShort": "Password too short",
+    "loginFailed": "Invalid username or password",
+    "errFillAll": "Please fill in all fields",
+    "errPasswordMismatch": "Passwords do not match",
+    "errSetupFailed": "Failed to create account",
+    "updateFailed": "Update failed: {error}",
+    "pwdUpdated": "Password updated",
+    "confirmDeleteUser": "Delete this user?",
+    "deleteFailed": "Delete failed: {error}",
+    "btnPassword": "Password",
+    "btnDelete": "Delete",
+    "viewerNoPermission": "Viewer role is not authorized for this action",
+    "operatorNoPermission": "Operator role is not authorized for this action"
   },
   "update": {
     "newVersion": "New version available"

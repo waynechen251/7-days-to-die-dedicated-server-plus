@@ -36,6 +36,37 @@ function getSince(sinceISO, topics = TOPICS) {
 }
 
 function sseHandler(req, res) {
+  // ✅ 使用 auth 模組的認證邏輯
+  const auth = require("./auth");
+
+  // 解析 Cookie
+  const parseCookie = (cookieHeader, name) => {
+    if (!cookieHeader) return null;
+    const cookies = cookieHeader.split(";").map((c) => c.trim());
+    for (const cookie of cookies) {
+      const [key, ...valParts] = cookie.split("=");
+      if (key.trim() === name) return valParts.join("=");
+    }
+    return null;
+  };
+
+  const sessionId = parseCookie(req.headers.cookie, auth.SESSION_COOKIE);
+
+  if (!sessionId) {
+    res.writeHead(401, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ ok: false, message: "未授權：請先登入" }));
+    return;
+  }
+
+  const session = auth.getSession(sessionId);
+
+  if (!session) {
+    res.writeHead(401, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ ok: false, message: "會話已過期：請重新登入" }));
+    return;
+  }
+
+  // ✅ 認證通過，繼續 SSE 邏輯
   const topics = (req.query.topics || "").split(",").filter(Boolean);
   const wanted = topics.length ? topics : TOPICS;
   const replay = Math.min(Number(req.query.replay || 200), 1000);

@@ -42,18 +42,84 @@
       D.importUploadBtn,
     ];
 
-    setBadge(D.stBackend, backendUp ? "ok" : "err");
+    const isViewer = App.auth?.isViewer?.() || false;
+
+    // 後端離線
+    if (S.backendDown || !backendUp) {
+      setBadge(D.stBackend, "err");
+      // 重置其他徽章
+      setBadge(D.stSteam, "");
+      setBadge(D.stGame, "");
+      setBadge(D.stTelnet, "");
+      setDisabled(all, true);
+      return;
+    }
+
+    // 更新通用狀態徽章與儀表板
+    setBadge(D.stBackend, "ok");
     setBadge(D.stSteam, steamRunning ? "ok" : "err");
     const gameStatus = gameRunning ? (telnetOk ? "ok" : "warn") : "err";
     setBadge(D.stGame, gameStatus);
     setBadge(D.stTelnet, telnetOk ? "ok" : "err");
+    updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning });
 
-    setDisabled(all, false);
+    if (isViewer) {
+      const readOnlyButtons = [
+        D.installServerBtn,
+        D.deleteGameNameBtn,
+        D.stopServerBtn,
+        D.killServerBtn,
+        D.configStartBtn,
+        D.versionSelect,
+        D.telnetInput,
+        D.telnetSendBtn,
+        ...D.telnetBtns,
+        D.exportGameNameBtn,
+        D.backupSelect,
+        D.importBackupBtn,
+        D.importUploadFile,
+        D.importUploadBtn,
+        D.cfgSaveBtn,
+        D.cfgSaveStartBtn,
+      ];
 
-    if (!backendUp) {
-      setDisabled(all, true);
+      setDisabled(readOnlyButtons, true);
+      readOnlyButtons.forEach(btn => {
+        if (btn) btn.title = t("auth.viewerNoPermission", "觀察者角色無權執行此操作");
+      });
+
+      // Viewer 可用的功能（唯讀）
+      const viewOnlyButtons = [
+        D.viewConfigBtn,
+        D.exportSavesBtn,
+        D.gwSelect,
+        D.gnSelect,
+        D.refreshSavesBtn,
+        D.viewBackupsBtn,
+      ];
+      setDisabled(viewOnlyButtons, false);
+      
+      // 更新按鈕文字狀態 (例如查看配置 vs 啟動伺服器)
+      if (D.configStartBtn) {
+        if (gameRunning) {
+          D.configStartBtn.textContent = "📝 " + t("card.game.viewServerconfig", "檢視 serverconfig.xml");
+          // 如果是查看模式，允許 Viewer 點擊
+          if (D.configStartBtn.disabled && isViewer) {
+            D.configStartBtn.disabled = false;
+            D.configStartBtn.title = "";
+          }
+        } else {
+          D.configStartBtn.textContent = "🛠 " + t("card.game.startServer", "啟動伺服器");
+          // 保持禁用
+        }
+      }
+
       return;
     }
+
+    // ─── 標準權限邏輯 (Admin / Operator) ───
+    setDisabled(all, false);
+    
     if (steamRunning) {
       setDisabled(all, true);
       setDisabled([D.installServerBtn, D.viewConfigBtn], false);
@@ -134,8 +200,23 @@
       false
     );
 
-    syncConfigLockFromStatus();
+    if (App.auth?.isOperator?.() && D.deleteGameNameBtn) {
+      D.deleteGameNameBtn.disabled = true;
+      D.deleteGameNameBtn.title = t("auth.operatorNoPermission", "操作員無權執行此操作");
+    }
 
+    syncConfigLockFromStatus();
+    
+    updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning });
+
+    if (D.configStartBtn) {
+      D.configStartBtn.textContent = gameRunning
+        ? "📝 " + t("card.game.viewServerconfig", "檢視 serverconfig.xml")
+        : "🛠 " + t("card.game.startServer", "啟動伺服器");
+    }
+  }
+
+  function updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning }) {
     const gvEl = document.getElementById("gameVersionBadge");
     if (gvEl) {
       gvEl.textContent = `${t("card.game.version", "版本:")} ${ 
@@ -167,12 +248,6 @@
     const rssEl = document.getElementById("rssBadge");
     if (rssEl)
       rssEl.textContent = `${t("card.game.rss", "RSS:")} ${Number.isFinite(rss) ? rss + "MB" : "-"}`;
-
-    if (D.configStartBtn) {
-      D.configStartBtn.textContent = gameRunning
-        ? "📝 " + t("card.game.viewServerconfig", "檢視 serverconfig.xml")
-        : "🛠 " + t("card.game.startServer", "啟動伺服器");
-    }
   }
 
   function computeGameRunning() {

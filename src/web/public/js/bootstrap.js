@@ -6,12 +6,14 @@
   const D = App.dom;
   const S = App.state;
 
+  const t = (key, def) => (App.i18n ? App.i18n.t(key) : def || key);
+
   function setVersionSourceBadge(source) {
     if (!D.versionSourceBadge) return;
     const sourceLabels = {
-      api: "SteamCMD API",
-      cache: "SteamCMD API (快取)",
-      fallback: "靜態列表",
+      api: t("status.versionSourceApi", "SteamCMD API"),
+      cache: t("status.versionSourceCache", "SteamCMD API (快取)"),
+      fallback: t("status.versionSourceFallback", "靜態列表"),
     };
     const sourceColors = {
       api: "var(--c-ok)",
@@ -32,7 +34,7 @@
         }
 
         // 更新頁面標題
-        document.title = `7DTD-DS-P 管理後台 ${result.version}`;
+        document.title = `${t("topbar.brand", "7DTD-DS-P 管理後台")} ${result.version}`;
       }
     } catch (err) {
       console.error("[bootstrap] Failed to load app version:", err);
@@ -108,13 +110,13 @@
           const lbl = App.status.versionLabel
             ? App.status.versionLabel(installed)
             : installed;
-          D.gameSelectedVersionBadge.textContent = "上次安裝版本: " + lbl;
+          D.gameSelectedVersionBadge.textContent = t("card.game.lastInstallVersion", "上次安裝版本:") + " " + lbl;
         }
       }
     } catch (_) {
       setInstalledVersion(null);
       if (D.gameSelectedVersionBadge) {
-        D.gameSelectedVersionBadge.textContent = "上次安裝版本: 無紀錄";
+        D.gameSelectedVersionBadge.textContent = t("card.game.lastInstallVersionNoRecord", "上次安裝版本: 無紀錄");
       }
     }
     restoreUnreadBadges();

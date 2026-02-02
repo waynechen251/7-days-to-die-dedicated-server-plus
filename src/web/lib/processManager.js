@@ -60,6 +60,9 @@ const processManager = {
     async checkTelnet() {
       return await gameServer.checkTelnet();
     },
+    async isProcessRunning(exeName) {
+      return await gameServer.isProcessRunning(exeName);
+    },
   },
 };
 
@@ -97,9 +100,7 @@ const status = (function () {
     if (updating) return;
     updating = true;
     try {
-      if (processManager.gameServer.gameVersion) {
-        await processManager.gameServer.checkTelnet(getConfigFn());
-      }
+      await processManager.gameServer.checkTelnet();
 
       cache = {
         status: {

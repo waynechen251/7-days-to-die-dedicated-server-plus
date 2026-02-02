@@ -199,9 +199,22 @@ const routeContext = {
 // Auth 路由（公開，不需驗證）
 require("./lib/routes/auth")(app, { ...routeContext, auth });
 
-// 對 /api 套用認證 + 許可中間件
-app.use("/api", auth.requireAuth);
-app.use("/api", auth.checkPermission);
+// 對 /api 套用認證 + 許可中間件（排除 SSE 端點）
+app.use("/api", (req, res, next) => {
+  // SSE 端點在內部自行處理認證
+  if (req.path === "/stream") {
+    return next();
+  }
+  auth.requireAuth(req, res, next);
+});
+
+app.use("/api", (req, res, next) => {
+  // SSE 端點跳過權限檢查
+  if (req.path === "/stream") {
+    return next();
+  }
+  auth.checkPermission(req, res, next);
+});
 
 // 應用資訊 API (版本資訊等)
 app.get("/api/app-info", (req, res) => {

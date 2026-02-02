@@ -62,6 +62,8 @@ async function telnetStart(config) {
     reconnectToken = -1;
     await connection.connect(params);
   } catch (err) {
+    console.error(`❌ Telnet 連線嘗試失敗: ${err.message}`);
+    isAlive = false;
     if (connection != null) {
       connection.end().catch(() => {});
     }

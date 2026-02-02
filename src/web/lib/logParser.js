@@ -6,6 +6,10 @@ const reVersion =
 
 const reTelnet = /Started Telnet on\s+(?<port>\d+)/;
 
+const reTelnetError = /Error in Telnet\.ctor: System\.Net\.Sockets\.SocketException/i;
+
+const reStartGameDone = /StartGame done/i;
+
 const reUserData = /UserDataFolder:\s*(?<path>.+)$/i;
 
 function parseServerStatus(line) {
@@ -83,6 +87,10 @@ function detectAndParse(line) {
 
   const t = parseTelnetStarted(line);
   if (t) return { kind: "telnetStarted", data: t };
+
+  if (reTelnetError.test(line)) return { kind: "telnetError", data: line };
+
+  if (reStartGameDone.test(line)) return { kind: "startGameDone", data: line };
 
   const u = parseUserDataFolder(line);
   if (u) return { kind: "userDataFolder", data: u };

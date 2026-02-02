@@ -106,3 +106,28 @@ select {
     gap: 0.5rem;
   }
 }
+
+/* 權限禁用樣式 */
+button:disabled,
+select:disabled,
+input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed !important;
+  filter: grayscale(0.5);
+}
+
+button:disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Viewer 角色提示 */
+.viewer-badge {
+  background: var(--c-warn);
+  color: var(--c-surface);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}

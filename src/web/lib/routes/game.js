@@ -62,6 +62,18 @@ module.exports = function registerGameRoutes(app, ctx) {
     if (processManager.gameServer.isRunning) {
       return http.sendOk(req, res, "❌ 伺服器已經在運行中，請先關閉伺服器再試。");
     }
+
+    // ✅ 新增：系統層級進程檢查 (避免後台重啟後失去追蹤，或手動開啟的情況)
+    const isAlreadyRunning = await processManager.gameServer.isProcessRunning("7DaysToDieServer.exe") || 
+                             await processManager.gameServer.isProcessRunning("7DaysToDie.exe");
+    
+    if (isAlreadyRunning) {
+      const warn = "⚠️ 偵測到遊戲進程已在系統中執行，但目前不受管理後台控制。請先手動關閉該進程，或重新啟動管理後台。";
+      log(warn);
+      eventBus.push("system", { level: "warn", text: warn });
+      return http.sendOk(req, res, `❌ ${warn}`);
+    }
+
     closeDummyGamePort("game-start");
     try {
       processManager.status.resetVersion();
@@ -163,6 +175,16 @@ module.exports = function registerGameRoutes(app, ctx) {
             telnetStart({
               TelnetPort: CONFIG.game_server.TelnetPort,
               TelnetPassword: CONFIG.game_server.TelnetPassword,
+            });
+            break;
+          case "startGameDone":
+            log("✅ 偵測到遊戲啟動完成 (StartGame done)");
+            break;
+          case "telnetError":
+            error(`❌ 遊戲伺服器報告 Telnet 啟動失敗: ${logData.data}`);
+            eventBus.push("system", {
+              level: "error",
+              text: `❌ 遊戲伺服器 Telnet 服務啟動失敗 (SocketException)。這通常是權限不足或端口被佔用。`,
             });
             break;
           case "userDataFolder": {

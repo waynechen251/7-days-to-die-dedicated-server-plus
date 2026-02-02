@@ -386,7 +386,19 @@
     "btnCreate": "建立",
     "btnConfirm": "確認",
     "errUsernameTooShort": "帳戶名稱太短",
-    "errPasswordTooShort": "密碼太短"
+    "errPasswordTooShort": "密碼太短",
+    "loginFailed": "帳戶名稱或密碼錯誤",
+    "errFillAll": "請填寫所有欄位",
+    "errPasswordMismatch": "兩次輸入的密碼不一致",
+    "errSetupFailed": "建立帳戶失敗",
+    "updateFailed": "更新失敗: {error}",
+    "pwdUpdated": "密碼已更新",
+    "confirmDeleteUser": "確認刪除此帳戶？",
+    "deleteFailed": "刪除失敗: {error}",
+    "btnPassword": "密碼",
+    "btnDelete": "刪除",
+    "viewerNoPermission": "觀察者角色無權執行此操作",
+    "operatorNoPermission": "操作員無權執行此操作"
   },
   "update": {
     "newVersion": "新版本可用"

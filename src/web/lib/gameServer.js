@@ -154,6 +154,21 @@ const gameServer = {
   async checkTelnet() {
     this.isTelnetConnected = checkTelnetAlive();
   },
+
+  /**
+   * 檢查系統中是否存在指定名稱的進程
+   * @param {string} exeName 進程名稱 (例如 7DaysToDieServer.exe)
+   * @returns {Promise<boolean>}
+   */
+  async isProcessRunning(exeName) {
+    if (process.platform !== "win32") return false;
+    return new Promise((resolve) => {
+      execFile("tasklist", ["/FI", `IMAGENAME eq ${exeName}`, "/NH"], { windowsHide: true }, (err, stdout) => {
+        if (err) return resolve(false);
+        resolve(stdout.toLowerCase().includes(exeName.toLowerCase()));
+      });
+    });
+  },
 };
 
 module.exports = gameServer;

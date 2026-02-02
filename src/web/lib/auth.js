@@ -257,5 +257,6 @@ module.exports = {
   checkPermission,
   createSession,
   destroySession,
+  getSession,
   SESSION_COOKIE,
 };
