@@ -9,3 +9,4 @@ package-lock.json
 7DTD-DS-P*.exe
 server.exe
 md5.txt
+src/inno-setup/version.iss

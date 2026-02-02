@@ -22,6 +22,24 @@
     D.versionSourceBadge.style.background = sourceColors[source] || "";
   }
 
+  async function loadAppVersion() {
+    try {
+      const result = await fetchJSON("/api/app-info");
+      if (result?.ok && result.version) {
+        const versionEl = document.getElementById("appVersion");
+        if (versionEl) {
+          versionEl.textContent = result.version;
+        }
+
+        // 更新頁面標題
+        document.title = `7DTD-DS-P 管理後台 ${result.version}`;
+      }
+    } catch (err) {
+      console.error("[bootstrap] Failed to load app version:", err);
+      // 載入失敗時保持預設文字
+    }
+  }
+
   async function loadVersions() {
     try {
       const result = await fetchJSON("/api/versions");
@@ -58,7 +76,8 @@
   }
 
   async function initUI() {
-    // Load versions dynamically
+    // Load app version and versions dynamically
+    await loadAppVersion();
     await loadVersions();
 
     try {

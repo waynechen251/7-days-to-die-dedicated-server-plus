@@ -203,6 +203,19 @@ require("./lib/routes/auth")(app, { ...routeContext, auth });
 app.use("/api", auth.requireAuth);
 app.use("/api", auth.checkPermission);
 
+// 應用資訊 API (版本資訊等)
+app.get("/api/app-info", (req, res) => {
+  http.respondJson(
+    res,
+    {
+      ok: true,
+      version: APP_VERSION,
+      name: "7DTD-DS-P",
+    },
+    200
+  );
+});
+
 // 進程管理路由（移至此處，確保受認證保護）
 processManager.registerRoutes(app, {
   eventBus,
