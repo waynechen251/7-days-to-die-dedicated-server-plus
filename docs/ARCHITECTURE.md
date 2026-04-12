@@ -1,6 +1,6 @@
 # 架構文檔 - 7DTD Dedicated Server Plus
 
-本文檔描述專案的整體架構，供 Claude 和 Gemini 作為共享知識庫使用。
+本文檔描述專案的整體架構，供本專案的 AI Agent 作為共享知識庫使用。
 
 ---
 
@@ -100,16 +100,16 @@
 │               ├── en.json         # 英文
 │               └── zh-CN.json      # 簡體中文
 ├── docs/
-│   ├── plans/                      # 執行計畫文件
+│   ├── plans/                      # 歷史 / 參考草稿（非標準流程）
 │   ├── images/                     # 文檔圖片
 │   ├── install.md                  # 安裝指南 (繁中)
 │   ├── install.en.md               # 安裝指南 (英文)
 │   └── ARCHITECTURE.md             # 本文檔
-├── CLAUDE.md                       # Claude 角色定義
-├── GEMINI.md                       # Gemini 角色定義
+├── .agents/                        # 專案知識 Agent 定義
+│   └── project-knowledge.agent.md  # 專案知識與限制摘要
+├── AGENTS.md                       # 專案共用 Agent 指南
 ├── CONTRIBUTING.md                 # 貢獻指南
 ├── .editorconfig                   # 編輯器配置
-├── .cursorrules                    # Cursor AI 規則
 ├── readme.md                       # 專案說明 (繁中)
 ├── readme.en.md                    # 專案說明 (英文)
 ├── package.json                    # Node.js 依賴

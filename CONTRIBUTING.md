@@ -34,7 +34,7 @@ src/web/           # 主要程式碼
 ├── lib/           # 後端模組
 └── public/        # 前端資源
 docs/              # 文檔
-├── plans/         # 執行計畫
+├── plans/         # 歷史 / 參考草稿（非標準流程）
 └── ARCHITECTURE.md
 ```
 
