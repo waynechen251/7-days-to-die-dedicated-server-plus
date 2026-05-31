@@ -4,6 +4,8 @@ const killTree = require("tree-kill");
 const { log, error } = require("./logger");
 const { checkTelnetAlive } = require("./telnet");
 
+const GAME_SERVER_EXE = "7DaysToDieServer.exe";
+
 const gameServer = {
   child: null,
   isRunning: false,
@@ -12,10 +14,10 @@ const gameServer = {
   lastPid: null,
   start(args, gameServerPath, options = {}) {
     if (this.isRunning) throw new Error("遊戲伺服器已經在運行中");
-    const { exeName = "7DaysToDieServer.exe", onExit, onError } = options;
+    const { onExit, onError } = options;
 
     this.basePath = gameServerPath;
-    const exePath = path.join(gameServerPath, exeName);
+    const exePath = path.join(gameServerPath, GAME_SERVER_EXE);
 
     log(
       `🚀 啟動遊戲伺服器: exe=${exePath}, cwd=${gameServerPath}, args=${JSON.stringify(
@@ -156,16 +158,15 @@ const gameServer = {
   },
 
   /**
-   * 檢查系統中是否存在指定名稱的進程
-   * @param {string} exeName 進程名稱 (例如 7DaysToDieServer.exe)
+   * 檢查系統中是否存在遊戲伺服器進程
    * @returns {Promise<boolean>}
    */
-  async isProcessRunning(exeName) {
+  async isProcessRunning() {
     if (process.platform !== "win32") return false;
     return new Promise((resolve) => {
-      execFile("tasklist", ["/FI", `IMAGENAME eq ${exeName}`, "/NH"], { windowsHide: true }, (err, stdout) => {
+      execFile("tasklist", ["/FI", `IMAGENAME eq ${GAME_SERVER_EXE}`, "/NH"], { windowsHide: true }, (err, stdout) => {
         if (err) return resolve(false);
-        resolve(stdout.toLowerCase().includes(exeName.toLowerCase()));
+        resolve(stdout.toLowerCase().includes(GAME_SERVER_EXE.toLowerCase()));
       });
     });
   },

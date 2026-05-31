@@ -2,6 +2,8 @@ const path = require("path");
 const fs = require("fs");
 const { format } = require("../time");
 
+const GAME_SERVER_EXE = "7DaysToDieServer.exe";
+
 function ensureDir(p) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 }
@@ -64,9 +66,8 @@ module.exports = function registerGameRoutes(app, ctx) {
     }
 
     // ✅ 新增：系統層級進程檢查 (避免後台重啟後失去追蹤，或手動開啟的情況)
-    const isAlreadyRunning = await processManager.gameServer.isProcessRunning("7DaysToDieServer.exe") || 
-                             await processManager.gameServer.isProcessRunning("7DaysToDie.exe");
-    
+    const isAlreadyRunning = await processManager.gameServer.isProcessRunning();
+
     if (isAlreadyRunning) {
       const warn = "⚠️ 偵測到遊戲進程已在系統中執行，但目前不受管理後台控制。請先手動關閉該進程，或重新啟動管理後台。";
       log(warn);
@@ -77,19 +78,14 @@ module.exports = function registerGameRoutes(app, ctx) {
     closeDummyGamePort("game-start");
     try {
       processManager.status.resetVersion();
-      const exeName = fs.existsSync(path.join(GAME_DIR, "7DaysToDieServer.exe"))
-        ? "7DaysToDieServer.exe"
-        : "7DaysToDie.exe";
-
-      const exePath = path.join(GAME_DIR, exeName);
+      const exePath = path.join(GAME_DIR, GAME_SERVER_EXE);
       if (!fs.existsSync(exePath)) {
         const msg = `❌ 找不到執行檔: ${exePath}\n請先執行安裝 / 更新，或確認路徑為 {app}\\7daystodieserver\\7DaysToDieServer.exe`;
         error(msg);
         return http.sendErr(req, res, msg);
       }
 
-      const logPrefix =
-        exeName === "7DaysToDieServer.exe" ? "output_log_dedi" : "output_log";
+      const logPrefix = "output_log_dedi";
       const logFileName = `${logPrefix}__${format(
         new Date(),
         "YYYY-MM-DD__HH-mm-ss"
@@ -131,7 +127,6 @@ module.exports = function registerGameRoutes(app, ctx) {
       ];
 
       processManager.gameServer.start(args, GAME_DIR, {
-        exeName,
         onExit: (code, signal) => {
           eventBus.push("system", {
             text: `遊戲進程結束 (code=${code}, signal=${signal || "-"})`,

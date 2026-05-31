@@ -60,8 +60,8 @@ const processManager = {
     async checkTelnet() {
       return await gameServer.checkTelnet();
     },
-    async isProcessRunning(exeName) {
-      return await gameServer.isProcessRunning(exeName);
+    async isProcessRunning() {
+      return await gameServer.isProcessRunning();
     },
   },
 };
