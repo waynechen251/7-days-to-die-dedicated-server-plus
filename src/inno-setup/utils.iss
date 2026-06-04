@@ -15,7 +15,7 @@ begin
   for I := Low(Ports) to High(Ports) do
   begin
 
-    Params := 'netstat -aon | findstr /R /C:":' + Ports[I] + ' " | findstr /R /C:"^  TCP    [0-9\.\:]*:' + Ports[I] + ' " /C:"^  TCP    \[::\]:' + Ports[I] + ' " /C:"^ TCP 127.0.0.1:' + Ports[I] + ' "';
+    Params := 'netstat -aon | findstr /R /C:":' + Ports[I] + ' " | findstr /V "TIME_WAIT" | findstr /R /C:"^  TCP    [0-9\.\:]*:' + Ports[I] + ' " /C:"^  TCP    \[::\]:' + Ports[I] + ' " /C:"^ TCP 127.0.0.1:' + Ports[I] + ' "';
     Log('Params: cmd.exe ' + Params);
     ShellExec('runas', 'cmd.exe', '/C ' + Params, '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     if ResultCode = 0 then
