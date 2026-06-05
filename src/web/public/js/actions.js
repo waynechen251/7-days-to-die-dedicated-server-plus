@@ -91,10 +91,9 @@
     });
 
     on(D.stopServerBtn, "click", async () => {
-      switchTab("system");
       try {
         appendLog(
-          "system",
+          "game",
           await fetchText("/api/stop", { method: "POST" }),
           Date.now()
         );
@@ -104,10 +103,9 @@
     });
 
     on(D.killServerBtn, "click", async () => {
-      switchTab("system");
       try {
         appendLog(
-          "system",
+          "game",
           await fetchText("/api/processManager/game_server/kill", { method: "POST" }),
           Date.now()
         );

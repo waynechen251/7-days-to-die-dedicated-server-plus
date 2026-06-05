@@ -1001,13 +1001,13 @@
       }
       closeCfgModal();
       if (startAfter) {
-        App.console.switchTab("system");
         const msg = await fetchText("/api/start", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nographics: false }),
         });
         App.console.appendLog("system", msg, Date.now());
+        App.console.switchTab("game");
       }
     } catch (e) {
       App.console.appendLog(

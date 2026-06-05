@@ -136,9 +136,16 @@ module.exports = function registerGameRoutes(app, ctx) {
 
       processManager.gameServer.start(args, GAME_DIR, {
         onExit: (code, signal) => {
-          eventBus.push("system", {
+          eventBus.push("game", {
             text: `遊戲進程結束 (code=${code}, signal=${signal || "-"})`,
           });
+          const stopGameTail = getStopGameTail();
+          if (stopGameTail) {
+            try {
+              stopGameTail();
+            } catch (_) {}
+          }
+          setStopGameTail(null);
           processManager.status.resetVersion();
           // best-effort 防火牆規則移除
           if (firewall && getConfig().firewall?.removeOnStop !== false) {
@@ -239,15 +246,9 @@ module.exports = function registerGameRoutes(app, ctx) {
   app.post("/api/stop", async (req, res) => {
     try {
       const result = await sendTelnetCommand("shutdown");
-      const stopGameTail = getStopGameTail();
-      if (stopGameTail)
-        try {
-          stopGameTail();
-        } catch (_) {}
-      setStopGameTail(null);
       const line = `✅ 關閉伺服器指令已發送`;
       log(`${line}: ${result}`);
-      eventBus.push("system", { text: line });
+      eventBus.push("game", { text: line });
       http.sendOk(req, res, `${line}:\n${result}`);
     } catch (err) {
       const msg = `❌ 關閉伺服器失敗: ${err.message}`;
