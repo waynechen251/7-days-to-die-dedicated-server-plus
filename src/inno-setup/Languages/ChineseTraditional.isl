@@ -9,7 +9,7 @@
 ; two periods being displayed).
 
 [LangOptions]
-; The following three entries are very important. Be sure to read and 
+; The following three entries are very important. Be sure to read and
 ; understand the '[LangOptions] section' topic in the help file.
 LanguageName=<7e41><9ad4><4e2d><6587>
 LanguageID=$0404
@@ -253,7 +253,7 @@ RunEntryExec=執行 %1
 ; used for example as 'View Readme.txt'
 RunEntryShellExec=檢視 %1
 
-; *** "Setup Needs the Next Disk" 
+; *** "Setup Needs the Next Disk"
 ChangeDiskTitle=安裝程式需要下一張磁片
 SelectDiskLabel2=請插入磁片 %1，然後按 「確定」。%n%n如果檔案不在以下所顯示的資料夾之中，請輸入正確的資料夾名稱或按 [瀏覽] 選取。
 PathLabel=路徑(&P):
@@ -386,6 +386,8 @@ ConfigPageTitle=配置頁面
 ConfigPageDescription=請在下面的欄位中輸入配置資訊。
 WebPort=管理後台通訊埠
 WebPortEmpty=管理後台通訊埠不能為空。
+OpenFirewallCheckbox=開啟後台管理埠防火牆
+OpenFirewallCheckboxDesc=安裝時自動建立 Windows 防火牆規則，允許外部連線存取後台管理埠。
 portIsUsed=通訊埠已被占用。
 IpEmpty=IP 地址不能為空。
 IpInvalid=IP 地址無效。

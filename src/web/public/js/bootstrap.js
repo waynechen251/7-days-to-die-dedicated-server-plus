@@ -121,6 +121,7 @@
     }
     restoreUnreadBadges();
     App.saves.loadSaves();
+    App.firewall?.refresh();
   }
 
   function setState(s) {

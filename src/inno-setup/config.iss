@@ -5,6 +5,7 @@ var
   ConfigPageID: Integer;
 
   WebPortInput: TEdit;
+  OpenFirewallCheckBox: TCheckBox;
 
 procedure CreateConfigPage;
 var
@@ -30,6 +31,14 @@ begin
   RegQueryStringValue(HKLM, 'Software\7DTD-DS-P', 'WebPort', REG_WebPort);
   if REG_WebPort = '' then REG_WebPort := '26901';
   WebPortInput := CreateInputNumber(ConfigPage.Surface, REG_WebPort, _Top, _Left);
+
+  _Top := _Top + 36;
+
+  OpenFirewallCheckBox := CreateCheckBox(ConfigPage.Surface, ExpandConstant('{cm:OpenFirewallCheckbox}'), _Top, _Left, True);
+
+  _Top := _Top + 20;
+
+  CreateLabel(ConfigPage.Surface, ExpandConstant('{cm:OpenFirewallCheckboxDesc}'), _Top, _Left + 18);
 
   _Top := _Top + 30;
 

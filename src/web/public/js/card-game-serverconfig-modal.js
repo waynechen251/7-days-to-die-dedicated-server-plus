@@ -955,7 +955,7 @@
     }
 
     try {
-      const needPreview = changed > 0 || toggleChanged > 0 || startAfter;
+      const needPreview = changed > 0 || toggleChanged > 0;
       if (needPreview) {
         const summary = buildChangeSummary({
           updates,

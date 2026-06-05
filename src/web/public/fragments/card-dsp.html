@@ -16,4 +16,126 @@
     </div>
     <div id="usersList" class="users-list"></div>
   </div>
+
+  <!-- 防火牆管理 子區塊 -->
+  <div id="firewallSection" style="margin-top: 1rem; border-top: 1px solid var(--c-border, #333); padding-top: 1rem;">
+    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+      <h3 style="margin: 0; font-size: 1rem;" data-i18n="card.firewall.title">🛡 動態防火牆管理</h3>
+    </div>
+
+    <div style="border: 1px solid var(--c-border, #333); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem;">
+      <span class="field__label" data-i18n="card.firewall.summaryLabel">目前狀態摘要</span>
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem; margin-top: 0.35rem; flex-wrap: wrap;">
+        <div style="min-width: 220px; flex: 1 1 240px;">
+          <div id="fw-status-summary" style="font-size: 0.95rem; font-weight: 600;">載入中...</div>
+          <div id="fw-status-detail" style="font-size: 0.8rem; color: var(--c-muted, #888); margin-top: 0.3rem;"></div>
+        </div>
+        <span id="fw-status-badge" class="badge" data-i18n="card.firewall.statusUnknown">狀態未知</span>
+      </div>
+      <div id="fw-summary-counts" class="row" style="gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap;">
+        <span id="fw-summary-desired" class="badge"></span>
+        <span id="fw-summary-actual" class="badge"></span>
+        <span id="fw-summary-pending" class="badge"></span>
+        <span id="fw-summary-unexpected" class="badge"></span>
+      </div>
+
+      <div id="fw-elevation-warn" class="hidden" style="background: var(--c-err, #c00); color: #fff; border-radius: 4px; padding: 0.5rem 0.75rem; margin-top: 0.65rem; font-size: 0.875rem;">
+        <span data-i18n="card.firewall.noElevation">⚠️ 此功能需以系統管理員權限執行。生產環境請以服務（LocalSystem）執行，開發環境請以系統管理員身分啟動 Node.js。</span>
+      </div>
+
+      <div id="fw-platform-warn" class="hidden" style="background: var(--c-warn, #a80); color: #fff; border-radius: 4px; padding: 0.5rem 0.75rem; margin-top: 0.65rem; font-size: 0.875rem;">
+        <span data-i18n="card.firewall.notWindows">⚠️ 動態防火牆管理僅支援 Windows 平台。</span>
+      </div>
+    </div>
+
+    <div style="border: 1px solid var(--c-border, #333); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem;">
+      <span class="field__label" data-i18n="card.firewall.policyLabel">自動化策略</span>
+      <div class="row" style="flex-wrap: wrap; gap: 0.75rem 1.5rem; align-items: flex-start; margin-top: 0.35rem;">
+        <div>
+          <label class="field" style="flex-direction: row; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 2px;">
+            <input type="checkbox" id="fw-toggle-auto-manage" />
+            <span data-i18n="card.firewall.autoManage">遊戲伺服器啟動時自動套用規則</span>
+          </label>
+          <div style="font-size: 0.75rem; color: var(--c-muted, #888); margin-left: 22px;" data-i18n="card.firewall.autoManageHint">每次啟動遊戲伺服器時，自動執行「立即套用規則」</div>
+        </div>
+        <div>
+          <label class="field" style="flex-direction: row; align-items: center; gap: 0.5rem; cursor: pointer; margin-bottom: 2px;">
+            <input type="checkbox" id="fw-toggle-remove-on-stop" />
+            <span data-i18n="card.firewall.removeOnStop">遊戲伺服器停止時自動移除規則</span>
+          </label>
+          <div style="font-size: 0.75rem; color: var(--c-muted, #888); margin-left: 22px;" data-i18n="card.firewall.removeOnStopHint">遊戲伺服器停止後，只自動移除遊戲用規則，不移除管理用規則</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="border: 1px solid var(--c-border, #333); border-radius: 8px; padding: 0.75rem; margin-bottom: 0.75rem;">
+      <span class="field__label" data-i18n="card.firewall.accessLabel">開放範圍</span>
+      <div class="row" style="flex-wrap: wrap; gap: 1rem; margin-top: 0.35rem;">
+        <label class="field" style="flex-direction: row; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" id="fw-toggle-game-ports" />
+          <span data-i18n="card.firewall.openGamePorts">遊戲用埠（ServerPort TCP+UDP）</span>
+        </label>
+      </div>
+      <div style="margin-top: 0.45rem;">
+        <label class="field" style="flex-direction: row; align-items: center; gap: 0.5rem; cursor: pointer;">
+          <input type="checkbox" id="fw-toggle-mgmt-ports" />
+          <span data-i18n="card.firewall.openMgmtPorts">管理用埠（後台/Telnet/WebDashboard TCP）</span>
+        </label>
+        <div id="fw-mgmt-local-only" class="hidden" style="font-size: 0.75rem; color: var(--c-warn, #a87000); margin-left: 22px; margin-top: 0.2rem;" data-i18n="card.firewall.mgmtPortsLocalOnlyReason">管理用埠設定僅允許從 localhost 修改，避免遠端連線被自己關掉。</div>
+      </div>
+    </div>
+
+    <div style="border: 1px solid var(--c-border, #333); border-radius: 8px; padding: 0.75rem;">
+      <span class="field__label" data-i18n="card.firewall.manualLabel">手動操作與詳細規則</span>
+      <div class="row" style="margin-top: 0.35rem;">
+        <button id="fw-apply-btn" data-i18n="card.firewall.applyBtn">🛡 立即套用規則</button>
+        <button
+          id="fw-remove-btn"
+          data-i18n="card.firewall.removeBtn"
+          data-danger-i18n="confirm.removeFirewallRules"
+          data-cancel-i18n="common.cancel"
+          data-continue-i18n="common.confirm"
+        >
+          🗑 移除所有規則
+        </button>
+        <button id="fw-refresh-btn" data-i18n="card.firewall.refreshBtn">🔄 重新整理</button>
+      </div>
+
+      <div id="fw-action-feedback" class="hidden" style="border-radius: 4px; padding: 0.5rem 0.75rem; margin-top: 0.65rem; font-size: 0.875rem;"></div>
+
+      <div id="fw-rules-section" style="margin-top: 0.75rem;">
+        <span class="field__label" data-i18n="card.firewall.rulesLabel">目前納入管理的規則</span>
+        <div id="fw-rules-empty" class="hidden" style="color: var(--c-muted, #888); font-size: 0.875rem; padding: 0.25rem 0;" data-i18n="card.firewall.rulesEmpty">（目前無規則）</div>
+        <table id="fw-rules-table" style="width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 0.25rem;" class="hidden">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--c-border, #333);">
+              <th style="text-align: left; padding: 2px 6px;" data-i18n="card.firewall.col.status">狀態</th>
+              <th style="text-align: left; padding: 2px 6px;" data-i18n="card.firewall.col.group">群組</th>
+              <th style="text-align: left; padding: 2px 6px;" data-i18n="card.firewall.col.port">埠</th>
+              <th style="text-align: left; padding: 2px 6px;" data-i18n="card.firewall.col.protocol">協定</th>
+              <th style="text-align: left; padding: 2px 6px;" data-i18n="card.firewall.col.name">規則名稱</th>
+            </tr>
+          </thead>
+          <tbody id="fw-rules-tbody"></tbody>
+        </table>
+      </div>
+
+      <details id="fw-all-rules-details" class="hidden" style="margin-top: 0.75rem;">
+        <summary id="fw-all-rules-summary" style="cursor: pointer; color: var(--c-link, #6aa9ff);" data-i18n="card.firewall.allRulesSummary">顯示全部候選規則</summary>
+        <div id="fw-all-rules-empty" class="hidden" style="color: var(--c-muted, #888); font-size: 0.875rem; padding: 0.35rem 0;" data-i18n="card.firewall.rulesEmpty">（目前無規則）</div>
+        <table id="fw-all-rules-table" style="width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 0.4rem;" class="hidden">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--c-border, #333);">
+              <th style="text-align: left; padding: 2px 6px;" data-i18n="card.firewall.col.status">狀態</th>
+              <th style="text-align: left; padding: 2px 6px;" data-i18n="card.firewall.col.group">群組</th>
+              <th style="text-align: left; padding: 2px 6px;" data-i18n="card.firewall.col.port">埠</th>
+              <th style="text-align: left; padding: 2px 6px;" data-i18n="card.firewall.col.protocol">協定</th>
+              <th style="text-align: left; padding: 2px 6px;" data-i18n="card.firewall.col.name">規則名稱</th>
+            </tr>
+          </thead>
+          <tbody id="fw-all-rules-tbody"></tbody>
+        </table>
+      </details>
+    </div>
+  </div>
 </section>

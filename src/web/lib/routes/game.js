@@ -57,6 +57,7 @@ module.exports = function registerGameRoutes(app, ctx) {
     error,
     getStopGameTail,
     setStopGameTail,
+    firewall,
   } = ctx;
 
   app.post("/api/start", async (req, res) => {
@@ -114,6 +115,13 @@ module.exports = function registerGameRoutes(app, ctx) {
         saveConfig,
       });
 
+      // best-effort 防火牆規則套用（不阻斷伺服器啟動）
+      if (firewall && CONFIG.firewall?.autoManage !== false) {
+        firewall.applyRules(CONFIG, { log, error, eventBus, saveConfig }).catch((err) => {
+          eventBus.push("system", { level: "warn", text: `⚠️ 防火牆套用失敗: ${err?.message || err}` });
+        });
+      }
+
       const nographics = req.body?.nographics ?? true;
       const args = [
         "-logfile",
@@ -132,6 +140,18 @@ module.exports = function registerGameRoutes(app, ctx) {
             text: `遊戲進程結束 (code=${code}, signal=${signal || "-"})`,
           });
           processManager.status.resetVersion();
+          // best-effort 防火牆規則移除
+          if (firewall && getConfig().firewall?.removeOnStop !== false) {
+            firewall.removeRules(getConfig(), {
+              log,
+              error,
+              eventBus,
+              saveConfig,
+              allowManagementMutations: false,
+            }).catch((err) => {
+              eventBus.push("system", { level: "warn", text: `⚠️ 防火牆規則移除失敗: ${err?.message || err}` });
+            });
+          }
         },
         onError: (err) => {
           eventBus.push("system", {

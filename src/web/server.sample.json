@@ -5,5 +5,13 @@
   "web": {
     "port": 26901,
     "installUser": "<USER>"
+  },
+  "firewall": {
+    "autoManage": true,
+    "removeOnStop": true,
+    "openGamePorts": true,
+    "openManagementPorts": false,
+    "rulePrefix": "7DTD-DS-P-",
+    "appliedRules": []
   }
 }

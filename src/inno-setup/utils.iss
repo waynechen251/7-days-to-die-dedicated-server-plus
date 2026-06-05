@@ -33,7 +33,7 @@ begin
 
 end;
 
-// 添加防火牆規則
+// 添加防火牆規則（profile=any，適用所有網路類型）
 procedure AddPortsInFirewall(const RuleName: string; const Ports: string);
 var
   ResultCode: Integer;
@@ -42,8 +42,27 @@ begin
   // 刪除現有的防火牆規則
   Exec(ExpandConstant('{sys}\netsh.exe'), 'advfirewall firewall delete rule name="' + RuleName + '"', ExpandConstant('{sys}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
 
-  // 添加新的防火牆規則，包含所有端口
-  Exec(ExpandConstant('{sys}\netsh.exe'), 'advfirewall firewall add rule name="' + RuleName + '" dir=in protocol=tcp action=allow localport=' + Ports, ExpandConstant('{sys}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+  // 添加新的防火牆規則（profile=any 確保 Public/Private/Domain 網路皆生效）
+  Exec(ExpandConstant('{sys}\netsh.exe'), 'advfirewall firewall add rule name="' + RuleName + '" dir=in protocol=tcp action=allow localport=' + Ports + ' profile=any', ExpandConstant('{sys}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+end;
+
+// 添加後台管理埠防火牆規則（命名與 Node.js 動態管理一致）
+procedure AddMgmtBackendFirewallRule(const Port: string);
+var
+  ResultCode: Integer;
+  RuleName: String;
+begin
+
+  RuleName := '7DTD-DS-P-mgmt-Backend-' + Port + '-TCP';
+
+  // 刪除現有規則（idempotent）
+  Exec(ExpandConstant('{sys}\netsh.exe'), 'advfirewall firewall delete rule name="' + RuleName + '"', ExpandConstant('{sys}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  // 建立新規則：TCP、profile=any（Public/Private/Domain 皆生效）
+  Exec(ExpandConstant('{sys}\netsh.exe'), 'advfirewall firewall add rule name="' + RuleName + '" dir=in protocol=tcp action=allow localport=' + Port + ' profile=any enable=yes', ExpandConstant('{sys}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+  Log('AddMgmtBackendFirewallRule: ' + RuleName + ' port=' + Port + ' ResultCode=' + IntToStr(ResultCode));
 
 end;
 
@@ -139,6 +158,24 @@ begin
   _Input.Width := 200;
   
   Result := _Input;
+
+end;
+
+// 輔助函數來創建核選框控件
+function CreateCheckBox(_Parent: TWinControl; const _Caption: String; const _Top: Integer; const _Left: Integer; _Checked: Boolean): TCheckBox;
+var
+  _CheckBox: TCheckBox;
+begin
+
+  _CheckBox := TCheckBox.Create(WizardForm);
+  _CheckBox.Parent := _Parent;
+  _CheckBox.Top := _Top;
+  _CheckBox.Left := _Left;
+  _CheckBox.Caption := _Caption;
+  _CheckBox.Width := 350;
+  _CheckBox.Checked := _Checked;
+
+  Result := _CheckBox;
 
 end;
 

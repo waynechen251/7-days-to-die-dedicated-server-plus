@@ -63,6 +63,17 @@
 
       deleteBackupBtn: document.getElementById("deleteBackupBtn"),
       updateBadge: $("updateBadge"),
+
+      fwStatusBadge: $("fw-status-badge"),
+      fwApplyBtn: $("fw-apply-btn"),
+      fwRemoveBtn: $("fw-remove-btn"),
+      fwRefreshBtn: $("fw-refresh-btn"),
+      fwToggleAutoManage: $("fw-toggle-auto-manage"),
+      fwToggleRemoveOnStop: $("fw-toggle-remove-on-stop"),
+      fwToggleGamePorts: $("fw-toggle-game-ports"),
+      fwToggleMgmtPorts: $("fw-toggle-mgmt-ports"),
+      fwElevationWarn: $("fw-elevation-warn"),
+      fwPlatformWarn: $("fw-platform-warn"),
     };
   }
 
