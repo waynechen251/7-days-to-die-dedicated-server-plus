@@ -198,10 +198,19 @@
       "deleteBackupTitle": "刪除所選備份檔",
       "importUpload": "匯入 (自行上傳 ZIP 結構可參考匯出之 ZIP 檔)",
       "selectZip": "選擇 ZIP",
-      "uploadAndImport": "上傳並匯入"
+      "uploadAndImport": "上傳並匯入",
+      "openManageBtn": "📂 開啟存檔管理",
+      "sumWorlds": "世界",
+      "sumSaves": "存檔",
+      "sumBackups": "備份",
+      "noSaves": "(尚無存檔)"
     }
   },
   "modal": {
+    "saves": {
+      "title": "存檔管理",
+      "ariaLabel": "存檔管理"
+    },
     "firewall": {
       "title": "防火牆進階設定與規則明細",
       "ariaLabel": "防火牆進階設定"

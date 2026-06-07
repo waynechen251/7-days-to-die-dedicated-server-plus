@@ -1,5 +1,6 @@
-.github-link {
-  color: #60a5fa;
+/* 1. 合併 GitHub 與 巴哈姆特的共同樣式 */
+.github-link,
+.gamer-link {
   text-decoration: none;
   font-weight: 600;
   display: inline-flex;
@@ -9,11 +10,30 @@
   border-radius: var(--radius-s);
   transition: 0.15s background;
 }
-.github-link:hover {
+
+.github-link {
+  color: #60a5fa;
+}
+
+.gamer-link {
+  color: #fbbf24;
+}
+
+.github-link:hover,
+.gamer-link:hover {
   background: rgba(255, 255, 255, 0.08);
 }
+
+.github-link__img,
+.gamer-link__img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
 @media (max-width: 720px) {
-  .github-link {
+  .github-link,
+  .gamer-link {
     padding: var(--space-1) var(--space-2);
     font-size: 0.8rem;
     flex-shrink: 0;

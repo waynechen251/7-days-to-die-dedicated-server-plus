@@ -198,10 +198,19 @@
       "deleteBackupTitle": "Delete selected backup",
       "importUpload": "Import (Upload ZIP - refer to exported ZIP for structure)",
       "selectZip": "Select ZIP",
-      "uploadAndImport": "Upload & Import"
+      "uploadAndImport": "Upload & Import",
+      "openManageBtn": "📂 Open Save Management",
+      "sumWorlds": "Worlds",
+      "sumSaves": "Saves",
+      "sumBackups": "Backups",
+      "noSaves": "(no saves)"
     }
   },
   "modal": {
+    "saves": {
+      "title": "Save Management",
+      "ariaLabel": "Save Management"
+    },
     "firewall": {
       "title": "Firewall Advanced Settings & Rule Details",
       "ariaLabel": "Firewall Advanced Settings"

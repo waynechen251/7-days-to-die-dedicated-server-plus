@@ -198,10 +198,19 @@
       "deleteBackupTitle": "删除所选备份文件",
       "importUpload": "导入 (自行上传 ZIP 结构可参考导出之 ZIP 文件)",
       "selectZip": "选择 ZIP",
-      "uploadAndImport": "上传并导入"
+      "uploadAndImport": "上传并导入",
+      "openManageBtn": "📂 打开存档管理",
+      "sumWorlds": "世界",
+      "sumSaves": "存档",
+      "sumBackups": "备份",
+      "noSaves": "(暂无存档)"
     }
   },
   "modal": {
+    "saves": {
+      "title": "存档管理",
+      "ariaLabel": "存档管理"
+    },
     "firewall": {
       "title": "防火墙高级设置与规则明细",
       "ariaLabel": "防火墙高级设置"
