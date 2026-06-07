@@ -112,7 +112,8 @@
       "applyBtn": "🛡 Sync All Rules",
       "removeBtn": "🗑 Remove All Rules",
       "refreshBtn": "🔄 Refresh",
-      "rulesLabel": "Rules Currently Managed",
+      "advancedBtn": "⚙️ Advanced Settings & Rule Details",
+      "rulesLabel":"Rules Currently Managed",
       "rulesManagedHint": "The default view shows only day-to-day decision data; raw names stay in the advanced section.",
       "rulesEmpty": "(No rules)",
       "advancedSummary": "Show advanced rules and raw names",
@@ -201,6 +202,10 @@
     }
   },
   "modal": {
+    "firewall": {
+      "title": "Firewall Advanced Settings & Rule Details",
+      "ariaLabel": "Firewall Advanced Settings"
+    },
     "dspConfig": {
       "title": "Admin Config (server.json)",
       "ariaLabel": "Admin configuration file",

@@ -613,7 +613,7 @@
     w.addEventListener("i18n:changed", refresh);
   }
 
-  App.firewall = { refresh, init };
+  App.firewall = { refresh, init, bindAdvancedControls: bindEvents };
 
   if (w.__fragmentsReady) {
     init();

@@ -112,6 +112,7 @@
       "applyBtn": "🛡 同步所有规则",
       "removeBtn": "🗑 移除所有规则",
       "refreshBtn": "🔄 刷新",
+      "advancedBtn": "⚙️ 高级设置与规则明细",
       "rulesLabel": "当前纳入管理的规则",
       "rulesManagedHint": "默认只显示日常判断需要的信息；原始名称请在进阶区查看。",
       "rulesEmpty": "（暂无规则）",
@@ -201,6 +202,10 @@
     }
   },
   "modal": {
+    "firewall": {
+      "title": "防火墙高级设置与规则明细",
+      "ariaLabel": "防火墙高级设置"
+    },
     "dspConfig": {
       "title": "管理后台设置 (server.json)",
       "ariaLabel": "管理后台设置文件",

@@ -112,6 +112,7 @@
       "applyBtn": "🛡 同步所有規則",
       "removeBtn": "🗑 移除所有規則",
       "refreshBtn": "🔄 重新整理",
+      "advancedBtn": "⚙️ 進階設定與規則明細",
       "rulesLabel": "目前納入管理的規則",
       "rulesManagedHint": "預設只顯示日常判讀需要的資訊；原始名稱在進階區查看。",
       "rulesEmpty": "（目前無規則）",
@@ -201,6 +202,10 @@
     }
   },
   "modal": {
+    "firewall": {
+      "title": "防火牆進階設定與規則明細",
+      "ariaLabel": "防火牆進階設定"
+    },
     "dspConfig": {
       "title": "管理後台設定 (server.json)",
       "ariaLabel": "管理後台設定檔",
