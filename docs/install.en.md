@@ -147,7 +147,15 @@
 ## Firewall and Connection
 
 - To allow external players to join your server, please open the following in Windows Firewall/router:
-  - `ServerPort` (Game connection)
+  - `ServerPort/TCP`
+  - `ServerPort/UDP`
+  - `ServerPort+1/UDP`
+  - `ServerPort+2/UDP`
+  - `ServerPort+3/UDP` (recommended for current public/crossplay setups)
+- If remote management features are enabled, also open:
+  - `TelnetPort/TCP`
+  - `WebDashboardPort/TCP` or `ControlPanelPort/TCP`
+- By default the admin panel uses `26901/TCP`, while the game derives `26901/UDP`; these can coexist because they use different protocols.
 - The specific port values should be based on your `serverconfig.xml`.
 
 ---
@@ -216,7 +224,8 @@ SteamCMD itself may output logs slowly; if the SteamCMD status in the management
 
 ### Players Cannot Connect to the Server
 
-1. Confirm Windows Firewall has opened `ServerPort` (default 26900)
+1. Confirm Windows Firewall has opened `ServerPort` through `ServerPort+3`
+   - By default this means `26900/TCP+UDP`, `26901/UDP`, `26902/UDP`, and `26903/UDP`
 2. If using a router, ensure port forwarding is configured
 3. Confirm the server has fully started
 4. Players should use the correct IP and Port when connecting
@@ -231,6 +240,7 @@ SteamCMD itself may output logs slowly; if the SteamCMD status in the management
 | ---------------------- | ------- | ------------------------------ |
 | `ServerName`           | -       | Server name                    |
 | `ServerPort`           | 26900   | Game connection port           |
+| `ControlPanelPort`     | 8080    | Web control panel port (if enabled) |
 | `ServerMaxPlayerCount` | 8       | Maximum number of players      |
 | `GameWorld`            | -       | Map name                       |
 | `GameName`             | -       | Save name                      |

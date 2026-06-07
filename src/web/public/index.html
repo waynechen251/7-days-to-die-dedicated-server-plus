@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/buttons.css" />
     <link rel="stylesheet" href="css/forms.css" />
     <link rel="stylesheet" href="css/cards.css" />
+    <link rel="stylesheet" href="css/card-firewall.css" />
     <link rel="stylesheet" href="css/console.css" />
     <link rel="stylesheet" href="css/modal.css" />
     <link rel="stylesheet" href="css/mask.css" />
@@ -120,13 +121,16 @@
         <main class="grid">
 
           <!-- 管理後台 卡片 -->
-          <div id="card-dsp" data-fragment="card-dsp"></div>
+          <div id="card-dsp" data-fragment="card-dsp" data-card-id="dsp"></div>
+
+          <!-- 動態防火牆 卡片 -->
+          <div id="card-firewall" data-fragment="card-firewall" data-card-id="firewall"></div>
 
           <!-- 7DaysToDieServer 卡片 -->
-          <div id="card-game" data-fragment="card-game"></div>
+          <div id="card-game" data-fragment="card-game" data-card-id="game"></div>
 
           <!-- 存檔管理 卡片 -->
-          <div id="card-saves" data-fragment="card-saves"></div>
+          <div id="card-saves" data-fragment="card-saves" data-card-id="saves"></div>
 
         </main>
       </div>
@@ -143,8 +147,20 @@
               <button data-tab="telnet" data-i18n="console.tabTelnet">Telnet</button>
               <button data-tab="backup" data-i18n="console.tabBackup">存檔管理</button>
             </div>
+            <div class="console-bar__spacer"></div>
+            <button
+              id="consoleCollapseBtn"
+              class="console-collapse-btn"
+              type="button"
+              title="收合"
+              aria-controls="consolePanes"
+              aria-expanded="true"
+            >
+              <span id="consoleCollapseIcon" class="console-collapse-btn__icon" aria-hidden="true">▾</span>
+              <span id="consoleCollapseText">收合</span>
+            </button>
           </div>
-          <div class="console-panes">
+          <div id="consolePanes" class="console-panes">
             <pre id="console-system" class="console active"></pre>
             <pre id="console-steamcmd" class="console"></pre>
             <pre id="console-game" class="console"></pre>
@@ -175,6 +191,7 @@
     <script defer src="js/utils.js"></script>
     <script defer src="js/i18n.js"></script>
     <script defer src="js/dom.js"></script>
+    <script defer src="js/card-order.js"></script>
     <script defer src="js/state.js"></script>
     <script defer src="js/api.js"></script>
     <script defer src="js/console.js"></script>

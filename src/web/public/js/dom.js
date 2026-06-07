@@ -44,6 +44,11 @@
       splitResizer: $("splitResizer"),
       appSplit: document.querySelector(".app-split"),
       paneMainEl: document.querySelector(".pane-main"),
+      paneConsoleEl: document.querySelector(".pane-console"),
+      consoleCollapseBtn: $("consoleCollapseBtn"),
+      consoleCollapseText: $("consoleCollapseText"),
+      consoleCollapseIcon: $("consoleCollapseIcon"),
+      consolePanesEl: $("consolePanes"),
 
       panes: {
         system: $("console-system"),

@@ -10,6 +10,7 @@ var
 procedure CreateConfigPage;
 var
   REG_WebPort: String;
+  FirewallChecked: Boolean;
   _Top: Integer;
   _Left: Integer;
 
@@ -34,7 +35,8 @@ begin
 
   _Top := _Top + 36;
 
-  OpenFirewallCheckBox := CreateCheckBox(ConfigPage.Surface, ExpandConstant('{cm:OpenFirewallCheckbox}'), _Top, _Left, True);
+  FirewallChecked := MgmtBackendFirewallRuleExists(REG_WebPort);
+  OpenFirewallCheckBox := CreateCheckBox(ConfigPage.Surface, ExpandConstant('{cm:OpenFirewallCheckbox}'), _Top, _Left, FirewallChecked);
 
   _Top := _Top + 20;
 

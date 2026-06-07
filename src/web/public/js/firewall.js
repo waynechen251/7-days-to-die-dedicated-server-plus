@@ -166,7 +166,7 @@
     });
   }
 
-  function renderRuleTable(rules, ids) {
+  function renderSimpleRuleTable(rules, ids) {
     const tbody = $id(ids.tbody);
     const table = $id(ids.table);
     const empty = $id(ids.empty);
@@ -190,11 +190,43 @@
       const state = getRuleState(rule);
 
       tr.innerHTML = `
-        <td style="padding: 2px 6px; color: ${state.color};" title="${state.title}">${state.text}</td>
-        <td style="padding: 2px 6px;">${rule.groupLabel || ""}</td>
-        <td style="padding: 2px 6px;">${rule.port}</td>
-        <td style="padding: 2px 6px;">${rule.protocol}</td>
-        <td style="padding: 2px 6px; font-size: 0.75rem; color: var(--c-muted, #888);" title="${rule.nameLabel}">${rule.nameLabel}</td>
+        <td class="firewall-rule-state" style="color: ${state.color};" title="${state.title}">${state.text}</td>
+        <td>${rule.groupLabel || ""}</td>
+        <td class="firewall-rule-endpoint">${rule.port} / ${rule.protocol}</td>
+      `;
+      tbody.appendChild(tr);
+    }
+  }
+
+  function renderRawRuleTable(rules, ids) {
+    const tbody = $id(ids.tbody);
+    const table = $id(ids.table);
+    const empty = $id(ids.empty);
+    if (!tbody) return;
+
+    tbody.innerHTML = "";
+
+    if (!rules || rules.length === 0) {
+      setHidden(table, true);
+      setHidden(empty, false);
+      return;
+    }
+
+    setHidden(empty, true);
+    setHidden(table, false);
+
+    const displayRules = mergeDisplayRules(rules);
+
+    for (const rule of displayRules) {
+      const tr = document.createElement("tr");
+      const state = getRuleState(rule);
+
+      tr.innerHTML = `
+        <td class="firewall-rule-state" style="color: ${state.color};" title="${state.title}">${state.text}</td>
+        <td>${rule.groupLabel || ""}</td>
+        <td>${rule.port}</td>
+        <td>${rule.protocol}</td>
+        <td class="firewall-rule-name" title="${rule.nameLabel}">${rule.nameLabel}</td>
       `;
       tbody.appendChild(tr);
     }
@@ -297,10 +329,41 @@
     };
   }
 
+  function getNextActionText(data) {
+    const capability = data.capability || {};
+    const summary = data.summary || {
+      desiredCount: 0,
+      actualCount: 0,
+      pendingCount: 0,
+      unexpectedCount: 0,
+    };
+
+    if (!capability.platformSupported) {
+      return t("card.firewall.nextActionUnsupported", "這個功能只支援 Windows 主機。");
+    }
+    if (!capability.elevated) {
+      return t("card.firewall.nextActionNeedElevation", "請用系統管理員權限重新啟動後台，再執行套用或移除。");
+    }
+    if (summary.desiredCount === 0 && summary.unexpectedCount > 0) {
+      return t("card.firewall.nextActionRemoveResidual", "如果這些舊規則不再需要，建議執行「移除所有規則」。");
+    }
+    if (summary.desiredCount === 0) {
+      return t("card.firewall.nextActionNone", "目前無需額外操作。");
+    }
+    if (summary.pendingCount > 0) {
+      return t("card.firewall.nextActionApply", "設定已開啟，但規則尚未完全寫入，建議先執行「同步所有規則」。");
+    }
+    if (summary.unexpectedCount > 0) {
+      return t("card.firewall.nextActionReviewResidual", "主要規則已生效，但仍有殘留規則，建議檢查進階規則清單。");
+    }
+    return t("card.firewall.nextActionNone", "目前無需額外操作。");
+  }
+
   function renderSummary(data) {
     const badge = $id("fw-status-badge");
     const summaryTextEl = $id("fw-status-summary");
     const detailTextEl = $id("fw-status-detail");
+    const nextActionEl = $id("fw-next-action");
     const platformWarn = $id("fw-platform-warn");
     const elevationWarn = $id("fw-elevation-warn");
     const capability = data.capability || {};
@@ -319,6 +382,7 @@
     }
     if (summaryTextEl) summaryTextEl.textContent = presentation.summaryText;
     if (detailTextEl) detailTextEl.textContent = presentation.detailText;
+    if (nextActionEl) nextActionEl.textContent = getNextActionText(data);
 
     renderSummaryBadges(summary);
 
@@ -330,18 +394,28 @@
     const rules = Array.isArray(data.rules) ? data.rules : [];
     const managedRules = rules.filter((rule) => rule.enabledByPolicy);
     const hasSecondaryRules = rules.some((rule) => !rule.enabledByPolicy);
-    const allRulesDetails = $id("fw-all-rules-details");
+    const advancedDetails = $id("fw-advanced-details");
+    const allRulesSection = $id("fw-all-rules-section");
 
-    renderRuleTable(managedRules, {
+    renderSimpleRuleTable(managedRules, {
       tbody: "fw-rules-tbody",
       table: "fw-rules-table",
       empty: "fw-rules-empty",
     });
 
-    setHidden(allRulesDetails, !hasSecondaryRules);
+    renderRawRuleTable(managedRules, {
+      tbody: "fw-raw-rules-tbody",
+      table: "fw-raw-rules-table",
+      empty: "fw-raw-rules-empty",
+    });
+
+    setHidden(advancedDetails, rules.length === 0);
+    if (advancedDetails) advancedDetails.open = false;
+
+    setHidden(allRulesSection, !hasSecondaryRules);
 
     if (hasSecondaryRules) {
-      renderRuleTable(rules, {
+      renderRawRuleTable(rules, {
         tbody: "fw-all-rules-tbody",
         table: "fw-all-rules-table",
         empty: "fw-all-rules-empty",
@@ -403,11 +477,15 @@
       }
       const summaryTextEl = $id("fw-status-summary");
       const detailTextEl = $id("fw-status-detail");
+      const nextActionEl = $id("fw-next-action");
       if (summaryTextEl) {
         summaryTextEl.textContent = t("card.firewall.summaryRefreshFailed", "狀態讀取失敗");
       }
       if (detailTextEl) {
         detailTextEl.textContent = err.message || t("card.firewall.detailRefreshFailed", "無法取得最新的 Windows 防火牆狀態。");
+      }
+      if (nextActionEl) {
+        nextActionEl.textContent = t("card.firewall.nextActionRefresh", "請先重新整理狀態，確認目前規則與權限資訊。");
       }
     }
   }
@@ -451,14 +529,14 @@
       applyBtn.addEventListener("click", async () => {
         applyBtn.disabled = true;
         try {
-          App.console?.appendLog?.("system", t("card.firewall.applyingMsg", "正在套用防火牆規則..."), Date.now());
+          App.console?.appendLog?.("system", t("card.firewall.applyingMsg", "正在同步防火牆規則..."), Date.now());
           const result = await App.api.fetchJSON("/api/firewall/apply", { method: "POST" });
           const ok = !!result?.ok;
-          const message = result?.message || (ok ? t("card.firewall.applySuccess", "防火牆規則套用完成") : t("card.firewall.applyFailed", "套用失敗"));
+          const message = result?.message || (ok ? t("card.firewall.applySuccess", "防火牆規則同步完成") : t("card.firewall.applyFailed", "同步失敗"));
           App.console?.appendLog?.("system", `${ok ? "✅" : "❌"} ${message}`, Date.now());
           lastActionFeedback = { tone: ok ? "ok" : "err", message };
         } catch (err) {
-          const message = t("card.firewall.applyRequestFailed", "防火牆規則套用失敗: {error}", {
+          const message = t("card.firewall.applyRequestFailed", "防火牆規則同步失敗: {error}", {
             error: err.message,
           });
           App.console?.appendLog?.("system", `❌ ${message}`, Date.now());

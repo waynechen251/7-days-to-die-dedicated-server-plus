@@ -227,6 +227,8 @@
     const onFragmentsReady = async () => {
       // 1. 初始化 i18n（登入頁面也需要翻譯）
       if (App.i18n) await App.i18n.init();
+      App.cardOrder?.refresh?.();
+      App.split?.refreshUI?.();
 
       // 2. 綁定 Auth 表單事件
       App.auth?.bindEvents();

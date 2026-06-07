@@ -155,6 +155,32 @@ body.has-dock-open {
   flex-wrap: wrap;
   margin-top: var(--space-1);
 }
+.console-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.5rem 0.75rem 0;
+  flex-wrap: wrap;
+}
+.console-bar__spacer {
+  flex: 1 1 auto;
+}
+.console-collapse-btn {
+  min-height: 2rem;
+  padding: 0.4rem 0.7rem;
+  background: #334155;
+  border-color: #475569;
+  color: #fff;
+  white-space: nowrap;
+}
+.console-collapse-btn:hover:not(:disabled) {
+  background: #3e4f60;
+}
+.console-collapse-btn__icon {
+  display: inline-block;
+  width: 0.8rem;
+  text-align: center;
+}
 .pane-console .console-shell {
   flex: 1;
   display: flex;
@@ -190,9 +216,34 @@ body.has-dock-open {
 .pane-console .console::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+.pane-console.is-collapsed .console-panes {
+  display: none;
+}
+.pane-console.is-collapsed .console-shell {
+  min-height: var(--console-dock-collapsed);
+}
+.pane-console.is-collapsed .console-bar {
+  padding-bottom: 0.45rem;
+}
+.app-split.console-collapsed .console-tabs {
+  display: none;
+}
+.app-split.console-collapsed .console-bar {
+  padding: 0.2rem 0.75rem;
+  min-height: var(--console-dock-collapsed);
+}
+.app-split.console-collapsed .console-bar__spacer {
+  display: none;
+}
 @media (max-width: 720px) {
   :root {
     --console-dock-height: 35vh;
+  }
+  .console-bar {
+    padding-inline: 0.5rem;
+  }
+  .console-collapse-btn {
+    margin-left: auto;
   }
   .console-dock .console,
   .pane-console .console {

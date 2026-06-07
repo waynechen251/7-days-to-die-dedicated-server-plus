@@ -1,6 +1,7 @@
 const { execFile } = require("child_process");
 
 const RULE_PREFIX = "7DTD-DS-P-";
+const MGMT_RULE_PREFIX = `${RULE_PREFIX}mgmt-`;
 
 function run(cmd, args) {
   return new Promise((resolve, reject) => {
@@ -69,6 +70,54 @@ async function checkRuleExists(name) {
   }
 }
 
+async function listManagedRuleNames() {
+  const prefix = `${RULE_PREFIX}*`;
+  const psScript = [
+    `$rules = Get-NetFirewallRule -ErrorAction SilentlyContinue | Where-Object { $_.DisplayName -like '${escapePowerShellString(prefix)}' } | Select-Object -ExpandProperty DisplayName -Unique`,
+    "if ($rules) { $rules | ForEach-Object { Write-Output $_ } }",
+  ].join("; ");
+
+  try {
+    const { stdout } = await run("powershell", [
+      "-NoProfile",
+      "-NonInteractive",
+      "-Command",
+      psScript,
+    ]);
+    return String(stdout || "")
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.startsWith(RULE_PREFIX));
+  } catch (_) {
+    try {
+      const { stdout, stderr } = await run("netsh", [
+        "advfirewall",
+        "firewall",
+        "show",
+        "rule",
+        "name=all",
+      ]);
+      const output = `${stdout || ""}\n${stderr || ""}`;
+      const names = [];
+      const pattern = /^(?:Rule Name|規則名稱|规则名称)\s*:\s*(.+)$/gim;
+      let match;
+      while ((match = pattern.exec(output)) !== null) {
+        const name = String(match[1] || "").trim();
+        if (name.startsWith(RULE_PREFIX) && !names.includes(name)) {
+          names.push(name);
+        }
+      }
+      return names;
+    } catch (_) {
+      return [];
+    }
+  }
+}
+
+function isManagementRuleName(name) {
+  return String(name || "").toLowerCase().startsWith(MGMT_RULE_PREFIX.toLowerCase());
+}
+
 function getPolicy(CONFIG) {
   return {
     autoManage: CONFIG?.firewall?.autoManage !== false,
@@ -119,20 +168,20 @@ function computeDesiredRules(CONFIG, { forDisplay = false } = {}) {
   if (openGame) {
     const sp = parseInt(gs.ServerPort, 10);
     if (Number.isFinite(sp) && sp >= 1 && sp <= 65535) {
-      for (const proto of ["TCP", "UDP"]) {
-        addRule("game", "Server", sp, proto);
-      }
+      addRule("game", "Server", sp, "TCP");
+      addRule("game", "Server", sp, "UDP");
+      addRule("game", "ServerPlus1", sp + 1, "UDP");
+      addRule("game", "ServerPlus2", sp + 2, "UDP");
+      addRule("game", "ServerPlus3", sp + 3, "UDP");
     }
   }
 
   if (openMgmt) {
     const wdEnabled = /^(true|1)$/i.test(String(gs.WebDashboardEnabled || ""));
-    if (wdEnabled) {
-      const wdPort = parseInt(gs.WebDashboardPort, 10);
-      if (Number.isFinite(wdPort) && wdPort >= 1 && wdPort <= 65535) {
-        addRule("mgmt", "WebDashboard", wdPort, "TCP");
-      }
-    }
+    const cpEnabled = /^(true|1)$/i.test(String(gs.ControlPanelEnabled || ""));
+
+    if (wdEnabled) addRule("mgmt", "WebDashboard", gs.WebDashboardPort, "TCP");
+    if (cpEnabled) addRule("mgmt", "ControlPanel", gs.ControlPanelPort, "TCP");
 
     const telnetEnabled = /^(true|1)$/i.test(String(gs.TelnetEnabled || ""));
     if (telnetEnabled) {
@@ -159,23 +208,48 @@ async function applyRules(CONFIG, { log, error, eventBus, saveConfig, allowManag
     return { ok: false, message: msg, elevated: false };
   }
 
-  const allRules = computeDesiredRules(CONFIG);
+  const desiredRules = computeDesiredRules(CONFIG);
+  const desiredSet = new Set(desiredRules.map((rule) => rule.name));
   const protectedRuleNames = getProtectedRuleNames(CONFIG);
-  const rules = filterRulesForMutation(allRules, protectedRuleNames, allowManagementMutations);
-  const skippedRules = summarizeSkippedRules(allRules, rules);
-  if (rules.length === 0) {
-    const msg = skippedRules.length > 0
-      ? "遠端操作已保留管理用埠相關規則，沒有其他需要套用的規則"
-      : "無需開放的防火牆規則（依目前設定判斷）";
+  const rulesToApply = filterRulesForMutation(
+    desiredRules,
+    protectedRuleNames,
+    allowManagementMutations
+  );
+  const skippedRules = summarizeSkippedRules(desiredRules, rulesToApply);
+  const existingRuleNames = await listManagedRuleNames();
+  const protectedExistingRuleNames = allowManagementMutations === false
+    ? new Set(existingRuleNames.filter((name) => isManagementRuleName(name)))
+    : new Set();
+  const staleRuleNames = existingRuleNames.filter((name) => {
+    if (desiredSet.has(name)) return false;
+    if (protectedExistingRuleNames.has(name)) return false;
+    return true;
+  });
+
+  if (rulesToApply.length === 0 && staleRuleNames.length === 0) {
+    let msg = "同步完成：目前沒有需要異動的規則";
+    if (protectedExistingRuleNames.size > 0) {
+      msg += `；已保留 ${protectedExistingRuleNames.size} 條管理用埠相關規則`;
+    }
     if (log) log(`ℹ️ ${msg}`);
     if (eventBus) eventBus.push("system", { text: `ℹ️ ${msg}` });
-    return { ok: true, message: msg, results: [], skippedRules };
+    return {
+      ok: true,
+      message: msg,
+      results: [],
+      skippedRules,
+      removedRules: [],
+      appliedRules: [],
+      keptRules: Array.from(protectedExistingRuleNames),
+    };
   }
 
   const results = [];
   const applied = [];
+  const removed = [];
 
-  for (const rule of rules) {
+  for (const rule of rulesToApply) {
     const { name, port, protocol } = rule;
     try {
       // delete 先忽略錯誤（not found 視為正常）
@@ -194,8 +268,8 @@ async function applyRules(CONFIG, { log, error, eventBus, saveConfig, allowManag
         "profile=any",
       ]);
       applied.push(name);
-      results.push({ name, ok: true });
-      if (log) log(`✅ 防火牆規則已套用: ${name}`);
+      results.push({ name, ok: true, action: "apply" });
+      if (log) log(`✅ 防火牆規則已同步: ${name}`);
     } catch (err) {
       const isAccessDenied =
         err.code === 5 ||
@@ -203,36 +277,72 @@ async function applyRules(CONFIG, { log, error, eventBus, saveConfig, allowManag
         (err.message || "").toLowerCase().includes("access");
       const errMsg = isAccessDenied
         ? `權限不足: ${name}`
-        : `套用失敗: ${name} (${err.message || err})`;
-      results.push({ name, ok: false, error: errMsg });
-      if (error) error(`❌ 防火牆規則套用失敗: ${name}: ${err.message || err}`);
+        : `同步失敗: ${name} (${err.message || err})`;
+      results.push({ name, ok: false, action: "apply", error: errMsg });
+      if (error) error(`❌ 防火牆規則同步失敗: ${name}: ${err.message || err}`);
       if (eventBus) eventBus.push("system", { level: "warn", text: `⚠️ ${errMsg}` });
     }
   }
 
-  // 持久化到 server.json
+  for (const name of staleRuleNames) {
+    try {
+      await run("netsh", [
+        "advfirewall", "firewall", "delete", "rule", `name=${name}`,
+      ]);
+      removed.push(name);
+      results.push({ name, ok: true, action: "remove" });
+      if (log) log(`✅ 防火牆殘留規則已移除: ${name}`);
+    } catch (err) {
+      const notFound =
+        (err.stderr || "").toLowerCase().includes("no rules") ||
+        (err.stdout || "").toLowerCase().includes("no rules") ||
+        (err.stderr || "").includes("找不到") ||
+        (err.stdout || "").includes("找不到");
+      if (notFound) {
+        results.push({ name, ok: true, action: "remove" });
+      } else {
+        results.push({
+          name,
+          ok: false,
+          action: "remove",
+          error: err.message || String(err),
+        });
+        if (error) error(`❌ 防火牆殘留規則移除失敗: ${name}: ${err.message || err}`);
+        if (eventBus) eventBus.push("system", { level: "warn", text: `⚠️ 移除失敗: ${name}` });
+      }
+    }
+  }
+
   if (!CONFIG.firewall) CONFIG.firewall = {};
-  const existing = Array.isArray(CONFIG.firewall.appliedRules)
-    ? CONFIG.firewall.appliedRules
-    : [];
-  const merged = Array.from(new Set([...existing, ...applied]));
-  CONFIG.firewall.appliedRules = merged;
+  const finalRuleNames = allowManagementMutations === false
+    ? Array.from(
+        new Set([
+          ...rulesToApply.map((rule) => rule.name),
+          ...Array.from(protectedExistingRuleNames),
+        ])
+      )
+    : desiredRules.map((rule) => rule.name);
+  CONFIG.firewall.appliedRules = finalRuleNames;
   if (saveConfig) saveConfig();
 
-  const okCount = results.filter((r) => r.ok).length;
-  let msg = `防火牆規則套用完成：${okCount}/${results.length} 條成功`;
-  if (skippedRules.length > 0) {
-    msg += `；已保留 ${skippedRules.length} 條管理用埠相關規則`;
+  const failedCount = results.filter((r) => !r.ok).length;
+  let msg = `防火牆規則同步完成：套用 ${applied.length} 條，移除 ${removed.length} 條`;
+  if (protectedExistingRuleNames.size > 0) {
+    msg += `，保留 ${protectedExistingRuleNames.size} 條管理用埠相關規則`;
   }
+  if (failedCount > 0) msg += `；另有 ${failedCount} 項失敗`;
   if (log) log(`✅ ${msg}`);
   if (eventBus) eventBus.push("system", { text: `✅ ${msg}` });
 
   return {
-    ok: okCount > 0 || results.length === 0,
+    ok: failedCount === 0,
     message: msg,
     results,
     elevated: true,
     skippedRules,
+    removedRules: removed,
+    appliedRules: applied,
+    keptRules: Array.from(protectedExistingRuleNames),
   };
 }
 
@@ -249,20 +359,15 @@ async function removeRules(CONFIG, { log, error, eventBus, saveConfig, allowMana
     return { ok: false, message: msg, elevated: false };
   }
 
-  const desired = computeDesiredRules(CONFIG).map((r) => r.name);
-  const persisted = Array.isArray(CONFIG.firewall?.appliedRules)
-    ? CONFIG.firewall.appliedRules
-    : [];
-  const allRules = computeDesiredRules(CONFIG, { forDisplay: true });
-  const protectedRuleNames = getProtectedRuleNames(CONFIG);
-  const toRemove = Array.from(new Set([...desired, ...persisted]))
-    .filter((name) => {
-      if (allowManagementMutations !== false) return true;
-      return !protectedRuleNames.has(name);
-    });
-  const skippedRules = allowManagementMutations !== false
+  const existingRuleNames = await listManagedRuleNames();
+  const skippedRuleNames = allowManagementMutations !== false
     ? []
-    : allRules.filter((rule) => protectedRuleNames.has(rule.name));
+    : existingRuleNames.filter((name) => isManagementRuleName(name));
+  const toRemove = existingRuleNames.filter((name) => {
+    if (allowManagementMutations !== false) return true;
+    return !isManagementRuleName(name);
+  });
+  const skippedRules = skippedRuleNames.map((name) => ({ name }));
 
   if (toRemove.length === 0) {
     const msg = skippedRules.length > 0
@@ -300,7 +405,7 @@ async function removeRules(CONFIG, { log, error, eventBus, saveConfig, allowMana
   // 清空持久化清單
   if (!CONFIG.firewall) CONFIG.firewall = {};
   CONFIG.firewall.appliedRules = allowManagementMutations === false
-    ? persisted.filter((name) => protectedRuleNames.has(name))
+    ? skippedRuleNames
     : [];
   if (saveConfig) saveConfig();
 

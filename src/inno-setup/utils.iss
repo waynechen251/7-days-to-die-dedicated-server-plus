@@ -66,6 +66,27 @@ begin
 
 end;
 
+function MgmtBackendFirewallRuleExists(const Port: string): Boolean;
+var
+  ResultCode: Integer;
+  RuleName: String;
+begin
+
+  RuleName := '7DTD-DS-P-mgmt-Backend-' + Port + '-TCP';
+  ResultCode := -1;
+  Exec(
+    'cmd.exe',
+    '/C netsh advfirewall firewall show rule name="' + RuleName + '" | findstr /C:"' + RuleName + '" >nul',
+    '',
+    SW_HIDE,
+    ewWaitUntilTerminated,
+    ResultCode
+  );
+  Result := ResultCode = 0;
+  Log('MgmtBackendFirewallRuleExists: ' + RuleName + ' Result=' + IntToStr(ResultCode));
+
+end;
+
 // 輸入框只能輸入數字
 procedure InputKeyPress_Number(Sender: TObject; var Key: Char);
 begin

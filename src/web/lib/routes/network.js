@@ -130,10 +130,15 @@ module.exports = function registerNetworkRoutes(app, ctx) {
       return http.respondJson(res, { ok: false, message: "port 無效" }, 400);
     }
     try {
+      // 僅檢查 TCP 連線可否建立，不代表 UDP 端口是否可用。
       const inUse = await checkPortInUse(p);
       // 判斷是否為 dummy 監聽器佔用
       const isDummy = !!(dummyGamePortServer && dummyGamePort === p);
-      return http.respondJson(res, { ok: true, data: { inUse, isDummy } }, 200);
+      return http.respondJson(
+        res,
+        { ok: true, data: { inUse, isDummy, protocol: "tcp" } },
+        200
+      );
     } catch (err) {
       return http.respondJson(
         res,

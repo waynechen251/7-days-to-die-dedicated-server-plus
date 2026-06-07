@@ -30,3 +30,25 @@
   border-bottom: 1px solid var(--c-border-soft);
   padding-bottom: var(--space-2);
 }
+
+.card-header__tools {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.card-order-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.card-order-btn {
+  min-height: 2rem;
+  min-width: 2rem;
+  padding: 0.35rem 0.55rem;
+  justify-content: center;
+  font-size: 0.8rem;
+}

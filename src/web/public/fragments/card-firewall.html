@@ -1,0 +1,156 @@
+<section class="card card-firewall">
+  <header class="card-header">
+    <h2 class="card-title" data-i18n="card.firewall.title">動態防火牆管理</h2>
+  </header>
+
+  <section class="firewall-panel firewall-overview">
+    <div class="firewall-overview__main">
+      <span class="field__label" data-i18n="card.firewall.summaryLabel">目前狀態摘要</span>
+      <div class="firewall-overview__headline">
+        <div class="firewall-overview__copy">
+          <div id="fw-status-summary" class="firewall-overview__summary">載入中...</div>
+          <div id="fw-status-detail" class="firewall-overview__detail"></div>
+        </div>
+        <span id="fw-status-badge" class="badge" data-i18n="card.firewall.statusUnknown">狀態未知</span>
+      </div>
+
+      <div class="firewall-next-action">
+        <span class="field__label" data-i18n="card.firewall.nextActionLabel">建議操作</span>
+        <div id="fw-next-action" class="firewall-next-action__value" data-i18n="card.firewall.nextActionNone">目前無需額外操作。</div>
+      </div>
+
+      <div id="fw-summary-counts" class="firewall-summary-counts">
+        <span id="fw-summary-desired" class="badge"></span>
+        <span id="fw-summary-actual" class="badge"></span>
+        <span id="fw-summary-pending" class="badge"></span>
+        <span id="fw-summary-unexpected" class="badge"></span>
+      </div>
+
+      <div id="fw-elevation-warn" class="hidden firewall-alert firewall-alert--err">
+        <span data-i18n="card.firewall.noElevation">⚠️ 此功能需以系統管理員權限執行。生產環境請以服務（LocalSystem）執行，開發環境請以系統管理員身分啟動 Node.js。</span>
+      </div>
+
+      <div id="fw-platform-warn" class="hidden firewall-alert firewall-alert--warn">
+        <span data-i18n="card.firewall.notWindows">⚠️ 動態防火牆管理僅支援 Windows 平台。</span>
+      </div>
+    </div>
+
+    <div class="firewall-overview__actions">
+      <span class="field__label" data-i18n="card.firewall.actionsLabel">主要操作</span>
+      <div class="firewall-action-buttons">
+        <button id="fw-apply-btn" class="btn--primary" data-i18n="card.firewall.applyBtn">🛡 同步所有規則</button>
+        <button
+          id="fw-remove-btn"
+          class="btn--danger"
+          data-i18n="card.firewall.removeBtn"
+          data-danger-i18n="confirm.removeFirewallRules"
+          data-cancel-i18n="common.cancel"
+          data-continue-i18n="common.confirm"
+        >
+          🗑 移除所有規則
+        </button>
+        <button id="fw-refresh-btn" data-i18n="card.firewall.refreshBtn">🔄 重新整理</button>
+      </div>
+      <div id="fw-action-feedback" class="hidden firewall-feedback"></div>
+    </div>
+  </section>
+
+  <section class="firewall-panel">
+    <span class="field__label" data-i18n="card.firewall.policyLabel">自動化策略</span>
+    <div class="firewall-policy-grid">
+      <label class="firewall-toggle">
+        <input type="checkbox" id="fw-toggle-auto-manage" />
+        <div class="firewall-toggle__copy">
+          <span class="firewall-toggle__title" data-i18n="card.firewall.autoManage">遊戲伺服器啟動時自動套用規則</span>
+          <span class="firewall-toggle__hint" data-i18n="card.firewall.autoManageHint">每次啟動遊戲伺服器時，自動執行「同步所有規則」</span>
+        </div>
+      </label>
+
+      <label class="firewall-toggle">
+        <input type="checkbox" id="fw-toggle-remove-on-stop" />
+        <div class="firewall-toggle__copy">
+          <span class="firewall-toggle__title" data-i18n="card.firewall.removeOnStop">遊戲伺服器停止時自動移除規則</span>
+          <span class="firewall-toggle__hint" data-i18n="card.firewall.removeOnStopHint">遊戲伺服器停止後，只自動移除遊戲用規則，不移除管理用規則</span>
+        </div>
+      </label>
+
+      <label class="firewall-toggle">
+        <input type="checkbox" id="fw-toggle-game-ports" />
+        <div class="firewall-toggle__copy">
+          <span class="firewall-toggle__title" data-i18n="card.firewall.openGamePorts">遊戲用埠（依 ServerPort 開放 TCP+UDP，並開放 ServerPort+1~+3 的 UDP）</span>
+          <span class="firewall-toggle__hint" data-i18n="card.firewall.scopeGameHint">對外玩家連線主要依賴這組規則。</span>
+        </div>
+      </label>
+
+      <div class="firewall-toggle firewall-toggle--stacked">
+        <label class="firewall-toggle__row">
+          <input type="checkbox" id="fw-toggle-mgmt-ports" />
+          <div class="firewall-toggle__copy">
+            <span class="firewall-toggle__title" data-i18n="card.firewall.openMgmtPorts">管理用埠（依後台/Telnet/WebDashboard 設定值開放 TCP）</span>
+            <span class="firewall-toggle__hint" data-i18n="card.firewall.scopeMgmtHint">只在需要遠端維運時開啟，避免暴露多餘入口。</span>
+          </div>
+        </label>
+        <div id="fw-mgmt-local-only" class="hidden firewall-toggle__notice" data-i18n="card.firewall.mgmtPortsLocalOnlyReason">管理用埠設定僅允許從 localhost 修改，避免遠端連線被自己關掉。</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="firewall-panel">
+    <div class="firewall-panel__header">
+      <div>
+        <span class="field__label" data-i18n="card.firewall.rulesLabel">目前納入管理的規則</span>
+        <div class="firewall-panel__hint" data-i18n="card.firewall.rulesManagedHint">預設只顯示日常判讀需要的資訊；原始名稱在進階區查看。</div>
+      </div>
+    </div>
+
+    <div id="fw-rules-empty" class="hidden firewall-empty" data-i18n="card.firewall.rulesEmpty">（目前無規則）</div>
+    <table id="fw-rules-table" class="hidden firewall-table">
+      <thead>
+        <tr>
+          <th data-i18n="card.firewall.col.status">狀態</th>
+          <th data-i18n="card.firewall.col.use">用途</th>
+          <th data-i18n="card.firewall.col.endpoint">埠 / 協定</th>
+        </tr>
+      </thead>
+      <tbody id="fw-rules-tbody"></tbody>
+    </table>
+
+    <details id="fw-advanced-details" class="firewall-advanced hidden">
+      <summary data-i18n="card.firewall.advancedSummary">顯示進階規則與原始名稱</summary>
+
+      <div class="firewall-advanced__section">
+        <span class="field__label" data-i18n="card.firewall.rawRulesLabel">已納入管理的原始規則</span>
+        <div id="fw-raw-rules-empty" class="hidden firewall-empty" data-i18n="card.firewall.rulesEmpty">（目前無規則）</div>
+        <table id="fw-raw-rules-table" class="hidden firewall-table firewall-table--raw">
+          <thead>
+            <tr>
+              <th data-i18n="card.firewall.col.status">狀態</th>
+              <th data-i18n="card.firewall.col.group">群組</th>
+              <th data-i18n="card.firewall.col.port">埠</th>
+              <th data-i18n="card.firewall.col.protocol">協定</th>
+              <th data-i18n="card.firewall.col.name">規則名稱</th>
+            </tr>
+          </thead>
+          <tbody id="fw-raw-rules-tbody"></tbody>
+        </table>
+      </div>
+
+      <div id="fw-all-rules-section" class="hidden firewall-advanced__section">
+        <span class="field__label" data-i18n="card.firewall.allRulesLabel">全部候選規則</span>
+        <div id="fw-all-rules-empty" class="hidden firewall-empty" data-i18n="card.firewall.rulesEmpty">（目前無規則）</div>
+        <table id="fw-all-rules-table" class="hidden firewall-table firewall-table--raw">
+          <thead>
+            <tr>
+              <th data-i18n="card.firewall.col.status">狀態</th>
+              <th data-i18n="card.firewall.col.group">群組</th>
+              <th data-i18n="card.firewall.col.port">埠</th>
+              <th data-i18n="card.firewall.col.protocol">協定</th>
+              <th data-i18n="card.firewall.col.name">規則名稱</th>
+            </tr>
+          </thead>
+          <tbody id="fw-all-rules-tbody"></tbody>
+        </table>
+      </div>
+    </details>
+  </section>
+</section>
