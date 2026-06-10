@@ -74,7 +74,17 @@
       "killServer": "Force Kill",
       "telnetPlaceholder": "Enter Telnet command...",
       "telnetSend": "Send",
-      "telnetSettings": "Settings"
+      "telnetSettings": "Settings",
+      "sectionInstall": "Version & Install",
+      "sectionRuntime": "Live Status",
+      "sectionControl": "Server Control",
+      "sectionTelnet": "Telnet Command",
+      "statPlayers": "Players",
+      "statFps": "FPS",
+      "statZombies": "Zombies",
+      "statHeap": "Heap",
+      "statMax": "Max",
+      "statRss": "RSS"
     },
     "firewall": {
       "title": "Dynamic Firewall Manager",

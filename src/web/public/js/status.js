@@ -225,29 +225,22 @@
     }
 
     const opEl = document.getElementById("onlinePlayersBadge");
-    if (opEl) {
-      opEl.textContent = `${t("card.game.onlinePlayers", "線上玩家數:")} ${ 
-        onlinePlayers !== "" ? onlinePlayers : gameRunning ? "-" : "-"
-      }`;
-    }
+    if (opEl) opEl.textContent = onlinePlayers !== "" ? onlinePlayers : "-";
 
     const fpsEl = document.getElementById("fpsBadge");
-    if (fpsEl) fpsEl.textContent = `${t("card.game.fps", "FPS:")} ${Number.isFinite(fps) ? fps : "-"}`;
+    if (fpsEl) fpsEl.textContent = Number.isFinite(fps) ? fps : "-";
 
     const heapEl = document.getElementById("heapBadge");
-    if (heapEl)
-      heapEl.textContent = `${t("card.game.heap", "Heap:")} ${Number.isFinite(heap) ? heap + "MB" : "-"}`;
+    if (heapEl) heapEl.textContent = Number.isFinite(heap) ? heap + "MB" : "-";
 
     const maxEl = document.getElementById("maxBadge");
-    if (maxEl)
-      maxEl.textContent = `${t("card.game.max", "Max:")} ${Number.isFinite(max) ? max + "MB" : "-"}`;
+    if (maxEl) maxEl.textContent = Number.isFinite(max) ? max + "MB" : "-";
 
     const zomEl = document.getElementById("zomBadge");
-    if (zomEl) zomEl.textContent = `${t("card.game.zombies", "Zombies:")} ${Number.isFinite(zom) ? zom : "-"}`;
+    if (zomEl) zomEl.textContent = Number.isFinite(zom) ? zom : "-";
 
     const rssEl = document.getElementById("rssBadge");
-    if (rssEl)
-      rssEl.textContent = `${t("card.game.rss", "RSS:")} ${Number.isFinite(rss) ? rss + "MB" : "-"}`;
+    if (rssEl) rssEl.textContent = Number.isFinite(rss) ? rss + "MB" : "-";
   }
 
   function computeGameRunning() {

@@ -8,9 +8,12 @@
     </div>
   </header>
 
-  <div class="row game-install">
+  <div class="game-section">
+    <div class="game-section__head">
+      <span class="field__label" data-i18n="card.game.sectionInstall">版本與安裝</span>
+      <span id="versionSourceBadge" class="badge" data-i18n="card.game.versionSourceLoading">載入中</span>
+    </div>
     <label class="field field--version-select">
-      <span class="field__label"><span data-i18n="card.game.versionSelectLabel">伺服器版本選擇</span> <span id="versionSourceBadge" class="badge" style="font-size: 0.75em" data-i18n="card.game.versionSourceLoading">載入中</span></span>
       <div class="row">
         <span id="gameSelectedVersionBadge" class="badge" data-i18n="card.game.lastInstallVersion">上次安裝版本:</span>
       </div>
@@ -32,42 +35,76 @@
     </label>
   </div>
 
-  <span class="field__label" data-i18n="card.game.serverManagement">七日殺伺服器管理</span>
-  <div class="row">
-    <span id="gameVersionBadge" class="badge"><span data-i18n="card.game.version">版本:</span> -</span>
-    <span id="onlinePlayersBadge" class="badge"><span data-i18n="card.game.onlinePlayers">在線玩家數:</span> -</span>
-    <span id="fpsBadge" class="badge"><span data-i18n="card.game.fps">FPS:</span> -</span>
-    <span id="heapBadge" class="badge"><span data-i18n="card.game.heap">Heap:</span> -</span>
-    <span id="maxBadge" class="badge"><span data-i18n="card.game.max">Max:</span> -</span>
-    <span id="zomBadge" class="badge"><span data-i18n="card.game.zombies">Zombies:</span> -</span>
-    <span id="rssBadge" class="badge"><span data-i18n="card.game.rss">RSS:</span> -</span>
+  <div class="game-section">
+    <div class="game-section__head">
+      <span class="field__label" data-i18n="card.game.sectionRuntime">即時狀態</span>
+      <span id="gameVersionBadge" class="badge"><span data-i18n="card.game.version">版本:</span> -</span>
+    </div>
+    <div class="game-stat-grid">
+      <div class="game-stat">
+        <span id="onlinePlayersBadge" class="game-stat__value">-</span>
+        <span class="game-stat__label" data-i18n="card.game.statPlayers">玩家</span>
+      </div>
+      <div class="game-stat">
+        <span id="fpsBadge" class="game-stat__value">-</span>
+        <span class="game-stat__label" data-i18n="card.game.statFps">FPS</span>
+      </div>
+      <div class="game-stat">
+        <span id="zomBadge" class="game-stat__value">-</span>
+        <span class="game-stat__label" data-i18n="card.game.statZombies">殭屍</span>
+      </div>
+      <div class="game-stat">
+        <span id="heapBadge" class="game-stat__value">-</span>
+        <span class="game-stat__label" data-i18n="card.game.statHeap">Heap</span>
+      </div>
+      <div class="game-stat">
+        <span id="maxBadge" class="game-stat__value">-</span>
+        <span class="game-stat__label" data-i18n="card.game.statMax">Max</span>
+      </div>
+      <div class="game-stat">
+        <span id="rssBadge" class="game-stat__value">-</span>
+        <span class="game-stat__label" data-i18n="card.game.statRss">RSS</span>
+      </div>
+    </div>
   </div>
-  <div class="row">
-    <button id="configStartBtn" data-i18n="card.game.startServer">🛠 啟動伺服器</button>
-    <button
-      id="stopServerBtn"
-      data-i18n="card.game.stopServer"
-      data-danger-i18n="confirm.stopServer"
-      data-cancel-i18n="common.cancel"
-      data-continue-i18n="common.confirm"
-    >
-      ⏹️ 正常結束
-    </button>
-    <button
-      id="killServerBtn"
-      data-i18n="card.game.killServer"
-      data-danger-i18n="confirm.killServer"
-      data-cancel-i18n="common.cancel"
-      data-continue-i18n="common.confirm"
-    >
-      ⚠️ 強制結束
-    </button>
+
+  <div class="game-section">
+    <div class="game-section__head">
+      <span class="field__label" data-i18n="card.game.sectionControl">伺服器控制</span>
+    </div>
+    <div class="row">
+      <button id="configStartBtn" data-i18n="card.game.startServer">🛠 啟動伺服器</button>
+      <button
+        id="stopServerBtn"
+        data-i18n="card.game.stopServer"
+        data-danger-i18n="confirm.stopServer"
+        data-cancel-i18n="common.cancel"
+        data-continue-i18n="common.confirm"
+      >
+        ⏹️ 正常結束
+      </button>
+      <button
+        id="killServerBtn"
+        data-i18n="card.game.killServer"
+        data-danger-i18n="confirm.killServer"
+        data-cancel-i18n="common.cancel"
+        data-continue-i18n="common.confirm"
+      >
+        ⚠️ 強制結束
+      </button>
+    </div>
   </div>
-  <div class="row">
-    <input id="telnetInput" data-i18n-placeholder="card.game.telnetPlaceholder" placeholder="輸入 Telnet 指令…" />
-    <button id="telnetSendBtn" data-role="telnet" data-i18n="card.game.telnetSend">送出</button>
-    <button data-role="telnet" onclick="sendTelnet('getgamepref')" data-i18n="card.game.telnetSettings">
-      ⚙️ 設定
-    </button>
+
+  <div class="game-section">
+    <div class="game-section__head">
+      <span class="field__label" data-i18n="card.game.sectionTelnet">Telnet 指令</span>
+    </div>
+    <div class="row">
+      <input id="telnetInput" data-i18n-placeholder="card.game.telnetPlaceholder" placeholder="輸入 Telnet 指令…" />
+      <button id="telnetSendBtn" data-role="telnet" data-i18n="card.game.telnetSend">送出</button>
+      <button data-role="telnet" onclick="sendTelnet('getgamepref')" data-i18n="card.game.telnetSettings">
+        ⚙️ 設定
+      </button>
+    </div>
   </div>
 </section>

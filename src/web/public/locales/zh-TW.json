@@ -74,7 +74,17 @@
       "killServer": "強制結束",
       "telnetPlaceholder": "輸入 Telnet 指令…",
       "telnetSend": "送出",
-      "telnetSettings": "設定"
+      "telnetSettings": "設定",
+      "sectionInstall": "版本與安裝",
+      "sectionRuntime": "即時狀態",
+      "sectionControl": "伺服器控制",
+      "sectionTelnet": "Telnet 指令",
+      "statPlayers": "玩家",
+      "statFps": "FPS",
+      "statZombies": "殭屍",
+      "statHeap": "Heap",
+      "statMax": "Max",
+      "statRss": "RSS"
     },
     "firewall": {
       "title": "動態防火牆管理",
