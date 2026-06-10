@@ -11,6 +11,7 @@
       killServerBtn: $("killServerBtn"),
       versionSelect: $("versionSelect"),
       versionSourceBadge: $("versionSourceBadge"),
+      gameRuntimeSection: $("gameRuntimeSection"),
       telnetInput: $("telnetInput"),
       telnetSendBtn: $("telnetSendBtn"),
       telnetBtns: Array.from(

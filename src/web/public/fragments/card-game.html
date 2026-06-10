@@ -35,7 +35,7 @@
     </label>
   </div>
 
-  <div class="game-section">
+  <div id="gameRuntimeSection" class="game-section hidden">
     <div class="game-section__head">
       <span class="field__label" data-i18n="card.game.sectionRuntime">即時狀態</span>
       <span id="statsUpdatedBadge" class="badge"><span data-i18n="card.game.statsUpdatedAt">更新於:</span> -</span>
@@ -93,12 +93,6 @@
       >
         ⚠️ 強制結束
       </button>
-    </div>
-  </div>
-
-  <div class="game-section">
-    <div class="game-section__head">
-      <span class="field__label" data-i18n="card.game.sectionTelnet">Telnet 指令</span>
     </div>
     <div class="row">
       <input id="telnetInput" data-i18n-placeholder="card.game.telnetPlaceholder" placeholder="輸入 Telnet 指令…" />

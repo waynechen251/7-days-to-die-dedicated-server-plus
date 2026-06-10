@@ -11,6 +11,10 @@
     D.gnList.querySelectorAll(".save-chip").forEach((c) => (c.disabled = !!disabled));
   }
 
+  function setGameRuntimeVisible(visible) {
+    D.gameRuntimeSection?.classList.toggle("hidden", !visible);
+  }
+
   function applyUIState({
     backendUp,
     steamRunning,
@@ -52,6 +56,7 @@
 
     // 後端離線
     if (S.backendDown || !backendUp) {
+      setGameRuntimeVisible(false);
       setBadge(D.stBackend, "err");
       // 重置其他徽章
       setBadge(D.stSteam, "");
@@ -69,6 +74,7 @@
     const gameStatus = gameRunning ? (telnetOk ? "ok" : "warn") : "err";
     setBadge(D.stGame, gameStatus);
     setBadge(D.stTelnet, telnetOk ? "ok" : "err");
+    setGameRuntimeVisible(gameRunning);
     updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning, statsUpdatedAt });
 
     if (isViewer) {
