@@ -92,11 +92,13 @@
 
     on(D.stopServerBtn, "click", async () => {
       try {
+        appendLog("game", "⏳ 正在發送關閉伺服器指令...", Date.now());
         appendLog(
           "game",
           await fetchText("/api/stop", { method: "POST" }),
           Date.now()
         );
+        setTimeout(() => App.bootstrap?.refreshStatus?.(), 250);
       } catch (e) {
         appendLog("system", `❌ ${e.message}`, Date.now());
       }

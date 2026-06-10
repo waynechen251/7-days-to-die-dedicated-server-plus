@@ -246,7 +246,9 @@ module.exports = function registerGameRoutes(app, ctx) {
 
   app.post("/api/stop", async (req, res) => {
     try {
-      const result = await sendTelnetCommand("shutdown");
+      const result = await sendTelnetCommand("shutdown", {
+        waitForPrompt: false,
+      });
       const line = `✅ 關閉伺服器指令已發送`;
       log(`${line}: ${result}`);
       eventBus.push("game", { text: line });
