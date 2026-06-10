@@ -49,6 +49,7 @@
       telnetOk: false,
       gameVersion: "",
       onlinePlayers: "",
+      statsUpdatedAt: null,
     },
     hasEverConnected: false,
     backupInProgress: false,

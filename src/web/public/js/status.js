@@ -23,6 +23,7 @@
     max,
     zom,
     rss,
+    statsUpdatedAt,
   }) {
     const all = [
       D.installServerBtn,
@@ -68,7 +69,7 @@
     const gameStatus = gameRunning ? (telnetOk ? "ok" : "warn") : "err";
     setBadge(D.stGame, gameStatus);
     setBadge(D.stTelnet, telnetOk ? "ok" : "err");
-    updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning });
+    updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning, statsUpdatedAt });
 
     if (isViewer) {
       const readOnlyButtons = [
@@ -227,7 +228,7 @@
 
     syncConfigLockFromStatus();
     
-    updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning });
+    updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning, statsUpdatedAt });
 
     if (D.configStartBtn) {
       D.configStartBtn.textContent = gameRunning
@@ -238,10 +239,10 @@
     App.saves?.updateApplyActiveBtnState?.();
   }
 
-  function updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning }) {
+  function updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning, statsUpdatedAt }) {
     const gvEl = document.getElementById("gameVersionBadge");
     if (gvEl) {
-      gvEl.textContent = `${t("card.game.version", "版本:")} ${ 
+      gvEl.textContent = `${t("card.game.version", "版本:")} ${
         gameVersion ? gameVersion : gameRunning ? "-" : "-"
       }`;
     }
@@ -263,6 +264,19 @@
 
     const rssEl = document.getElementById("rssBadge");
     if (rssEl) rssEl.textContent = Number.isFinite(rss) ? rss + "MB" : "-";
+
+    const updatedEl = document.getElementById("statsUpdatedBadge");
+    if (updatedEl) {
+      updatedEl.textContent = `${t("card.game.statsUpdatedAt", "更新於:")} ${
+        statsUpdatedAt ? formatDateTime(statsUpdatedAt) : "-"
+      }`;
+    }
+  }
+
+  function formatDateTime(ts) {
+    const d = new Date(ts);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }
 
   function computeGameRunning() {

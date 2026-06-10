@@ -186,6 +186,7 @@ module.exports = function registerGameRoutes(app, ctx) {
             processManager.gameServer.maxMB = logData.data.max;
             processManager.gameServer.zom = logData.data.zom;
             processManager.gameServer.rssMB = logData.data.rss;
+            processManager.gameServer.statsUpdatedAt = Date.now();
             try {
               processManager.status?.refresh?.().catch(() => {});
             } catch (_) {}

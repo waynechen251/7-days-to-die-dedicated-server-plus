@@ -39,6 +39,7 @@ const processManager = {
     co: null,
     zom: null,
     rssMB: null,
+    statsUpdatedAt: null,
     get isRunning() {
       return gameServer.isRunning;
     },
@@ -87,6 +88,7 @@ const status = (function () {
         co: null,
         zom: null,
         rssMB: null,
+        statsUpdatedAt: null,
       },
     },
     lastUpdated: 0,
@@ -158,6 +160,7 @@ const status = (function () {
               processManager.gameServer.rssMB != null
                 ? processManager.gameServer.rssMB
                 : null,
+            statsUpdatedAt: processManager.gameServer.statsUpdatedAt,
           },
         },
         lastUpdated: Date.now(),
@@ -196,6 +199,7 @@ const status = (function () {
       processManager.gameServer.co = null;
       processManager.gameServer.zom = null;
       processManager.gameServer.rssMB = null;
+      processManager.gameServer.statsUpdatedAt = null;
     },
   };
 })();

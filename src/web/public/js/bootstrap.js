@@ -170,6 +170,7 @@
         max: maxVal,
         zom: Number.isFinite(game.zom) ? game.zom : undefined,
         rss: rssVal,
+        statsUpdatedAt: game.statsUpdatedAt || null,
       });
     } catch {
       setState({
@@ -179,6 +180,7 @@
         telnetOk: false,
         gameVersion: "",
         onlinePlayers: "",
+        statsUpdatedAt: null,
       });
     } finally {
       setTimeout(refreshStatus, 1000);
