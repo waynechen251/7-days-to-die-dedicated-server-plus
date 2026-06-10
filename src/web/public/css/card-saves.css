@@ -80,3 +80,117 @@
 .form-grid.form-grid--backup > .field.span-2 {
   grid-column: 1 / -1;
 }
+
+/* GameName chip 清單 */
+.saves-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: 0.5rem 0.6rem;
+  background: var(--c-bg);
+  border: 1px solid var(--c-border);
+  border-radius: var(--radius-s);
+  max-height: 140px;
+  overflow-y: auto;
+}
+
+.save-chip {
+  font: 400 0.8rem/1.3 var(--font-stack);
+  padding: 0.35rem 0.7rem;
+  background: var(--c-surface-alt);
+  border: 1px solid var(--c-border-soft);
+  border-radius: 999px;
+  color: var(--c-text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.save-chip:hover:not(:disabled) {
+  border-color: var(--c-primary);
+}
+
+.save-chip.is-selected {
+  background: var(--c-primary);
+  border-color: var(--c-primary);
+  color: #fff;
+}
+
+.save-chip--active {
+  border-style: solid;
+  box-shadow: inset 0 0 0 1px var(--c-accent);
+}
+
+.save-chip--active::after {
+  content: "🟢";
+  margin-left: 0.3em;
+  font-size: 0.75em;
+}
+
+.saves-chip-empty {
+  font-size: 0.8rem;
+  color: var(--c-text-sec);
+  font-style: italic;
+}
+
+/* 目前使用中資訊列 */
+.saves-active-config {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--c-text-sec);
+}
+
+/* 匯出區塊分組 */
+.saves-export-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 1px solid var(--c-border-soft);
+  border-radius: var(--radius-s);
+}
+
+.saves-export-block__title {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--c-text);
+}
+
+.saves-export-block__selected {
+  color: var(--c-primary);
+}
+
+.saves-export-block__desc {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--c-text-sec);
+}
+
+/* 首頁總覽：可點選項目 */
+.saves-overview__world-name,
+.saves-overview__name {
+  cursor: pointer;
+}
+
+.saves-overview__world-name:hover,
+.saves-overview__name:hover {
+  color: var(--c-primary);
+}
+
+.saves-overview__world-name:focus-visible,
+.saves-overview__name:focus-visible {
+  outline: 2px solid var(--c-primary);
+  outline-offset: 1px;
+  border-radius: var(--radius-s);
+}
+
+.saves-overview__world-name--active,
+.saves-overview__name--active {
+  color: var(--c-accent);
+  font-weight: 600;
+}
+
+.saves-overview__world-name--active::after,
+.saves-overview__name--active::after {
+  content: " 🟢";
+}

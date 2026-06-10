@@ -47,10 +47,13 @@
       if (e.key === "Escape" && !modal.classList.contains("hidden")) hide();
     }
 
-    async function open() {
+    async function open(world, name) {
       show();
       App.dom?.refresh?.();
       await App.saves?.loadSaves?.();
+      if (world) App.saves?.selectWorldGame?.(world, name);
+      App.saves?.bindGnListEvents?.();
+      if (App.i18n?.updateDOM) App.i18n.updateDOM();
     }
 
     closeBtn?.addEventListener("click", hide);
@@ -63,32 +66,36 @@
     App.savesManage = { open, hide };
   }
 
+  async function openModal(world, name) {
+    try {
+      await ensureFragment(
+        "savesManageModal",
+        "fragments/card-saves-modal.html"
+      );
+      const alreadyBound = !!App.savesManage;
+      wireModal();
+      if (App.savesManage?.open) {
+        await App.savesManage.open(world, name);
+      } else if (!alreadyBound) {
+        console.error("存檔管理視窗綁定失敗：缺少 open()");
+      }
+    } catch (e) {
+      console.error("載入存檔管理視窗失敗:", e);
+    }
+  }
+
   function bindTrigger() {
     const triggerBtn = document.getElementById("saves-open-manage-btn");
     if (!triggerBtn) return false;
 
     if (!triggerBtn.__bound_openSavesManage) {
-      triggerBtn.addEventListener("click", async () => {
-        try {
-          await ensureFragment(
-            "savesManageModal",
-            "fragments/card-saves-modal.html"
-          );
-          const alreadyBound = !!App.savesManage;
-          wireModal();
-          if (App.savesManage?.open) {
-            await App.savesManage.open();
-          } else if (!alreadyBound) {
-            console.error("存檔管理視窗綁定失敗：缺少 open()");
-          }
-        } catch (e) {
-          console.error("載入存檔管理視窗失敗:", e);
-        }
-      });
+      triggerBtn.addEventListener("click", () => openModal());
       triggerBtn.__bound_openSavesManage = true;
     }
     return true;
   }
+
+  App.savesOpenModal = openModal;
 
   function boot() {
     if (bindTrigger()) return;

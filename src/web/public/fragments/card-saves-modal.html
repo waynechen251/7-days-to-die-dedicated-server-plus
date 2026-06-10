@@ -21,46 +21,76 @@
               <span class="field__label" data-i18n="card.saves.gameWorld">GameWorld</span>
               <select id="gwSelect" class="field__control"></select>
             </label>
-            <label class="field">
+            <div class="field">
               <span class="field__label" data-i18n="card.saves.gameName">GameName</span>
-              <select id="gnSelect" class="field__control"></select>
-            </label>
+              <div id="gnList" class="saves-chip-list" role="group"></div>
+            </div>
           </div>
+          <p class="saves-active-config">
+            <span data-i18n="card.saves.activeConfigLabel">目前使用中：</span>
+            <span id="saves-active-config-label" data-i18n="card.saves.activeConfigNone">未設定</span>
+          </p>
         </section>
 
         <section class="saves-group">
           <h3 class="field__label" data-i18n="card.saves.export">匯出</h3>
-          <div class="btn-row wrap">
-            <button
-              id="exportGameNameBtn"
-              class="btn"
-              data-i18n="card.saves.exportGameNameOnly"
-              data-i18n-title="card.saves.exportGameNameTitle"
-              title="匯出目前選擇的 GameWorld / GameName"
-            >
-              📤 僅匯出所選 GameName
-            </button>
-            <button
-              id="exportSavesBtn"
-              class="btn"
-              data-i18n="card.saves.exportFullSaves"
-              data-i18n-title="card.saves.exportFullSavesTitle"
-              title="完整匯出整個 Saves 目錄"
-            >
-              💾 匯出完整 Saves
-            </button>
-            <button
-              id="deleteGameNameBtn"
-              class="btn"
-              title="刪除所選 GameName"
-              data-i18n="card.saves.deleteGameName"
-              data-i18n-title="card.saves.deleteGameNameTitle"
-              data-danger-i18n="confirm.deleteGameName"
-              data-cancel-i18n="common.cancel"
-              data-continue-i18n="common.confirm"
-            >
-              ❌ 刪除所選 GameName
-            </button>
+
+          <div class="saves-export-block">
+            <h4 class="saves-export-block__title" data-i18n="card.saves.exportAllTitle">整個 Saves（所有世界）</h4>
+            <p class="saves-export-block__desc" data-i18n="card.saves.exportAllDesc">匯出後台 Saves 根目錄下所有世界與存檔的完整備份。</p>
+            <div class="btn-row wrap">
+              <button
+                id="exportSavesBtn"
+                class="btn"
+                data-i18n="card.saves.exportFullSaves"
+                data-i18n-title="card.saves.exportFullSavesTitle"
+                title="完整匯出整個 Saves 目錄"
+              >
+                💾 匯出完整 Saves
+              </button>
+            </div>
+          </div>
+
+          <div class="saves-export-block">
+            <h4 class="saves-export-block__title">
+              <span data-i18n="card.saves.selectedSavePrefix">所選存檔：</span><span id="saves-export-selected-label" class="saves-export-block__selected" data-i18n="card.saves.noSaveSelected">尚未選擇</span>
+            </h4>
+            <p class="saves-export-block__desc" data-i18n="card.saves.exportOneDesc">僅匯出上方選擇的單一世界存檔，或將其刪除（刪除前會自動建立備份）。</p>
+            <div class="btn-row wrap">
+              <button
+                id="exportGameNameBtn"
+                class="btn"
+                data-i18n="card.saves.exportGameNameOnly"
+                data-i18n-title="card.saves.exportGameNameTitle"
+                title="匯出目前選擇的 GameWorld / GameName"
+              >
+                📤 匯出此存檔
+              </button>
+              <button
+                id="applyActiveSaveBtn"
+                class="btn btn--accent"
+                data-i18n="card.saves.applyActiveSave"
+                data-i18n-title="card.saves.applyActiveSaveTitle"
+                data-danger-i18n="confirm.applyActiveSave"
+                data-cancel-i18n="common.cancel"
+                data-continue-i18n="common.confirm"
+                title="將所選存檔寫入 serverconfig.xml 的 GameWorld/GameName，下次啟動伺服器將載入此存檔"
+              >
+                🔀 切換為使用中存檔
+              </button>
+              <button
+                id="deleteGameNameBtn"
+                class="btn btn--danger"
+                title="刪除所選 GameName"
+                data-i18n="card.saves.deleteGameName"
+                data-i18n-title="card.saves.deleteGameNameTitle"
+                data-danger-i18n="confirm.deleteGameName"
+                data-cancel-i18n="common.cancel"
+                data-continue-i18n="common.confirm"
+              >
+                ❌ 刪除此存檔
+              </button>
+            </div>
           </div>
         </section>
 

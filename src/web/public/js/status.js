@@ -6,6 +6,11 @@
 
   const t = (key, def) => (App.i18n ? App.i18n.t(key) : def || key);
 
+  function setGnListDisabled(disabled) {
+    if (!D.gnList) return;
+    D.gnList.querySelectorAll(".save-chip").forEach((c) => (c.disabled = !!disabled));
+  }
+
   function applyUIState({
     backendUp,
     steamRunning,
@@ -32,8 +37,8 @@
       D.telnetSendBtn,
       ...D.telnetBtns,
       D.gwSelect,
-      D.gnSelect,
       D.exportGameNameBtn,
+      D.applyActiveSaveBtn,
       D.refreshSavesBtn,
       D.viewBackupsBtn,
       D.backupSelect,
@@ -52,6 +57,8 @@
       setBadge(D.stGame, "");
       setBadge(D.stTelnet, "");
       setDisabled(all, true);
+      setGnListDisabled(true);
+      App.saves?.updateApplyActiveBtnState?.();
       return;
     }
 
@@ -67,6 +74,7 @@
       const readOnlyButtons = [
         D.installServerBtn,
         D.deleteGameNameBtn,
+        D.applyActiveSaveBtn,
         D.stopServerBtn,
         D.killServerBtn,
         D.configStartBtn,
@@ -93,11 +101,11 @@
         D.viewConfigBtn,
         D.exportSavesBtn,
         D.gwSelect,
-        D.gnSelect,
         D.refreshSavesBtn,
         D.viewBackupsBtn,
       ];
       setDisabled(viewOnlyButtons, false);
+      setGnListDisabled(false);
       
       // 更新按鈕文字狀態 (例如查看配置 vs 啟動伺服器)
       if (D.configStartBtn) {
@@ -114,22 +122,24 @@
         }
       }
 
+      App.saves?.updateApplyActiveBtnState?.();
       return;
     }
 
     // ─── 標準權限邏輯 (Admin / Operator) ───
     setDisabled(all, false);
-    
+    setGnListDisabled(false);
+
     if (steamRunning) {
       setDisabled(all, true);
       setDisabled([D.installServerBtn, D.viewConfigBtn], false);
 
       const savesControls = [
         D.gwSelect,
-        D.gnSelect,
         D.refreshSavesBtn,
         D.exportSavesBtn,
         D.exportGameNameBtn,
+        D.applyActiveSaveBtn,
         D.deleteGameNameBtn,
         D.viewBackupsBtn,
         D.backupSelect,
@@ -140,6 +150,7 @@
 
       const lockBecauseBackup = S.backupInProgress;
       setDisabled(savesControls, !!lockBecauseBackup);
+      setGnListDisabled(!!lockBecauseBackup);
 
       if (D.installServerBtn) {
         D.installServerBtn.textContent = "❌ " + t("card.game.abortInstall", "中斷安裝 / 更新");
@@ -150,6 +161,7 @@
         D.installServerBtn.setAttribute("data-cancel-text", t("common.cancel", "取消"));
         D.installServerBtn.setAttribute("data-continue-text", t("common.confirm", "繼續"));
       }
+      App.saves?.updateApplyActiveBtnState?.();
       return;
     } else {
       if (D.installServerBtn) {
@@ -183,6 +195,7 @@
     setDisabled(D.exportSavesBtn, gameRunning || lockBecauseBackup);
     setDisabled(D.deleteGameNameBtn, gameRunning || lockBecauseBackup);
     setDisabled(D.exportGameNameBtn, gameRunning || lockBecauseBackup);
+    setDisabled(D.applyActiveSaveBtn, gameRunning || lockBecauseBackup);
 
     const canManageSaves = !gameRunning && !lockBecauseBackup;
     setDisabled(
@@ -196,13 +209,20 @@
     );
 
     setDisabled(
-      [D.gwSelect, D.gnSelect, D.refreshSavesBtn, D.backupSelect],
+      [D.gwSelect, D.refreshSavesBtn, D.backupSelect],
       false
     );
+    setGnListDisabled(false);
 
-    if (App.auth?.isOperator?.() && D.deleteGameNameBtn) {
-      D.deleteGameNameBtn.disabled = true;
-      D.deleteGameNameBtn.title = t("auth.operatorNoPermission", "操作員無權執行此操作");
+    if (App.auth?.isOperator?.()) {
+      if (D.deleteGameNameBtn) {
+        D.deleteGameNameBtn.disabled = true;
+        D.deleteGameNameBtn.title = t("auth.operatorNoPermission", "操作員無權執行此操作");
+      }
+      if (D.applyActiveSaveBtn) {
+        D.applyActiveSaveBtn.disabled = true;
+        D.applyActiveSaveBtn.title = t("auth.operatorNoPermission", "操作員無權執行此操作");
+      }
     }
 
     syncConfigLockFromStatus();
@@ -214,6 +234,8 @@
         ? "📝 " + t("card.game.viewServerconfig", "檢視 serverconfig.xml")
         : "🛠 " + t("card.game.startServer", "啟動伺服器");
     }
+
+    App.saves?.updateApplyActiveBtnState?.();
   }
 
   function updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning }) {

@@ -136,8 +136,8 @@
     on(D.refreshSavesBtn, "click", () => App.saves.loadSaves());
 
     on(D.exportGameNameBtn, "click", async () => {
-      const world = D.gwSelect.value || "";
-      const name = D.gnSelect.value || "";
+      const world = S.selectedWorld || "";
+      const name = S.selectedName || "";
       if (!world || !name) {
         appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectWorldName") : "請選擇 GameWorld / GameName"}`, Date.now());
         return;
@@ -223,8 +223,8 @@
     });
 
     on(D.deleteGameNameBtn, "click", async () => {
-      const world = D.gwSelect.value || "";
-      const name = D.gnSelect.value || "";
+      const world = S.selectedWorld || "";
+      const name = S.selectedName || "";
       if (!world || !name) {
         appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectWorldName") : "請選擇 GameWorld / GameName"}`, Date.now());
         return;
@@ -269,7 +269,27 @@
 
     on(D.versionSelect, "change", () => updateVersionLockUI());
 
-    on(D.gwSelect, "change", () => App.saves.fillNamesFor(D.gwSelect.value));
+    on(D.gwSelect, "change", () => {
+      S.selectedWorld = D.gwSelect.value || "";
+      S.selectedName = "";
+      App.saves.fillNamesFor(S.selectedWorld);
+    });
+
+    on(D.applyActiveSaveBtn, "click", async () => {
+      const world = S.selectedWorld || "";
+      const name = S.selectedName || "";
+      if (!world || !name) {
+        appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectWorldName") : "請選擇 GameWorld / GameName"}`, Date.now());
+        return;
+      }
+      switchTab("backup");
+      try {
+        await App.saves.applyActiveSave();
+        appendLog("backup", `✅ ${App.i18n ? App.i18n.t("messages.activeSaveApplied", { world, name }) : `已切換使用中存檔: ${world} / ${name}`}`, Date.now());
+      } catch (e) {
+        appendLog("backup", `❌ ${e.message}`, Date.now());
+      }
+    });
 
     App.actions = { sendTelnet };
   }

@@ -17,8 +17,9 @@
         document.querySelectorAll('button[data-role="telnet"]')
       ),
       gwSelect: $("gwSelect"),
-      gnSelect: $("gnSelect"),
+      gnList: $("gnList"),
       exportGameNameBtn: $("exportGameNameBtn"),
+      applyActiveSaveBtn: $("applyActiveSaveBtn"),
       refreshSavesBtn: $("refreshSavesBtn"),
       backupSelect: $("backupSelect"),
       importBackupBtn: $("importBackupBtn"),

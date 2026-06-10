@@ -66,5 +66,9 @@
     },
 
     worldMap: new Map(),
+    selectedWorld: "",
+    selectedName: "",
+    activeWorld: "",
+    activeName: "",
   };
 })(window);
