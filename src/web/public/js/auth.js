@@ -502,6 +502,11 @@
     }
   }
 
+  w.addEventListener("i18n:changed", () => {
+    if (!currentUser) return;
+    updateUI();
+  });
+
   // ─── 工具 ────────────────────────────────────────
   function escapeHtml(str) {
     const d = document.createElement("div");
