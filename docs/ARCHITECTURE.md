@@ -105,8 +105,10 @@
 │   ├── install.md                  # 安裝指南 (繁中)
 │   ├── install.en.md               # 安裝指南 (英文)
 │   └── ARCHITECTURE.md             # 本文檔
-├── .agents/                        # 專案知識 Agent 定義
-│   └── project-knowledge.agent.md  # 專案知識與限制摘要
+├── .agents/                        # Agent 文件與專案知識
+│   ├── 7DaysToDie_Save_Structure_KnowledgeBase_zh-TW.md  # 存檔結構知識庫
+│   ├── project-knowledge.agent.md  # 專案知識與限制摘要
+│   └── ui-panel-design.agent.md    # 後台 UI 設計參考
 ├── AGENTS.md                       # 專案共用 Agent 指南
 ├── CONTRIBUTING.md                 # 貢獻指南
 ├── .editorconfig                   # 編輯器配置
