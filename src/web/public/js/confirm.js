@@ -95,12 +95,15 @@
       };
 
       function close(ok) {
+        triggerEl?.focus();
         m.classList.add("hidden");
         m.setAttribute("aria-hidden", "true");
         m.removeEventListener("click", onClick, true);
         document.removeEventListener("keydown", onKey, true);
         resolve(ok);
       }
+
+      const triggerEl = document.activeElement;
 
       m.addEventListener("click", onClick, true);
       document.addEventListener("keydown", onKey, true);

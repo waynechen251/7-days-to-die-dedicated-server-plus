@@ -49,6 +49,7 @@
       telnetOk: false,
       gameVersion: "",
       onlinePlayers: "",
+      statsUpdatedAt: null,
     },
     hasEverConnected: false,
     backupInProgress: false,
@@ -66,5 +67,15 @@
     },
 
     worldMap: new Map(),
+    savesBackupCount: 0,
+    saveBackups: {
+      full: [],
+      single: [],
+      unknown: [],
+    },
+    selectedWorld: "",
+    selectedName: "",
+    activeWorld: "",
+    activeName: "",
   };
 })(window);

@@ -81,7 +81,17 @@ async function telnetEnd() {
   console.log("telnet連線中斷");
 }
 
-async function sendTelnetCommand(command) {
+async function sendTelnetCommand(command, options = {}) {
+  const waitForPrompt = options.waitForPrompt !== false;
+
+  if (!connection) {
+    throw new Error(`Telnet 尚未連線，無法執行命令: ${command}`);
+  }
+
+  if (!waitForPrompt) {
+    return await sendTelnetCommandNoWait(command);
+  }
+
   try {
     const result = await connection.send(command, { waitfor: ">" });
     return result.trim();
@@ -91,6 +101,20 @@ async function sendTelnetCommand(command) {
       `連線或指令執行失敗: ${err.message}\n執行的命令: ${command}`
     );
   }
+}
+
+async function sendTelnetCommandNoWait(command) {
+  return await new Promise((resolve, reject) => {
+    const socket = connection?.socket;
+    if (!socket || socket.destroyed || !socket.writable) {
+      return reject(new Error(`Telnet socket 不可用，無法執行命令: ${command}`));
+    }
+
+    socket.write(`${command}\r\n`, "utf8", (err) => {
+      if (err) return reject(err);
+      resolve(`命令已送出: ${command}`);
+    });
+  });
 }
 
 function checkTelnetAlive() {

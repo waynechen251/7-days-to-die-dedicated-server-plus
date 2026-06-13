@@ -39,6 +39,7 @@ const processManager = {
     co: null,
     zom: null,
     rssMB: null,
+    statsUpdatedAt: null,
     get isRunning() {
       return gameServer.isRunning;
     },
@@ -60,8 +61,8 @@ const processManager = {
     async checkTelnet() {
       return await gameServer.checkTelnet();
     },
-    async isProcessRunning(exeName) {
-      return await gameServer.isProcessRunning(exeName);
+    async isProcessRunning() {
+      return await gameServer.isProcessRunning();
     },
   },
 };
@@ -87,6 +88,7 @@ const status = (function () {
         co: null,
         zom: null,
         rssMB: null,
+        statsUpdatedAt: null,
       },
     },
     lastUpdated: 0,
@@ -158,6 +160,7 @@ const status = (function () {
               processManager.gameServer.rssMB != null
                 ? processManager.gameServer.rssMB
                 : null,
+            statsUpdatedAt: processManager.gameServer.statsUpdatedAt,
           },
         },
         lastUpdated: Date.now(),
@@ -196,6 +199,7 @@ const status = (function () {
       processManager.gameServer.co = null;
       processManager.gameServer.zom = null;
       processManager.gameServer.rssMB = null;
+      processManager.gameServer.statsUpdatedAt = null;
     },
   };
 })();
@@ -239,7 +243,7 @@ processManager.registerRoutes = function registerRoutes(
         return http.sendOk(req, res, `✅ ${warn}`);
       }
 
-      eventBus.push("system", {
+      eventBus.push("game", {
         text: `🗡️ 送出強制結束請求 pid=${targetPid}`,
       });
 
@@ -261,7 +265,7 @@ processManager.registerRoutes = function registerRoutes(
         processManager.status.resetVersion();
         const line = `⚠️ 已強制結束遊戲進程 pid=${targetPid}`;
         log(line);
-        eventBus.push("system", { text: line });
+        eventBus.push("game", { text: line });
         return http.sendOk(req, res, `✅ ${line}`);
       } else {
         const line = `❌ 強制結束失敗 pid=${targetPid}(可能為權限不足或進程不存在)`;

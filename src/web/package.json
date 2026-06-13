@@ -1,6 +1,6 @@
 {
   "name": "7-days-to-die-dedicated-server-plus",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "",
   "main": "server.js",
   "scripts": {

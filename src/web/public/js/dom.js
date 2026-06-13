@@ -11,19 +11,27 @@
       killServerBtn: $("killServerBtn"),
       versionSelect: $("versionSelect"),
       versionSourceBadge: $("versionSourceBadge"),
+      gameRuntimeSection: $("gameRuntimeSection"),
       telnetInput: $("telnetInput"),
       telnetSendBtn: $("telnetSendBtn"),
       telnetBtns: Array.from(
         document.querySelectorAll('button[data-role="telnet"]')
       ),
       gwSelect: $("gwSelect"),
-      gnSelect: $("gnSelect"),
+      gnList: $("gnList"),
       exportGameNameBtn: $("exportGameNameBtn"),
+      applyActiveSaveBtn: $("applyActiveSaveBtn"),
       refreshSavesBtn: $("refreshSavesBtn"),
-      backupSelect: $("backupSelect"),
-      importBackupBtn: $("importBackupBtn"),
-      importUploadFile: $("importUploadFile"),
-      importUploadBtn: $("importUploadBtn"),
+      fullBackupSelect: $("fullBackupSelect"),
+      importFullBackupBtn: $("importFullBackupBtn"),
+      deleteFullBackupBtn: $("deleteFullBackupBtn"),
+      fullImportUploadFile: $("fullImportUploadFile"),
+      importFullUploadBtn: $("importFullUploadBtn"),
+      singleBackupSelect: $("singleBackupSelect"),
+      importSingleBackupBtn: $("importSingleBackupBtn"),
+      deleteSingleBackupBtn: $("deleteSingleBackupBtn"),
+      singleImportUploadFile: $("singleImportUploadFile"),
+      importSingleUploadBtn: $("importSingleUploadBtn"),
       stBackend: $("st-backend"),
       stSteam: $("st-steam"),
       stGame: $("st-game"),
@@ -44,6 +52,11 @@
       splitResizer: $("splitResizer"),
       appSplit: document.querySelector(".app-split"),
       paneMainEl: document.querySelector(".pane-main"),
+      paneConsoleEl: document.querySelector(".pane-console"),
+      consoleCollapseBtn: $("consoleCollapseBtn"),
+      consoleCollapseText: $("consoleCollapseText"),
+      consoleCollapseIcon: $("consoleCollapseIcon"),
+      consolePanesEl: $("consolePanes"),
 
       panes: {
         system: $("console-system"),
@@ -61,8 +74,18 @@
         return map;
       })(),
 
-      deleteBackupBtn: document.getElementById("deleteBackupBtn"),
       updateBadge: $("updateBadge"),
+
+      fwStatusBadge: $("fw-status-badge"),
+      fwApplyBtn: $("fw-apply-btn"),
+      fwRemoveBtn: $("fw-remove-btn"),
+      fwRefreshBtn: $("fw-refresh-btn"),
+      fwToggleAutoManage: $("fw-toggle-auto-manage"),
+      fwToggleRemoveOnStop: $("fw-toggle-remove-on-stop"),
+      fwToggleGamePorts: $("fw-toggle-game-ports"),
+      fwToggleMgmtPorts: $("fw-toggle-mgmt-ports"),
+      fwElevationWarn: $("fw-elevation-warn"),
+      fwPlatformWarn: $("fw-platform-warn"),
     };
   }
 

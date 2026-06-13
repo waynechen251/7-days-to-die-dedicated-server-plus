@@ -671,20 +671,46 @@
 
     (function equalPortGuards() {
       const portEntries = [];
-      Object.keys(values).forEach((k) => {
-        if (!/Port$/i.test(k)) return;
-        if (!enables[k]) return;
-        const v = parseInt(values[k], 10);
-        if (!Number.isFinite(v) || v <= 0 || v > 65535) return;
-        portEntries.push({ name: k, port: v });
-      });
+      const seen = new Set();
+
+      function addEntry(name, port, protocol) {
+        const p = parseInt(port, 10);
+        if (!Number.isFinite(p) || p <= 0 || p > 65535) return;
+        const proto = String(protocol || "").toUpperCase();
+        const key = `${name}:${p}:${proto}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        portEntries.push({
+          name,
+          port: p,
+          protocol: proto,
+          displayName: `${name} (${proto})`,
+        });
+      }
+
+      if (enables.ServerPort) {
+        const sp = parseInt(values.ServerPort, 10);
+        if (Number.isFinite(sp) && sp > 0 && sp <= 65535) {
+          addEntry("ServerPort", sp, "TCP");
+          addEntry("ServerPort", sp, "UDP");
+          addEntry("ServerPort+1", sp + 1, "UDP");
+          addEntry("ServerPort+2", sp + 2, "UDP");
+          addEntry("ServerPort+3", sp + 3, "UDP");
+        }
+      }
+
+      if (enables.TelnetPort) addEntry("TelnetPort", values.TelnetPort, "TCP");
+      if (enables.WebDashboardPort)
+        addEntry("WebDashboardPort", values.WebDashboardPort, "TCP");
+      if (enables.ControlPanelPort)
+        addEntry("ControlPanelPort", values.ControlPanelPort, "TCP");
 
       if (Number.isFinite(webPort)) {
         for (const pe of portEntries) {
-          if (pe.port === webPort) {
+          if (pe.port === webPort && pe.protocol === "TCP") {
             results.push({
               ok: false,
-              text: t("checks.portConflictWithConsole", `${pe.name} 不可與控制台埠 ${webPort} 相同(避免衝突)`, { name: pe.name, port: webPort }),
+              text: t("checks.portConflictWithConsole", `${pe.displayName} 不可與控制台埠 ${webPort}/TCP 相同(避免衝突)`, { name: pe.displayName, port: webPort }),
             });
           }
         }
@@ -694,10 +720,10 @@
         for (let j = i + 1; j < portEntries.length; j++) {
           const a = portEntries[i];
           const b = portEntries[j];
-          if (a.port === b.port) {
+          if (a.port === b.port && a.protocol === b.protocol) {
             results.push({
               ok: false,
-              text: t("checks.portConflictSame", `${a.name} 與 ${b.name} 不可使用相同埠 (${a.port})`, { nameA: a.name, nameB: b.name, port: a.port }),
+              text: t("checks.portConflictSame", `${a.displayName} 與 ${b.displayName} 不可使用相同埠 (${a.port}/${a.protocol})`, { nameA: a.displayName, nameB: b.displayName, port: `${a.port}/${a.protocol}` }),
             });
           }
         }
@@ -718,24 +744,24 @@
                   if (localRes.data?.inUse && !localRes.data?.isDummy) {
                     results.push({
                       ok: false,
-                      text: t("checks.serverPortLocalInUse", `ServerPort 本機 ${sp} 已被佔用`, { port: sp }),
+                      text: t("checks.serverPortLocalInUse", `ServerPort/TCP 本機 ${sp} 已被佔用`, { port: sp }),
                     });
                   } else {
                     results.push({
                       ok: true,
-                      text: t("checks.serverPortLocalFree", `ServerPort 本機 ${sp} 未被佔用`, { port: sp }),
+                      text: t("checks.serverPortLocalFree", `ServerPort/TCP 本機 ${sp} 未被佔用`, { port: sp }),
                     });
                   }
                 } else {
                   results.push({
                     ok: "warn",
-                    text: t("checks.serverPortLocalCheckFailed", `ServerPort 本機檢查失敗: ${localRes?.message || "未知錯誤"}`, { error: localRes?.message || "未知錯誤" }),
+                    text: t("checks.serverPortLocalCheckFailed", `ServerPort/TCP 本機檢查失敗: ${localRes?.message || "未知錯誤"}`, { error: localRes?.message || "未知錯誤" }),
                   });
                 }
               } catch (e) {
                 results.push({
                   ok: "warn",
-                  text: t("checks.serverPortLocalCheckException", `ServerPort 本機檢查例外: ${e.message}`, { error: e.message }),
+                  text: t("checks.serverPortLocalCheckException", `ServerPort/TCP 本機檢查例外: ${e.message}`, { error: e.message }),
                 });
               }
 
@@ -758,23 +784,23 @@
                 if (pfRes.data?.open === true) {
                   results.push({
                     ok: true,
-                    text: t("checks.serverPortForwardOk", `ServerPort 轉發正常：${pubIp}:${sp} 可從公網連線`, { ip: pubIp, port: sp }),
+                    text: t("checks.serverPortForwardOk", `ServerPort/TCP 轉發正常：${pubIp}:${sp} 可從公網連線`, { ip: pubIp, port: sp }),
                   });
                 } else if (svcErr) {
                   results.push({
                     ok: "warn",
-                    text: t("checks.serverPortForwardServiceFailed", `ServerPort 轉發檢查服務失敗：${pfRes.data.error}`, { error: pfRes.data.error }),
+                    text: t("checks.serverPortForwardServiceFailed", `ServerPort/TCP 轉發檢查服務失敗：${pfRes.data.error}`, { error: pfRes.data.error }),
                   });
                 } else {
                   results.push({
                     ok: "warn",
-                    text: t("checks.serverPortForwardFailed", `ServerPort 轉發測試未通：${pubIp}:${sp}(請稍後再試或確認 NAT/防火牆)`, { ip: pubIp, port: sp }),
+                    text: t("checks.serverPortForwardFailed", `ServerPort/TCP 轉發測試未通：${pubIp}:${sp}(請稍後再試或確認 NAT/防火牆)`, { ip: pubIp, port: sp }),
                   });
                 }
               } else {
                 results.push({
                   ok: "warn",
-                  text: t("checks.serverPortForwardError", `ServerPort 轉發檢查錯誤: ${pfRes.message || "未知錯誤"}`, { error: pfRes.message || "未知錯誤" }),
+                  text: t("checks.serverPortForwardError", `ServerPort/TCP 轉發檢查錯誤: ${pfRes.message || "未知錯誤"}`, { error: pfRes.message || "未知錯誤" }),
                 });
               }
             } catch (e) {
@@ -785,6 +811,13 @@
             }
           })()
         );
+        results.push({
+          ok: "warn",
+          text: t(
+            "checks.serverPortTcpOnlyNotice",
+            "目前僅檢查 ServerPort/TCP；遊戲 UDP 與 ServerPort+1~+3/UDP 請另行確認防火牆與轉發"
+          ),
+        });
       }
     }
     if (enables.TelnetPort) {
@@ -955,7 +988,7 @@
     }
 
     try {
-      const needPreview = changed > 0 || toggleChanged > 0 || startAfter;
+      const needPreview = changed > 0 || toggleChanged > 0;
       if (needPreview) {
         const summary = buildChangeSummary({
           updates,
@@ -1001,13 +1034,13 @@
       }
       closeCfgModal();
       if (startAfter) {
-        App.console.switchTab("system");
         const msg = await fetchText("/api/start", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ nographics: false }),
         });
         App.console.appendLog("system", msg, Date.now());
+        App.console.switchTab("game");
       }
     } catch (e) {
       App.console.appendLog(

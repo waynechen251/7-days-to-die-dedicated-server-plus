@@ -14,6 +14,7 @@ const serverConfigLib = require("./lib/serverConfig");
 const steamcmd = require("./lib/steamcmd");
 const { sendTelnetCommand, telnetStart } = require("./lib/telnet");
 const auth = require("./lib/auth");
+const firewall = require("./lib/firewall");
 
 const APP_VERSION = (() => {
   try {
@@ -159,6 +160,17 @@ function loadConfig() {
         }
       }
     } catch (_) {}
+
+    // 補充 firewall 預設值
+    if (!config.firewall) config.firewall = {};
+    const fw = config.firewall;
+    if (fw.autoManage === undefined) fw.autoManage = true;
+    if (fw.removeOnStop === undefined) fw.removeOnStop = true;
+    if (fw.openGamePorts === undefined) fw.openGamePorts = true;
+    if (fw.openManagementPorts === undefined) fw.openManagementPorts = false;
+    if (!fw.rulePrefix) fw.rulePrefix = "7DTD-DS-P-";
+    if (!Array.isArray(fw.appliedRules)) fw.appliedRules = [];
+
     return config;
   } catch (err) {
     error(`❌ 讀取設定檔失敗: ${serverJsonPath}\n${err.message}`);
@@ -194,6 +206,7 @@ const routeContext = {
   },
   closeDummyGamePort: null, // Will be set by network routes
   appVersion: APP_VERSION,
+  firewall,
 };
 
 // Auth 路由（公開，不需驗證）
@@ -263,6 +276,7 @@ require("./lib/routes/game")(app, routeContext);
 require("./lib/routes/install")(app, routeContext);
 require("./lib/routes/versions")(app, routeContext);
 require("./lib/routes/updates")(app, routeContext);
+require("./lib/routes/firewall")(app, routeContext);
 
 // SSE endpoint
 app.get("/api/stream", eventBus.sseHandler);

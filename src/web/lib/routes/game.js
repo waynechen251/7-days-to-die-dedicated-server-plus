@@ -2,6 +2,8 @@ const path = require("path");
 const fs = require("fs");
 const { format } = require("../time");
 
+const GAME_SERVER_EXE = "7DaysToDieServer.exe";
+
 function ensureDir(p) {
   if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
 }
@@ -55,6 +57,7 @@ module.exports = function registerGameRoutes(app, ctx) {
     error,
     getStopGameTail,
     setStopGameTail,
+    firewall,
   } = ctx;
 
   app.post("/api/start", async (req, res) => {
@@ -64,9 +67,8 @@ module.exports = function registerGameRoutes(app, ctx) {
     }
 
     // ✅ 新增：系統層級進程檢查 (避免後台重啟後失去追蹤，或手動開啟的情況)
-    const isAlreadyRunning = await processManager.gameServer.isProcessRunning("7DaysToDieServer.exe") || 
-                             await processManager.gameServer.isProcessRunning("7DaysToDie.exe");
-    
+    const isAlreadyRunning = await processManager.gameServer.isProcessRunning();
+
     if (isAlreadyRunning) {
       const warn = "⚠️ 偵測到遊戲進程已在系統中執行，但目前不受管理後台控制。請先手動關閉該進程，或重新啟動管理後台。";
       log(warn);
@@ -77,19 +79,14 @@ module.exports = function registerGameRoutes(app, ctx) {
     closeDummyGamePort("game-start");
     try {
       processManager.status.resetVersion();
-      const exeName = fs.existsSync(path.join(GAME_DIR, "7DaysToDieServer.exe"))
-        ? "7DaysToDieServer.exe"
-        : "7DaysToDie.exe";
-
-      const exePath = path.join(GAME_DIR, exeName);
+      const exePath = path.join(GAME_DIR, GAME_SERVER_EXE);
       if (!fs.existsSync(exePath)) {
         const msg = `❌ 找不到執行檔: ${exePath}\n請先執行安裝 / 更新，或確認路徑為 {app}\\7daystodieserver\\7DaysToDieServer.exe`;
         error(msg);
         return http.sendErr(req, res, msg);
       }
 
-      const logPrefix =
-        exeName === "7DaysToDieServer.exe" ? "output_log_dedi" : "output_log";
+      const logPrefix = "output_log_dedi";
       const logFileName = `${logPrefix}__${format(
         new Date(),
         "YYYY-MM-DD__HH-mm-ss"
@@ -118,6 +115,13 @@ module.exports = function registerGameRoutes(app, ctx) {
         saveConfig,
       });
 
+      // best-effort 防火牆規則套用（不阻斷伺服器啟動）
+      if (firewall && CONFIG.firewall?.autoManage !== false) {
+        firewall.applyRules(CONFIG, { log, error, eventBus, saveConfig }).catch((err) => {
+          eventBus.push("system", { level: "warn", text: `⚠️ 防火牆套用失敗: ${err?.message || err}` });
+        });
+      }
+
       const nographics = req.body?.nographics ?? true;
       const args = [
         "-logfile",
@@ -131,12 +135,30 @@ module.exports = function registerGameRoutes(app, ctx) {
       ];
 
       processManager.gameServer.start(args, GAME_DIR, {
-        exeName,
         onExit: (code, signal) => {
-          eventBus.push("system", {
+          eventBus.push("game", {
             text: `遊戲進程結束 (code=${code}, signal=${signal || "-"})`,
           });
+          const stopGameTail = getStopGameTail();
+          if (stopGameTail) {
+            try {
+              stopGameTail();
+            } catch (_) {}
+          }
+          setStopGameTail(null);
           processManager.status.resetVersion();
+          // best-effort 防火牆規則移除
+          if (firewall && getConfig().firewall?.removeOnStop !== false) {
+            firewall.removeRules(getConfig(), {
+              log,
+              error,
+              eventBus,
+              saveConfig,
+              allowManagementMutations: false,
+            }).catch((err) => {
+              eventBus.push("system", { level: "warn", text: `⚠️ 防火牆規則移除失敗: ${err?.message || err}` });
+            });
+          }
         },
         onError: (err) => {
           eventBus.push("system", {
@@ -164,6 +186,7 @@ module.exports = function registerGameRoutes(app, ctx) {
             processManager.gameServer.maxMB = logData.data.max;
             processManager.gameServer.zom = logData.data.zom;
             processManager.gameServer.rssMB = logData.data.rss;
+            processManager.gameServer.statsUpdatedAt = Date.now();
             try {
               processManager.status?.refresh?.().catch(() => {});
             } catch (_) {}
@@ -223,16 +246,12 @@ module.exports = function registerGameRoutes(app, ctx) {
 
   app.post("/api/stop", async (req, res) => {
     try {
-      const result = await sendTelnetCommand("shutdown");
-      const stopGameTail = getStopGameTail();
-      if (stopGameTail)
-        try {
-          stopGameTail();
-        } catch (_) {}
-      setStopGameTail(null);
+      const result = await sendTelnetCommand("shutdown", {
+        waitForPrompt: false,
+      });
       const line = `✅ 關閉伺服器指令已發送`;
       log(`${line}: ${result}`);
-      eventBus.push("system", { text: line });
+      eventBus.push("game", { text: line });
       http.sendOk(req, res, `${line}:\n${result}`);
     } catch (err) {
       const msg = `❌ 關閉伺服器失敗: ${err.message}`;

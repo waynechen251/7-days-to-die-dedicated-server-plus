@@ -207,6 +207,19 @@ main.grid > [data-fragment] > .card {
   min-height: 0;
 }
 
+.app-split.console-collapsed .pane-main {
+  flex: 1 1 auto;
+}
+
+.app-split.console-collapsed .split-resizer {
+  display: none;
+}
+
+.app-split.console-collapsed .pane-console {
+  flex: 0 0 var(--console-dock-collapsed);
+  min-height: var(--console-dock-collapsed);
+}
+
 .card-header .status-inline {
   display: flex;
   flex-wrap: wrap;

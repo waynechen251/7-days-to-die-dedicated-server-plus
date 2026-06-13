@@ -10,10 +10,12 @@
     <link rel="stylesheet" href="css/buttons.css" />
     <link rel="stylesheet" href="css/forms.css" />
     <link rel="stylesheet" href="css/cards.css" />
+    <link rel="stylesheet" href="css/card-firewall.css" />
     <link rel="stylesheet" href="css/console.css" />
     <link rel="stylesheet" href="css/modal.css" />
     <link rel="stylesheet" href="css/mask.css" />
     <link rel="stylesheet" href="css/card-saves.css" />
+    <link rel="stylesheet" href="css/card-game.css" />
     <link rel="stylesheet" href="css/cfg-modal.css" />
     <link rel="stylesheet" href="css/utilities.css" />
     <link rel="stylesheet" href="css/theme-dark.css" />
@@ -94,14 +96,14 @@
         target="_blank"
         rel="noopener noreferrer"
         class="github-link"
-        >🌐 GitHub</a
+        ><img src="https://github.githubassets.com/favicons/favicon-dark.png" alt="GitHub" class="github-link__img"> GitHub</a
       >
       <a
         href="https://forum.gamer.com.tw/C.php?bsn=24608&snA=2831&tnum=6"
         target="_blank"
         rel="noopener noreferrer"
-        class="github-link"
-        >🌐 巴哈姆特</a
+        class="gamer-link"
+        ><img src="https://i2.bahamut.com.tw/favicon.svg?v=1689129528" alt="巴哈姆特" class="gamer-link__img"> 巴哈姆特</a
       >
       <div class="topbar__actions">
         <div id="topbarUser" class="topbar__user"></div>
@@ -120,13 +122,17 @@
         <main class="grid">
 
           <!-- 管理後台 卡片 -->
-          <div id="card-dsp" data-fragment="card-dsp"></div>
+          <div id="card-dsp" data-fragment="card-dsp" data-card-id="dsp"></div>
+
+          <!-- 動態防火牆 卡片 -->
+          <div id="card-firewall" data-fragment="card-firewall" data-card-id="firewall"></div>
 
           <!-- 7DaysToDieServer 卡片 -->
-          <div id="card-game" data-fragment="card-game"></div>
+          <div id="card-game" data-fragment="card-game" data-card-id="game"></div>
 
           <!-- 存檔管理 卡片 -->
-          <div id="card-saves" data-fragment="card-saves"></div>
+          <div id="card-saves" data-fragment="card-saves" data-card-id="saves"></div>
+
         </main>
       </div>
 
@@ -142,8 +148,20 @@
               <button data-tab="telnet" data-i18n="console.tabTelnet">Telnet</button>
               <button data-tab="backup" data-i18n="console.tabBackup">存檔管理</button>
             </div>
+            <div class="console-bar__spacer"></div>
+            <button
+              id="consoleCollapseBtn"
+              class="console-collapse-btn"
+              type="button"
+              title="收合"
+              aria-controls="consolePanes"
+              aria-expanded="true"
+            >
+              <span id="consoleCollapseIcon" class="console-collapse-btn__icon" aria-hidden="true">▾</span>
+              <span id="consoleCollapseText">收合</span>
+            </button>
           </div>
-          <div class="console-panes">
+          <div id="consolePanes" class="console-panes">
             <pre id="console-system" class="console active"></pre>
             <pre id="console-steamcmd" class="console"></pre>
             <pre id="console-game" class="console"></pre>
@@ -159,6 +177,8 @@
       id="gameServerconfigModalHost"
       data-fragment="card-game-serverconfig-modal"
     ></div>
+    <div id="firewallModalHost" data-fragment="card-firewall-modal"></div>
+    <div id="savesModalHost" data-fragment="card-saves-modal"></div>
 
     <noscript>
       <div class="modal" style="display: block">
@@ -174,6 +194,7 @@
     <script defer src="js/utils.js"></script>
     <script defer src="js/i18n.js"></script>
     <script defer src="js/dom.js"></script>
+    <script defer src="js/card-order.js"></script>
     <script defer src="js/state.js"></script>
     <script defer src="js/api.js"></script>
     <script defer src="js/console.js"></script>
@@ -183,9 +204,12 @@
     <script defer src="js/status.js"></script>
     <script defer src="js/sse.js"></script>
     <script defer src="js/saves.js"></script>
+    <script defer src="js/card-saves-modal.js"></script>
     <script defer src="js/split.js"></script>
     <script defer src="js/card-game-serverconfig-modal.js"></script>
     <script defer src="js/card-dsp-modal.js"></script>
+    <script defer src="js/firewall.js"></script>
+    <script defer src="js/card-firewall-modal.js"></script>
     <script defer src="js/actions.js"></script>
     <script defer src="js/auth.js"></script>
     <script defer src="js/bootstrap.js"></script>

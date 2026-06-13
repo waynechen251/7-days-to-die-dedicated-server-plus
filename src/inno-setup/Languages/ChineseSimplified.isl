@@ -15,7 +15,7 @@
 ;
 
 [LangOptions]
-; The following three entries are very important. Be sure to read and 
+; The following three entries are very important. Be sure to read and
 ; understand the '[LangOptions] section' topic in the help file.
 LanguageName=简体中文
 ; If Language Name display incorrect, uncomment next line
@@ -130,7 +130,7 @@ WelcomeLabel2=现在将安装 [name/ver] 到您的电脑中。%n%n推荐您在�
 WizardPassword=密码
 PasswordLabel1=这个安装程序有密码保护。
 PasswordLabel3=请输入密码，然后点击“下一步”继续。密码区分大小写。
-PasswordEditLabel=密码(&P): 
+PasswordEditLabel=密码(&P):
 IncorrectPassword=您所输入的密码不正确，请重试。
 
 ; *** “许可协议”向导页
@@ -151,9 +151,9 @@ InfoAfterClickLabel=如果您想继续安装，点击“下一步”。
 ; *** “用户信息”向导页
 WizardUserInfo=用户信息
 UserInfoDesc=请输入您的信息。
-UserInfoName=用户名(&U): 
-UserInfoOrg=组织(&O): 
-UserInfoSerial=序列号(&S): 
+UserInfoName=用户名(&U):
+UserInfoOrg=组织(&O):
+UserInfoSerial=序列号(&S):
 UserInfoNameRequired=您必须输入用户名。
 
 ; *** “选择目标目录”向导页
@@ -213,12 +213,12 @@ WizardReady=准备安装
 ReadyLabel1=安装程序现在准备开始安装 [name] 到您的电脑中。
 ReadyLabel2a=点击“安装”继续此安装程序。如果您想要回顾或修改设置，请点击“上一步”。
 ReadyLabel2b=点击“安装”继续此安装程序？
-ReadyMemoUserInfo=用户信息: 
-ReadyMemoDir=目标位置: 
-ReadyMemoType=安装类型: 
-ReadyMemoComponents=选定组件: 
-ReadyMemoGroup=开始菜单文件夹: 
-ReadyMemoTasks=附加任务: 
+ReadyMemoUserInfo=用户信息:
+ReadyMemoDir=目标位置:
+ReadyMemoType=安装类型:
+ReadyMemoComponents=选定组件:
+ReadyMemoGroup=开始菜单文件夹:
+ReadyMemoTasks=附加任务:
 
 ; *** TDownloadWizardPage wizard page and DownloadTemporaryFile
 DownloadingLabel=正在下载附加文件...
@@ -266,7 +266,7 @@ RunEntryShellExec=查阅 %1
 ; *** “安装程序需要下一张磁盘”提示
 ChangeDiskTitle=安装程序需要下一张磁盘
 SelectDiskLabel2=请插入磁盘 %1 并点击“确定”。%n%n如果这个磁盘中的文件可以在下列文件夹之外的文件夹中找到，请输入正确的路径或点击“浏览”。
-PathLabel=路径(&P): 
+PathLabel=路径(&P):
 FileNotInDir2=文件“%1”不能在“%2”定位。请插入正确的磁盘或选择其它文件夹。
 SelectDirectoryLabel=请指定下一张磁盘的位置。
 
@@ -313,7 +313,7 @@ SourceDoesntExist=源文件“%1”不存在
 ExistingFileReadOnly2=无法替换现有文件，因为它是只读的。
 ExistingFileReadOnlyRetry=移除只读属性并重试(&R)
 ExistingFileReadOnlyKeepExisting=保留现有文件(&K)
-ErrorReadingExistingDest=尝试读取现有文件时出错: 
+ErrorReadingExistingDest=尝试读取现有文件时出错:
 FileExistsSelectAction=选择操作
 FileExists2=文件已经存在。
 FileExistsOverwriteExisting=覆盖已经存在的文件(&O)
@@ -324,13 +324,13 @@ ExistingFileNewer2=现有的文件比安装程序将要安装的文件更新。
 ExistingFileNewerOverwriteExisting=覆盖已经存在的文件(&O)
 ExistingFileNewerKeepExisting=保留现有的文件(&K) (推荐)
 ExistingFileNewerOverwriteOrKeepAll=为所有的冲突文件执行此操作(&D)
-ErrorChangingAttr=尝试改变下列现有的文件的属性时出错: 
-ErrorCreatingTemp=尝试在目标目录创建文件时出错: 
-ErrorReadingSource=尝试读取下列源文件时出错: 
-ErrorCopying=尝试复制下列文件时出错: 
-ErrorReplacingExistingFile=尝试替换现有的文件时出错: 
-ErrorRestartReplace=重新启动替换失败: 
-ErrorRenamingTemp=尝试重新命名以下目标目录中的一个文件时出错: 
+ErrorChangingAttr=尝试改变下列现有的文件的属性时出错:
+ErrorCreatingTemp=尝试在目标目录创建文件时出错:
+ErrorReadingSource=尝试读取下列源文件时出错:
+ErrorCopying=尝试复制下列文件时出错:
+ErrorReplacingExistingFile=尝试替换现有的文件时出错:
+ErrorRestartReplace=重新启动替换失败:
+ErrorRenamingTemp=尝试重新命名以下目标目录中的一个文件时出错:
 ErrorRegisterServer=无法注册 DLL/OCX: %1
 ErrorRegSvr32Failed=RegSvr32 失败；退出代码 %1
 ErrorRegisterTypeLib=无法注册类型库: %1
@@ -366,8 +366,8 @@ UninstallDataCorrupted=文件“%1”已损坏，无法卸载
 ; *** 卸载状态消息
 ConfirmDeleteSharedFileTitle=删除共享文件吗？
 ConfirmDeleteSharedFile2=系统中包含的下列共享文件已经不再被其它程序使用。您想要卸载程序删除这些共享文件吗？%n%n如果这些文件被删除，但还有程序正在使用这些文件，这些程序可能不能正确执行。如果您不能确定，选择“否”。把这些文件保留在系统中以免引起问题。
-SharedFileNameLabel=文件名: 
-SharedFileLocationLabel=位置: 
+SharedFileNameLabel=文件名:
+SharedFileLocationLabel=位置:
 WizardUninstalling=卸载状态
 StatusUninstalling=正在卸载 %1...
 
@@ -380,7 +380,7 @@ ShutdownBlockReasonUninstallingApp=正在卸载 %1。
 ; use of them in your scripts, you'll want to translate them.
 
 NameAndVersion=%1 版本 %2
-AdditionalIcons=附加快捷方式: 
+AdditionalIcons=附加快捷方式:
 CreateDesktopIcon=创建桌面快捷方式(&D)
 CreateQuickLaunchIcon=创建快速运行栏快捷方式(&Q)
 ProgramOnTheWeb=%1 网站
@@ -388,14 +388,16 @@ UninstallProgram=卸载 %1
 LaunchProgram=运行 %1
 AssocFileExtension=将 %2 文件扩展名与 %1 建立关联(&A)
 AssocingFileExtension=正在将 %2 文件扩展名与 %1 建立关联...
-AutoStartProgramGroupDescription=启动组: 
+AutoStartProgramGroupDescription=启动组:
 AutoStartProgram=自动启动 %1
 AddonHostProgramNotFound=%1无法找到您所选择的文件夹。%n%n您想要继续吗？
 
 ConfigPageTitle=配置页面
 ConfigPageDescription=在这里配置服务器的设置。
-WebPort=Web 端口不能为空。
-WebPortEmpty=Web 端口不能为空。
+WebPort=后台管理通信端口
+WebPortEmpty=后台管理通信端口不能为空。
+OpenFirewallCheckbox=开启后台管理端口防火墙
+OpenFirewallCheckboxDesc=安装时自动创建 Windows 防火墙规则，允许外部连接访问后台管理端口。
 portIsUsed=端口已被占用。
 IpEmpty=IP 地址不能为空。
 IpInvalid=IP 地址无效。

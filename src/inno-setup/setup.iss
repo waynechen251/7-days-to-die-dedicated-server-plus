@@ -161,8 +161,9 @@ begin
         '', SW_HIDE, ewWaitUntilTerminated, ResultCode
       );
 
-      // 註冊防火牆
-      AddPortsInFirewall('{#AppServiceName}', WebPortInput.Text);
+      // 依核選框決定是否建立後台管理埠防火牆規則
+      if OpenFirewallCheckBox.Checked then
+        AddMgmtBackendFirewallRule(WebPortInput.Text);
 
       Exec('powershell.exe',
         '-ExecutionPolicy Bypass -File "' + ExpandConstant('{app}\scripts\json-helper.ps1') + '" ' +
@@ -191,6 +192,7 @@ end;
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
   ResultCode: Integer;
+  WebPort: String;
 
 begin
 
@@ -201,7 +203,15 @@ begin
     Log('CurUninstallStepChanged: 停止並刪除服務 {#AppName}');
     Exec('cmd.exe', '/C net stop {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
     Exec('cmd.exe', '/C sc delete {#AppName}', '', SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
+    // 刪除新式命名防火牆規則（7DTD-DS-P-mgmt-Backend-{port}-TCP）
+    if RegQueryStringValue(HKLM, 'Software\7DTD-DS-P', 'WebPort', WebPort) and (WebPort <> '') then
+    begin
+      Exec(ExpandConstant('{sys}\netsh.exe'), 'advfirewall firewall delete rule name="7DTD-DS-P-mgmt-Backend-' + WebPort + '-TCP"', ExpandConstant('{sys}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+    end;
+    // 向後相容：刪除舊式命名規則（若升級前版本建立的）
     Exec(ExpandConstant('{sys}\netsh.exe'), 'advfirewall firewall delete rule name="' + ExpandConstant('{#AppServiceName}') + '"', ExpandConstant('{sys}'), SW_HIDE, ewWaitUntilTerminated, ResultCode);
+
     RegDeleteKeyIncludingSubkeys(HKLM, 'Software\7DTD-DS-P');
 
   end;

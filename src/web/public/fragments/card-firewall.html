@@ -1,0 +1,58 @@
+<section class="card card-firewall">
+  <header class="card-header">
+    <h2 class="card-title" data-i18n="card.firewall.title">動態防火牆管理</h2>
+  </header>
+
+  <section class="firewall-overview">
+    <div class="firewall-overview__main">
+      <span class="field__label" data-i18n="card.firewall.summaryLabel">目前狀態摘要</span>
+      <div class="firewall-overview__headline">
+        <div class="firewall-overview__copy">
+          <div id="fw-status-summary" class="firewall-overview__summary">載入中...</div>
+          <div id="fw-status-detail" class="firewall-overview__detail"></div>
+        </div>
+        <span id="fw-status-badge" class="badge" data-i18n="card.firewall.statusUnknown">狀態未知</span>
+      </div>
+
+      <div class="firewall-next-action">
+        <span class="field__label" data-i18n="card.firewall.nextActionLabel">建議操作</span>
+        <div id="fw-next-action" class="firewall-next-action__value" data-i18n="card.firewall.nextActionNone">目前無需額外操作。</div>
+      </div>
+
+      <div id="fw-summary-counts" class="firewall-summary-counts">
+        <span id="fw-summary-desired" class="badge"></span>
+        <span id="fw-summary-actual" class="badge"></span>
+        <span id="fw-summary-pending" class="badge"></span>
+        <span id="fw-summary-unexpected" class="badge"></span>
+      </div>
+
+      <div id="fw-elevation-warn" class="hidden firewall-alert firewall-alert--err">
+        <span data-i18n="card.firewall.noElevation">⚠️ 此功能需以系統管理員權限執行。生產環境請以服務（LocalSystem）執行，開發環境請以系統管理員身分啟動 Node.js。</span>
+      </div>
+
+      <div id="fw-platform-warn" class="hidden firewall-alert firewall-alert--warn">
+        <span data-i18n="card.firewall.notWindows">⚠️ 動態防火牆管理僅支援 Windows 平台。</span>
+      </div>
+    </div>
+
+    <div class="firewall-overview__actions">
+      <span class="field__label" data-i18n="card.firewall.actionsLabel">主要操作</span>
+      <div class="firewall-action-buttons">
+        <button id="fw-apply-btn" class="btn--primary" data-i18n="card.firewall.applyBtn">🛡 同步所有規則</button>
+        <button
+          id="fw-remove-btn"
+          class="btn--danger"
+          data-i18n="card.firewall.removeBtn"
+          data-danger-i18n="confirm.removeFirewallRules"
+          data-cancel-i18n="common.cancel"
+          data-continue-i18n="common.confirm"
+        >
+          🗑 移除所有規則
+        </button>
+        <button id="fw-refresh-btn" data-i18n="card.firewall.refreshBtn">🔄 重新整理</button>
+        <button id="fw-open-advanced-btn" data-i18n="card.firewall.advancedBtn">⚙️ 進階設定與規則明細</button>
+      </div>
+      <div id="fw-action-feedback" class="hidden firewall-feedback"></div>
+    </div>
+  </section>
+</section>

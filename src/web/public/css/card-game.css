@@ -1,0 +1,191 @@
+.card-dsp,
+.card-game-main {
+  gap: var(--space-3);
+}
+
+.dsp-panel,
+.card-game-main .game-panel {
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: var(--radius-m);
+  background: linear-gradient(
+      180deg,
+      rgba(148, 163, 184, 0.08),
+      rgba(148, 163, 184, 0.03) 6rem
+    ),
+    var(--c-surface);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.04);
+}
+
+.card-dsp > .row {
+  margin: 0;
+}
+
+.card-game-main .game-panel + .game-panel,
+.card-dsp .account-section {
+  margin-top: 0;
+  padding-top: 0.95rem;
+  border-top: 0;
+}
+
+.dsp-panel--action {
+  justify-content: flex-start;
+}
+
+.dsp-panel__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--c-text);
+}
+
+.dsp-panel__actions {
+  margin-top: var(--space-2);
+}
+
+.card-dsp .users-list {
+  margin-top: var(--space-3);
+}
+
+.card-dsp .user-row {
+  padding: 0.85rem 0.9rem;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: rgba(148, 163, 184, 0.06);
+}
+
+.card-dsp .user-row + .user-row {
+  margin-top: 0.55rem;
+}
+
+.card-dsp .user-row__actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.game-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.game-section + .game-section {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--c-border-soft);
+}
+
+.card-game-main .game-panel + .game-panel {
+  gap: var(--space-3);
+}
+
+.game-section__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.card-game-main .row {
+  margin: 0;
+}
+
+.card-game-main .row + .row {
+  margin-top: var(--space-2);
+}
+
+.card-game-main .field--version-select {
+  gap: var(--space-2);
+}
+
+.card-game-main .field--version-select > .row:first-child {
+  margin-bottom: 0;
+}
+
+.card-game-main .field--version-select > .row:last-child {
+  width: 100%;
+  align-items: stretch;
+}
+
+.card-game-main .field--version-select select {
+  flex: 1 1 auto;
+}
+
+.card-game-main .field--version-select button {
+  white-space: nowrap;
+}
+
+.card-game-main #telnetInput {
+  flex: 1 1 16rem;
+}
+
+.game-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+  gap: var(--space-2);
+}
+
+.game-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--c-border-soft);
+  border-radius: var(--radius-s);
+  background: var(--c-surface);
+  min-width: 0;
+}
+
+.game-stat__value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--c-text);
+}
+
+.game-stat__label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--c-text-sec);
+}
+
+@media (max-width: 720px) {
+  .dsp-panel,
+  .card-game-main .game-panel {
+    padding: var(--space-3);
+  }
+
+  .card-dsp .user-row {
+    align-items: start;
+    flex-direction: column;
+  }
+
+  .card-dsp .user-row__actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .card-dsp .user-row__actions > * {
+    flex: 1 1 0;
+  }
+
+  .card-game-main .field--version-select > .row:last-child,
+  .card-game-main .row {
+    flex-wrap: wrap;
+  }
+
+  .card-game-main .field--version-select > .row:last-child > *,
+  .card-game-main .row > button,
+  .card-game-main .row > input {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+
+  .game-stat-grid {
+    grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+  }
+}

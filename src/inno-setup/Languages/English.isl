@@ -9,7 +9,7 @@
 ; two periods being displayed).
 
 [LangOptions]
-; The following three entries are very important. Be sure to read and 
+; The following three entries are very important. Be sure to read and
 ; understand the '[LangOptions] section' topic in the help file.
 LanguageName=English
 LanguageID=$0409
@@ -385,6 +385,8 @@ ConfigPageTitle=Configuration Page
 ConfigPageDescription=Configure the server settings here.
 WebPort=Web Port
 WebPortEmpty=Web Port cannot be empty.
+OpenFirewallCheckbox=Open backend management port firewall
+OpenFirewallCheckboxDesc=Automatically create a Windows Firewall rule to allow remote access to the backend management port.
 portIsUsed=The port is already in use.
 IpEmpty=IP address cannot be empty.
 IpInvalid=IP address is invalid.

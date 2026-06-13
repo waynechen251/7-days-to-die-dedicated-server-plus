@@ -6,6 +6,15 @@
 
   const t = (key, def) => (App.i18n ? App.i18n.t(key) : def || key);
 
+  function setGnListDisabled(disabled) {
+    if (!D.gnList) return;
+    D.gnList.querySelectorAll(".save-chip").forEach((c) => (c.disabled = !!disabled));
+  }
+
+  function setGameRuntimeVisible(visible) {
+    D.gameRuntimeSection?.classList.toggle("hidden", !visible);
+  }
+
   function applyUIState({
     backendUp,
     steamRunning,
@@ -18,6 +27,7 @@
     max,
     zom,
     rss,
+    statsUpdatedAt,
   }) {
     const all = [
       D.installServerBtn,
@@ -32,26 +42,35 @@
       D.telnetSendBtn,
       ...D.telnetBtns,
       D.gwSelect,
-      D.gnSelect,
       D.exportGameNameBtn,
+      D.applyActiveSaveBtn,
       D.refreshSavesBtn,
       D.viewBackupsBtn,
-      D.backupSelect,
-      D.importBackupBtn,
-      D.importUploadFile,
-      D.importUploadBtn,
+      D.fullBackupSelect,
+      D.importFullBackupBtn,
+      D.deleteFullBackupBtn,
+      D.fullImportUploadFile,
+      D.importFullUploadBtn,
+      D.singleBackupSelect,
+      D.importSingleBackupBtn,
+      D.deleteSingleBackupBtn,
+      D.singleImportUploadFile,
+      D.importSingleUploadBtn,
     ];
 
     const isViewer = App.auth?.isViewer?.() || false;
 
     // 後端離線
     if (S.backendDown || !backendUp) {
+      setGameRuntimeVisible(false);
       setBadge(D.stBackend, "err");
       // 重置其他徽章
       setBadge(D.stSteam, "");
       setBadge(D.stGame, "");
       setBadge(D.stTelnet, "");
       setDisabled(all, true);
+      setGnListDisabled(true);
+      App.saves?.updateApplyActiveBtnState?.();
       return;
     }
 
@@ -61,12 +80,14 @@
     const gameStatus = gameRunning ? (telnetOk ? "ok" : "warn") : "err";
     setBadge(D.stGame, gameStatus);
     setBadge(D.stTelnet, telnetOk ? "ok" : "err");
-    updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning });
+    setGameRuntimeVisible(gameRunning);
+    updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning, statsUpdatedAt });
 
     if (isViewer) {
       const readOnlyButtons = [
         D.installServerBtn,
         D.deleteGameNameBtn,
+        D.applyActiveSaveBtn,
         D.stopServerBtn,
         D.killServerBtn,
         D.configStartBtn,
@@ -75,10 +96,14 @@
         D.telnetSendBtn,
         ...D.telnetBtns,
         D.exportGameNameBtn,
-        D.backupSelect,
-        D.importBackupBtn,
-        D.importUploadFile,
-        D.importUploadBtn,
+        D.importFullBackupBtn,
+        D.deleteFullBackupBtn,
+        D.fullImportUploadFile,
+        D.importFullUploadBtn,
+        D.importSingleBackupBtn,
+        D.deleteSingleBackupBtn,
+        D.singleImportUploadFile,
+        D.importSingleUploadBtn,
         D.cfgSaveBtn,
         D.cfgSaveStartBtn,
       ];
@@ -93,12 +118,14 @@
         D.viewConfigBtn,
         D.exportSavesBtn,
         D.gwSelect,
-        D.gnSelect,
+        D.fullBackupSelect,
+        D.singleBackupSelect,
         D.refreshSavesBtn,
         D.viewBackupsBtn,
       ];
       setDisabled(viewOnlyButtons, false);
-      
+      setGnListDisabled(false);
+
       // 更新按鈕文字狀態 (例如查看配置 vs 啟動伺服器)
       if (D.configStartBtn) {
         if (gameRunning) {
@@ -114,32 +141,41 @@
         }
       }
 
+      App.saves?.updateApplyActiveBtnState?.();
       return;
     }
 
     // ─── 標準權限邏輯 (Admin / Operator) ───
     setDisabled(all, false);
-    
+    setGnListDisabled(false);
+
     if (steamRunning) {
       setDisabled(all, true);
       setDisabled([D.installServerBtn, D.viewConfigBtn], false);
 
       const savesControls = [
         D.gwSelect,
-        D.gnSelect,
         D.refreshSavesBtn,
         D.exportSavesBtn,
         D.exportGameNameBtn,
+        D.applyActiveSaveBtn,
         D.deleteGameNameBtn,
         D.viewBackupsBtn,
-        D.backupSelect,
-        D.importBackupBtn,
-        D.importUploadFile,
-        D.importUploadBtn,
+        D.fullBackupSelect,
+        D.importFullBackupBtn,
+        D.deleteFullBackupBtn,
+        D.fullImportUploadFile,
+        D.importFullUploadBtn,
+        D.singleBackupSelect,
+        D.importSingleBackupBtn,
+        D.deleteSingleBackupBtn,
+        D.singleImportUploadFile,
+        D.importSingleUploadBtn,
       ];
 
       const lockBecauseBackup = S.backupInProgress;
       setDisabled(savesControls, !!lockBecauseBackup);
+      setGnListDisabled(!!lockBecauseBackup);
 
       if (D.installServerBtn) {
         D.installServerBtn.textContent = "❌ " + t("card.game.abortInstall", "中斷安裝 / 更新");
@@ -150,6 +186,7 @@
         D.installServerBtn.setAttribute("data-cancel-text", t("common.cancel", "取消"));
         D.installServerBtn.setAttribute("data-continue-text", t("common.confirm", "繼續"));
       }
+      App.saves?.updateApplyActiveBtnState?.();
       return;
     } else {
       if (D.installServerBtn) {
@@ -183,71 +220,92 @@
     setDisabled(D.exportSavesBtn, gameRunning || lockBecauseBackup);
     setDisabled(D.deleteGameNameBtn, gameRunning || lockBecauseBackup);
     setDisabled(D.exportGameNameBtn, gameRunning || lockBecauseBackup);
+    setDisabled(D.applyActiveSaveBtn, gameRunning || lockBecauseBackup);
 
     const canManageSaves = !gameRunning && !lockBecauseBackup;
     setDisabled(
       [
         D.viewBackupsBtn,
-        D.importBackupBtn,
-        D.importUploadFile,
-        D.importUploadBtn,
+        D.importFullBackupBtn,
+        D.deleteFullBackupBtn,
+        D.fullImportUploadFile,
+        D.importFullUploadBtn,
+        D.importSingleBackupBtn,
+        D.deleteSingleBackupBtn,
+        D.singleImportUploadFile,
+        D.importSingleUploadBtn,
       ],
       !canManageSaves
     );
 
     setDisabled(
-      [D.gwSelect, D.gnSelect, D.refreshSavesBtn, D.backupSelect],
+      [D.gwSelect, D.refreshSavesBtn, D.fullBackupSelect, D.singleBackupSelect],
       false
     );
+    setGnListDisabled(false);
 
-    if (App.auth?.isOperator?.() && D.deleteGameNameBtn) {
-      D.deleteGameNameBtn.disabled = true;
-      D.deleteGameNameBtn.title = t("auth.operatorNoPermission", "操作員無權執行此操作");
+    if (App.auth?.isOperator?.()) {
+      if (D.deleteGameNameBtn) {
+        D.deleteGameNameBtn.disabled = true;
+        D.deleteGameNameBtn.title = t("auth.operatorNoPermission", "操作員無權執行此操作");
+      }
+      if (D.applyActiveSaveBtn) {
+        D.applyActiveSaveBtn.disabled = true;
+        D.applyActiveSaveBtn.title = t("auth.operatorNoPermission", "操作員無權執行此操作");
+      }
     }
 
     syncConfigLockFromStatus();
-    
-    updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning });
+
+    updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning, statsUpdatedAt });
 
     if (D.configStartBtn) {
       D.configStartBtn.textContent = gameRunning
         ? "📝 " + t("card.game.viewServerconfig", "檢視 serverconfig.xml")
         : "🛠 " + t("card.game.startServer", "啟動伺服器");
     }
+
+    App.saves?.updateApplyActiveBtnState?.();
   }
 
-  function updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning }) {
+  function updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning, statsUpdatedAt }) {
     const gvEl = document.getElementById("gameVersionBadge");
     if (gvEl) {
-      gvEl.textContent = `${t("card.game.version", "版本:")} ${ 
+      gvEl.textContent = `${t("card.game.version", "版本:")} ${
         gameVersion ? gameVersion : gameRunning ? "-" : "-"
       }`;
     }
 
     const opEl = document.getElementById("onlinePlayersBadge");
-    if (opEl) {
-      opEl.textContent = `${t("card.game.onlinePlayers", "線上玩家數:")} ${ 
-        onlinePlayers !== "" ? onlinePlayers : gameRunning ? "-" : "-"
-      }`;
-    }
+    if (opEl) opEl.textContent = onlinePlayers !== "" ? onlinePlayers : "-";
 
     const fpsEl = document.getElementById("fpsBadge");
-    if (fpsEl) fpsEl.textContent = `${t("card.game.fps", "FPS:")} ${Number.isFinite(fps) ? fps : "-"}`;
+    if (fpsEl) fpsEl.textContent = Number.isFinite(fps) ? fps : "-";
 
     const heapEl = document.getElementById("heapBadge");
-    if (heapEl)
-      heapEl.textContent = `${t("card.game.heap", "Heap:")} ${Number.isFinite(heap) ? heap + "MB" : "-"}`;
+    if (heapEl) heapEl.textContent = Number.isFinite(heap) ? heap + "MB" : "-";
 
     const maxEl = document.getElementById("maxBadge");
-    if (maxEl)
-      maxEl.textContent = `${t("card.game.max", "Max:")} ${Number.isFinite(max) ? max + "MB" : "-"}`;
+    if (maxEl) maxEl.textContent = Number.isFinite(max) ? max + "MB" : "-";
 
     const zomEl = document.getElementById("zomBadge");
-    if (zomEl) zomEl.textContent = `${t("card.game.zombies", "Zombies:")} ${Number.isFinite(zom) ? zom : "-"}`;
+    if (zomEl) zomEl.textContent = Number.isFinite(zom) ? zom : "-";
 
     const rssEl = document.getElementById("rssBadge");
-    if (rssEl)
-      rssEl.textContent = `${t("card.game.rss", "RSS:")} ${Number.isFinite(rss) ? rss + "MB" : "-"}`;
+    if (rssEl) rssEl.textContent = Number.isFinite(rss) ? rss + "MB" : "-";
+
+    const updatedEl = document.getElementById("statsUpdatedBadge");
+    if (updatedEl) {
+      updatedEl.textContent = `${t("card.game.statsUpdatedAt", "更新於:")} ${
+        statsUpdatedAt ? formatDateTime(statsUpdatedAt) : "-"
+      }`;
+    }
+  }
+
+  function formatDateTime(ts) {
+    const d = new Date(ts);
+    const pad = (n) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
   }
 
   function computeGameRunning() {
