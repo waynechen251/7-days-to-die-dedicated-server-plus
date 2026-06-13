@@ -121,8 +121,8 @@
 }
 
 .firewall-action-buttons {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.65rem;
   margin-top: 0;
   padding-top: var(--space-1);
@@ -130,6 +130,7 @@
 
 .firewall-action-buttons > button {
   width: 100%;
+  min-width: 0;
   justify-content: center;
 }
 
@@ -306,6 +307,10 @@
 
   .firewall-overview__headline {
     flex-direction: column;
+  }
+
+  .firewall-action-buttons {
+    grid-template-columns: 1fr;
   }
 
   .firewall-table {
