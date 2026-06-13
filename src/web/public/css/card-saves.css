@@ -17,22 +17,20 @@
   align-items: center;
   min-height: 1.35rem;
   padding: 0.1rem 0.5rem;
-  border: 1px solid var(--c-border);
+  border: 0;
   border-radius: 999px;
-  background: var(--c-surface-alt);
-  color: var(--c-text-sec);
+  background: rgba(22, 163, 74, 0.14);
+  box-shadow: inset 0 0 0 1px rgba(22, 163, 74, 0.18);
+  color: var(--c-accent);
   font-size: 0.72rem;
   font-weight: 600;
 }
 
 .saves-browser {
   display: grid;
-  grid-template-columns: minmax(13rem, 0.8fr) minmax(0, 1.2fr);
-  gap: 0;
-  border: 1px solid var(--c-border-soft);
-  border-radius: var(--radius-s);
-  background: var(--c-surface);
-  overflow: hidden;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+  align-items: stretch;
 }
 
 .saves-panel,
@@ -47,20 +45,24 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  padding: 0.2rem;
+  border: 0;
+  border-radius: var(--radius-m);
+  background: rgba(148, 163, 184, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.05);
 }
 
 .saves-browser__column + .saves-browser__column {
-  border-left: 1px solid var(--c-border-soft);
+  border-left: 0;
 }
 
 .saves-browser__header {
   display: flex;
   justify-content: space-between;
   gap: var(--space-2);
-  align-items: center;
-  min-height: 2.8rem;
-  padding: 0.65rem 0.8rem;
-  border-bottom: 1px solid var(--c-border-soft);
+  align-items: start;
+  min-height: 4.25rem;
+  padding: 0.7rem 0.8rem 0.3rem;
 }
 
 .saves-browser__title,
@@ -89,30 +91,56 @@
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-  padding: 0.55rem;
-  gap: 0.4rem;
+  padding: 0 0.15rem 0.15rem;
+  gap: 0.5rem;
   min-height: 11rem;
 }
 
 .saves-browser-item {
+  position: relative;
   width: 100%;
+  display: flex;
   justify-content: space-between;
   align-items: center;
   text-align: left;
-  min-height: 3rem;
-  padding: 0.6rem 0.7rem;
-  background: var(--c-surface);
-  border-color: var(--c-border-soft);
+  gap: var(--space-2);
+  min-height: 3.15rem;
+  padding: 0.72rem 0.8rem;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: rgba(148, 163, 184, 0.06);
+  box-shadow: none;
 }
 
 .saves-browser-item:hover:not(:disabled) {
-  border-color: var(--c-primary);
+  background: rgba(148, 163, 184, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.08);
 }
 
 .saves-browser-item--selected {
-  border-color: var(--c-border);
-  background: var(--c-surface-alt);
-  box-shadow: inset 2px 0 0 var(--c-primary);
+  background: linear-gradient(
+    180deg,
+    rgba(37, 99, 235, 0.16),
+    rgba(37, 99, 235, 0.09)
+  );
+  box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.16);
+}
+
+.saves-browser-item::before {
+  content: "";
+  position: absolute;
+  left: 0.45rem;
+  top: 0.48rem;
+  bottom: 0.48rem;
+  width: 0.2rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--c-primary), var(--c-primary-hov));
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.saves-browser-item--selected::before {
+  opacity: 1;
 }
 
 .saves-browser-item__copy {
@@ -151,10 +179,15 @@
   align-items: center;
   gap: var(--space-2);
   min-height: 2.3rem;
-  padding: 0.35rem 0.65rem 0.55rem;
-  border-top: 1px solid var(--c-border-soft);
+  margin: 0 0.2rem 0.2rem;
+  padding: 0.28rem 0.45rem 0;
+  border-top: 0;
   color: var(--c-text-sec);
   font-size: 0.74rem;
+}
+
+.saves-browser-pager:not(:empty) {
+  box-shadow: inset 0 1px 0 rgba(148, 163, 184, 0.08);
 }
 
 .saves-browser-pager:empty {
@@ -184,10 +217,12 @@
 
 .saves-browser-empty,
 .saves-chip-empty {
+  display: flex;
+  align-items: center;
   font-size: 0.78rem;
   color: var(--c-text-sec);
   font-style: italic;
-  padding: 0.35rem 0.2rem;
+  padding: 0.75rem 0.35rem;
 }
 
 .saves-browser-actions {
@@ -204,6 +239,15 @@
   flex: 1 1 14rem;
   font-size: 0.82rem;
   color: var(--c-text-sec);
+  padding: 0.7rem 0.85rem;
+  border: 0;
+  border-radius: var(--radius-s);
+  background: linear-gradient(
+    180deg,
+    rgba(148, 163, 184, 0.1),
+    rgba(148, 163, 184, 0.06)
+  );
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
 }
 
 .saves-browser-actions .btn-row {
@@ -458,7 +502,6 @@
 
   .saves-browser__column + .saves-browser__column {
     border-left: 0;
-    border-top: 1px solid var(--c-border-soft);
   }
 
   .saves-browser__header,
