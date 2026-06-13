@@ -22,10 +22,16 @@
       exportGameNameBtn: $("exportGameNameBtn"),
       applyActiveSaveBtn: $("applyActiveSaveBtn"),
       refreshSavesBtn: $("refreshSavesBtn"),
-      backupSelect: $("backupSelect"),
-      importBackupBtn: $("importBackupBtn"),
-      importUploadFile: $("importUploadFile"),
-      importUploadBtn: $("importUploadBtn"),
+      fullBackupSelect: $("fullBackupSelect"),
+      importFullBackupBtn: $("importFullBackupBtn"),
+      deleteFullBackupBtn: $("deleteFullBackupBtn"),
+      fullImportUploadFile: $("fullImportUploadFile"),
+      importFullUploadBtn: $("importFullUploadBtn"),
+      singleBackupSelect: $("singleBackupSelect"),
+      importSingleBackupBtn: $("importSingleBackupBtn"),
+      deleteSingleBackupBtn: $("deleteSingleBackupBtn"),
+      singleImportUploadFile: $("singleImportUploadFile"),
+      importSingleUploadBtn: $("importSingleUploadBtn"),
       stBackend: $("st-backend"),
       stSteam: $("st-steam"),
       stGame: $("st-game"),
@@ -68,7 +74,6 @@
         return map;
       })(),
 
-      deleteBackupBtn: document.getElementById("deleteBackupBtn"),
       updateBadge: $("updateBadge"),
 
       fwStatusBadge: $("fw-status-badge"),

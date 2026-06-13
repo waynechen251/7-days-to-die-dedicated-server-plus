@@ -1,6 +1,14 @@
 (function (w) {
   const App = (w.App = w.App || {});
 
+  function jsonOptions(method, body, headers) {
+    return {
+      method,
+      headers: { "Content-Type": "application/json", ...(headers || {}) },
+      body: JSON.stringify(body),
+    };
+  }
+
   async function fetchText(url, options = {}, timeoutMs = 30000) {
     const ctrl = new AbortController();
     const id = setTimeout(() => ctrl.abort(), timeoutMs);
@@ -44,5 +52,56 @@
     }
   }
 
-  App.api = { fetchText, fetchJSON };
+  const saves = {
+    list() {
+      return fetchJSON("/api/saves/list", { method: "GET" });
+    },
+    exportFull() {
+      return fetchText("/api/backup", { method: "POST" });
+    },
+    exportSingle(world, name) {
+      return fetchText(
+        "/api/saves/export-one",
+        jsonOptions("POST", { world, name })
+      );
+    },
+    importBackup(scope, file) {
+      return fetchText(
+        "/api/saves/import-backup",
+        jsonOptions("POST", { scope, file })
+      );
+    },
+    importUpload(scope, file) {
+      return fetchText(
+        `/api/saves/import-upload?scope=${encodeURIComponent(
+          scope
+        )}&filename=${encodeURIComponent(file.name)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/octet-stream" },
+          body: file,
+        }
+      );
+    },
+    deleteSingle(world, name) {
+      return fetchText(
+        "/api/saves/delete",
+        jsonOptions("POST", { world, name })
+      );
+    },
+    deleteBackup(file) {
+      return fetchText(
+        "/api/saves/delete-backup",
+        jsonOptions("POST", { file })
+      );
+    },
+    setActive(world, name) {
+      return fetchJSON(
+        "/api/serverconfig",
+        jsonOptions("POST", { updates: { GameWorld: world, GameName: name } })
+      );
+    },
+  };
+
+  App.api = Object.assign(App.api || {}, { fetchText, fetchJSON, saves });
 })(window);

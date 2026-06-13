@@ -13,191 +13,286 @@
     </div>
     <div class="modal__body">
       <div class="saves-modal-sections">
-        <section class="saves-panel">
+        <section class="saves-panel" data-scope="full">
           <div class="saves-panel__header">
             <div>
               <h3 class="field__label" data-i18n="card.saves.fullSavesSection">整個 Saves</h3>
               <p class="saves-panel__desc" data-i18n="card.saves.fullSavesSectionDesc">這一區的操作會作用在整個 Saves 根目錄，而不是單一存檔。</p>
             </div>
           </div>
-          <div class="saves-action-card">
-            <h4 class="saves-action-card__title" data-i18n="card.saves.exportAllTitle">整個 Saves（所有世界）</h4>
-            <p class="saves-action-card__desc" data-i18n="card.saves.exportAllDesc">匯出後台 Saves 根目錄下所有世界與存檔的完整備份。</p>
-            <div class="btn-row wrap">
-              <button
-                id="exportSavesBtn"
-                class="btn"
-                data-i18n="card.saves.exportFullSaves"
-                data-i18n-title="card.saves.exportFullSavesTitle"
-                title="完整匯出整個 Saves 目錄"
-              >
-                💾 匯出完整 Saves
-              </button>
+          <div class="saves-panel__stack">
+            <div class="saves-action-card saves-action-card--block">
+              <h4 class="saves-action-card__title" data-i18n="card.saves.exportAllTitle">整個 Saves（所有世界）</h4>
+              <p class="saves-action-card__desc" data-i18n="card.saves.exportAllDesc">匯出後台 Saves 根目錄下所有世界與存檔的完整備份。</p>
+              <div class="btn-row wrap">
+                <button
+                  id="exportSavesBtn"
+                  class="btn"
+                  data-i18n="card.saves.exportFullSaves"
+                  data-i18n-title="card.saves.exportFullSavesTitle"
+                  title="完整匯出整個 Saves 目錄"
+                >
+                  💾 匯出完整 Saves
+                </button>
+              </div>
+            </div>
+
+            <div class="saves-action-card saves-action-card--block">
+              <h4 class="saves-action-card__title" data-i18n="card.saves.fullBackupListTitle">完整備份清單</h4>
+              <p class="saves-action-card__desc" data-i18n="card.saves.fullBackupListDesc">管理整個 Saves 的完整備份，只會接受完整備份 ZIP。</p>
+              <div class="form-grid form-grid--backup">
+                <label class="field span-2">
+                  <span class="field__label" data-i18n="card.saves.selectFullBackup">選擇完整備份檔</span>
+                  <select id="fullBackupSelect" class="field__control"></select>
+                </label>
+                <div class="field">
+                  <span class="field__label sr-only" data-i18n="card.saves.importFromFullBackup">從完整備份匯入</span>
+                  <button
+                    id="importFullBackupBtn"
+                    class="btn btn--accent full"
+                    data-i18n="card.saves.importFromFullBackup"
+                    data-danger-i18n="confirm.importFromBackup"
+                    data-cancel-i18n="common.cancel"
+                    data-continue-i18n="common.confirm"
+                  >
+                    📥 從完整備份匯入
+                  </button>
+                </div>
+                <div class="field">
+                  <span class="field__label sr-only" data-i18n="card.saves.deleteFullBackup">刪除此完整備份</span>
+                  <button
+                    id="deleteFullBackupBtn"
+                    class="btn btn--danger full"
+                    data-i18n="card.saves.deleteFullBackup"
+                    data-i18n-title="card.saves.deleteFullBackupTitle"
+                    data-danger-i18n="confirm.deleteBackup"
+                    data-cancel-i18n="common.cancel"
+                    data-continue-i18n="common.confirm"
+                    title="刪除所選完整備份檔"
+                  >
+                    🗑️ 刪除此完整備份
+                  </button>
+                </div>
+              </div>
+              <div class="saves-backup-meta" aria-live="polite">
+                <div class="saves-status-card">
+                  <span class="saves-status-card__label" data-i18n="card.saves.backupFileLabel">檔名</span>
+                  <span id="fullBackupFileValue" class="saves-status-card__value" data-i18n="common.noBackup">(沒有備份)</span>
+                </div>
+                <div class="saves-status-card">
+                  <span class="saves-status-card__label" data-i18n="card.saves.backupTargetLabel">備份目標</span>
+                  <span id="fullBackupTargetValue" class="saves-status-card__value" data-i18n="common.none">(無)</span>
+                </div>
+                <div class="saves-status-card">
+                  <span class="saves-status-card__label" data-i18n="card.saves.backupCreatedAtLabel">建立時間</span>
+                  <span id="fullBackupTimeValue" class="saves-status-card__value" data-i18n="common.none">(無)</span>
+                </div>
+                <div class="saves-status-card">
+                  <span class="saves-status-card__label" data-i18n="card.saves.backupSizeLabel">大小</span>
+                  <span id="fullBackupSizeValue" class="saves-status-card__value" data-i18n="common.none">(無)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="saves-action-card saves-action-card--block">
+              <h4 class="saves-action-card__title" data-i18n="card.saves.fullUploadTitle">上傳完整備份 ZIP</h4>
+              <p class="saves-action-card__desc" data-i18n="card.saves.fullUploadDesc">上傳完整備份 ZIP 並匯入，會覆蓋目前整個 Saves 根目錄。</p>
+              <div class="form-grid saves-upload-grid">
+                <label class="field">
+                  <span class="field__label" data-i18n="card.saves.selectFullZip">選擇完整備份 ZIP</span>
+                  <input
+                    id="fullImportUploadFile"
+                    type="file"
+                    accept=".zip"
+                    class="field__control"
+                  />
+                </label>
+                <div class="field">
+                  <span class="field__label sr-only" data-i18n="card.saves.uploadAndImportFull">上傳並匯入完整備份</span>
+                  <button
+                    id="importFullUploadBtn"
+                    class="btn full"
+                    data-i18n="card.saves.uploadAndImportFull"
+                    data-danger-i18n="confirm.uploadAndImport"
+                    data-cancel-i18n="common.cancel"
+                    data-continue-i18n="common.confirm"
+                  >
+                    📤 上傳並匯入完整備份
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
 
-        <section class="saves-panel saves-panel--selection">
-          <div class="saves-panel__header">
-            <div>
-              <h3 class="field__label" data-i18n="card.saves.serverSaves">七日殺伺服器存檔</h3>
-              <p class="saves-panel__desc" data-i18n="card.saves.selectionSectionDesc">先選擇世界與存檔，再執行後續操作。</p>
-            </div>
-          </div>
-          <div class="form-grid saves-selection-grid">
-            <label class="field">
-              <span class="field__label" data-i18n="card.saves.gameWorld">GameWorld</span>
-              <select id="gwSelect" class="field__control"></select>
-            </label>
-            <div class="field">
-              <span class="field__label" data-i18n="card.saves.gameName">GameName</span>
-              <div id="gnList" class="saves-chip-list" role="group"></div>
-            </div>
-          </div>
-
-          <div class="saves-status-grid">
-            <div class="saves-status-card">
-              <span class="saves-status-card__label" data-i18n="card.saves.activeConfigLabel">目前使用中：</span>
-              <span id="saves-active-config-label" class="saves-status-card__value" data-i18n="card.saves.activeConfigNone">未設定</span>
-            </div>
-            <div class="saves-status-card">
-              <span class="saves-status-card__label" data-i18n="card.saves.selectedSaveLabel">所選存檔：</span>
-              <span id="saves-export-selected-label" class="saves-status-card__value" data-i18n="card.saves.noSaveSelected">尚未選擇</span>
-            </div>
-          </div>
-        </section>
-
-        <section class="saves-panel saves-panel--actions">
+        <section class="saves-panel saves-panel--single" data-scope="single">
           <div class="saves-panel__header">
             <div>
               <h3 class="field__label" data-i18n="card.saves.singleSaveSection">單一存檔</h3>
               <p class="saves-panel__desc" data-i18n="card.saves.singleSaveSectionDesc">這一區的操作只作用在目前選取的 world / save。</p>
             </div>
           </div>
+          <div class="saves-panel__stack">
+            <div class="saves-action-card saves-action-card--block">
+              <h4 class="saves-action-card__title" data-i18n="card.saves.serverSaves">七日殺伺服器存檔</h4>
+              <p class="saves-action-card__desc" data-i18n="card.saves.selectionSectionDesc">先選擇世界與存檔，再執行後續操作。</p>
+              <div class="form-grid saves-selection-grid">
+                <label class="field">
+                  <span class="field__label" data-i18n="card.saves.gameWorld">GameWorld</span>
+                  <select id="gwSelect" class="field__control"></select>
+                </label>
+                <div class="field">
+                  <span class="field__label" data-i18n="card.saves.gameName">GameName</span>
+                  <div id="gnList" class="saves-chip-list" role="group"></div>
+                </div>
+              </div>
 
-          <div class="saves-action-grid">
-            <div class="saves-action-card">
-              <h4 class="saves-action-card__title" data-i18n="card.saves.exportSelectedTitle">目前選取的存檔</h4>
-              <p class="saves-action-card__desc" data-i18n="card.saves.exportOneDesc">僅匯出上方選擇的單一世界存檔，或將其刪除（刪除前會自動建立備份）。</p>
-              <div class="btn-row wrap">
+              <div class="saves-status-grid">
+                <div class="saves-status-card">
+                  <span class="saves-status-card__label" data-i18n="card.saves.activeConfigLabel">目前使用中：</span>
+                  <span id="saves-active-config-label" class="saves-status-card__value" data-i18n="card.saves.activeConfigNone">未設定</span>
+                </div>
+                <div class="saves-status-card">
+                  <span class="saves-status-card__label" data-i18n="card.saves.selectedSaveLabel">所選存檔：</span>
+                  <span id="saves-export-selected-label" class="saves-status-card__value" data-i18n="card.saves.noSaveSelected">尚未選擇</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="saves-action-grid">
+              <div class="saves-action-card saves-action-card--block">
+                <h4 class="saves-action-card__title" data-i18n="card.saves.exportSelectedTitle">目前選取的存檔</h4>
+                <p class="saves-action-card__desc" data-i18n="card.saves.exportOneDesc">僅匯出上方選擇的單一世界存檔，或將其刪除（刪除前會自動建立備份）。</p>
+                <div class="btn-row wrap">
+                  <button
+                    id="exportGameNameBtn"
+                    class="btn"
+                    data-i18n="card.saves.exportGameNameOnly"
+                    data-i18n-title="card.saves.exportGameNameTitle"
+                    title="匯出目前選擇的 GameWorld / GameName"
+                  >
+                    📤 匯出此存檔
+                  </button>
+                  <button
+                    id="applyActiveSaveBtn"
+                    class="btn btn--accent"
+                    data-i18n="card.saves.applyActiveSave"
+                    data-i18n-title="card.saves.applyActiveSaveTitle"
+                    data-danger-i18n="confirm.applyActiveSave"
+                    data-cancel-i18n="common.cancel"
+                    data-continue-i18n="common.confirm"
+                    title="將所選存檔寫入 serverconfig.xml 的 GameWorld/GameName，下次啟動伺服器將載入此存檔"
+                  >
+                    🔀 切換為使用中存檔
+                  </button>
+                </div>
+              </div>
+
+              <div class="saves-action-card saves-action-card--danger saves-action-card--block">
+                <h4 class="saves-action-card__title" data-i18n="card.saves.deleteGameName">刪除此存檔</h4>
+                <p class="saves-action-card__desc" data-i18n="card.saves.deleteGameNameDesc">刪除前會自動建立備份，請先確認目前所選存檔。</p>
                 <button
-                  id="exportGameNameBtn"
-                  class="btn"
-                  data-i18n="card.saves.exportGameNameOnly"
-                  data-i18n-title="card.saves.exportGameNameTitle"
-                  title="匯出目前選擇的 GameWorld / GameName"
-                >
-                  📤 匯出此存檔
-                </button>
-                <button
-                  id="applyActiveSaveBtn"
-                  class="btn btn--accent"
-                  data-i18n="card.saves.applyActiveSave"
-                  data-i18n-title="card.saves.applyActiveSaveTitle"
-                  data-danger-i18n="confirm.applyActiveSave"
+                  id="deleteGameNameBtn"
+                  class="btn btn--danger full"
+                  title="刪除所選 GameName"
+                  data-i18n="card.saves.deleteGameName"
+                  data-i18n-title="card.saves.deleteGameNameTitle"
+                  data-danger-i18n="confirm.deleteGameName"
                   data-cancel-i18n="common.cancel"
                   data-continue-i18n="common.confirm"
-                  title="將所選存檔寫入 serverconfig.xml 的 GameWorld/GameName，下次啟動伺服器將載入此存檔"
                 >
-                  🔀 切換為使用中存檔
+                  ❌ 刪除此存檔
                 </button>
               </div>
             </div>
 
-            <div class="saves-action-card saves-action-card--danger">
-              <h4 class="saves-action-card__title" data-i18n="card.saves.deleteGameName">刪除此存檔</h4>
-              <p class="saves-action-card__desc" data-i18n="card.saves.deleteGameNameDesc">刪除前會自動建立備份，請先確認目前所選存檔。</p>
-              <button
-                id="deleteGameNameBtn"
-                class="btn btn--danger full"
-                title="刪除所選 GameName"
-                data-i18n="card.saves.deleteGameName"
-                data-i18n-title="card.saves.deleteGameNameTitle"
-                data-danger-i18n="confirm.deleteGameName"
-                data-cancel-i18n="common.cancel"
-                data-continue-i18n="common.confirm"
-              >
-                ❌ 刪除此存檔
-              </button>
+            <div class="saves-action-card saves-action-card--block">
+              <h4 class="saves-action-card__title" data-i18n="card.saves.singleBackupListTitle">單一存檔備份清單</h4>
+              <p class="saves-action-card__desc" data-i18n="card.saves.singleBackupListDesc">管理單一存檔備份，只會接受 world / save 類型的 ZIP。</p>
+              <div class="form-grid form-grid--backup">
+                <label class="field span-2">
+                  <span class="field__label" data-i18n="card.saves.selectSingleBackup">選擇單一存檔備份</span>
+                  <select id="singleBackupSelect" class="field__control"></select>
+                </label>
+                <div class="field">
+                  <span class="field__label sr-only" data-i18n="card.saves.importFromSingleBackup">從單一存檔備份匯入</span>
+                  <button
+                    id="importSingleBackupBtn"
+                    class="btn btn--accent full"
+                    data-i18n="card.saves.importFromSingleBackup"
+                    data-danger-i18n="confirm.importFromBackup"
+                    data-cancel-i18n="common.cancel"
+                    data-continue-i18n="common.confirm"
+                  >
+                    📥 從單一存檔備份匯入
+                  </button>
+                </div>
+                <div class="field">
+                  <span class="field__label sr-only" data-i18n="card.saves.deleteSingleBackup">刪除此單一備份</span>
+                  <button
+                    id="deleteSingleBackupBtn"
+                    class="btn btn--danger full"
+                    title="刪除所選單一存檔備份"
+                    data-i18n="card.saves.deleteSingleBackup"
+                    data-i18n-title="card.saves.deleteSingleBackupTitle"
+                    data-danger-i18n="confirm.deleteBackup"
+                    data-cancel-i18n="common.cancel"
+                    data-continue-i18n="common.confirm"
+                  >
+                    🗑️ 刪除此單一備份
+                  </button>
+                </div>
+              </div>
+              <div class="saves-backup-meta" aria-live="polite">
+                <div class="saves-status-card">
+                  <span class="saves-status-card__label" data-i18n="card.saves.backupFileLabel">檔名</span>
+                  <span id="singleBackupFileValue" class="saves-status-card__value" data-i18n="common.noBackup">(沒有備份)</span>
+                </div>
+                <div class="saves-status-card">
+                  <span class="saves-status-card__label" data-i18n="card.saves.backupTargetLabel">備份目標</span>
+                  <span id="singleBackupTargetValue" class="saves-status-card__value" data-i18n="common.none">(無)</span>
+                </div>
+                <div class="saves-status-card">
+                  <span class="saves-status-card__label" data-i18n="card.saves.backupCreatedAtLabel">建立時間</span>
+                  <span id="singleBackupTimeValue" class="saves-status-card__value" data-i18n="common.none">(無)</span>
+                </div>
+                <div class="saves-status-card">
+                  <span class="saves-status-card__label" data-i18n="card.saves.backupSizeLabel">大小</span>
+                  <span id="singleBackupSizeValue" class="saves-status-card__value" data-i18n="common.none">(無)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="saves-action-card saves-action-card--block">
+              <h4 class="saves-action-card__title" data-i18n="card.saves.singleUploadTitle">上傳單一存檔 ZIP</h4>
+              <p class="saves-action-card__desc" data-i18n="card.saves.singleUploadDesc">上傳單一存檔 ZIP 並匯入，只會覆蓋對應的 world / save。</p>
+              <div class="form-grid saves-upload-grid">
+                <label class="field">
+                  <span class="field__label" data-i18n="card.saves.selectSingleZip">選擇單一存檔 ZIP</span>
+                  <input
+                    id="singleImportUploadFile"
+                    type="file"
+                    accept=".zip"
+                    class="field__control"
+                  />
+                </label>
+                <div class="field">
+                  <span class="field__label sr-only" data-i18n="card.saves.uploadAndImportSingle">上傳並匯入單一存檔</span>
+                  <button
+                    id="importSingleUploadBtn"
+                    class="btn full"
+                    data-i18n="card.saves.uploadAndImportSingle"
+                    data-danger-i18n="confirm.uploadAndImport"
+                    data-cancel-i18n="common.cancel"
+                    data-continue-i18n="common.confirm"
+                  >
+                    📤 上傳並匯入單一存檔
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </section>
-
-        <details class="saves-collapsible">
-          <summary class="saves-collapsible__summary">
-            <span class="saves-collapsible__title" data-i18n="card.saves.backupManagement">管理後台備份存檔</span>
-            <span class="saves-collapsible__hint" data-i18n="card.saves.backupManagementHint">檢視既有備份並進行還原或刪除。</span>
-          </summary>
-          <div class="saves-collapsible__body">
-            <div class="form-grid form-grid--backup">
-              <label class="field span-2">
-                <span class="field__label" data-i18n="card.saves.selectBackup">選擇備份檔</span>
-                <select id="backupSelect" class="field__control"></select>
-              </label>
-              <div class="field">
-                <span class="field__label sr-only" data-i18n="card.saves.importFromBackup">執行匯入</span>
-                <button
-                  id="importBackupBtn"
-                  class="btn btn--accent full"
-                  data-i18n="card.saves.importFromBackup"
-                  data-danger-i18n="confirm.importFromBackup"
-                  data-cancel-i18n="common.cancel"
-                  data-continue-i18n="common.confirm"
-                >
-                  📥 從備份匯入
-                </button>
-              </div>
-              <div class="field">
-                <span class="field__label sr-only" data-i18n="card.saves.deleteBackup">刪除備份</span>
-                <button
-                  id="deleteBackupBtn"
-                  class="btn btn--danger full"
-                  title="刪除所選備份檔"
-                  data-i18n="card.saves.deleteBackup"
-                  data-i18n-title="card.saves.deleteBackupTitle"
-                  data-danger-i18n="confirm.deleteBackup"
-                  data-cancel-i18n="common.cancel"
-                  data-continue-i18n="common.confirm"
-                >
-                  🗑️ 刪除備份檔
-                </button>
-              </div>
-            </div>
-          </div>
-        </details>
-
-        <details class="saves-collapsible">
-          <summary class="saves-collapsible__summary">
-            <span class="saves-collapsible__title" data-i18n="card.saves.importUpload">匯入 (自行上傳 ZIP 結構可參考匯出之 ZIP 檔)</span>
-            <span class="saves-collapsible__hint" data-i18n="card.saves.importUploadHint">上傳自備 ZIP，覆蓋現有存檔前請先確認內容結構。</span>
-          </summary>
-          <div class="saves-collapsible__body">
-            <div class="form-grid">
-              <label class="field">
-                <span class="field__label" data-i18n="card.saves.selectZip">選擇 ZIP</span>
-                <input
-                  id="importUploadFile"
-                  type="file"
-                  accept=".zip"
-                  class="field__control"
-                />
-              </label>
-              <div class="field">
-                <span class="field__label sr-only" data-i18n="card.saves.uploadAndImport">上傳並匯入</span>
-                <button
-                  id="importUploadBtn"
-                  class="btn full"
-                  data-i18n="card.saves.uploadAndImport"
-                  data-danger-i18n="confirm.uploadAndImport"
-                  data-cancel-i18n="common.cancel"
-                  data-continue-i18n="common.confirm"
-                >
-                  📤 上傳並匯入
-                </button>
-              </div>
-            </div>
-          </div>
-        </details>
       </div>
     </div>
     <div class="modal__footer">

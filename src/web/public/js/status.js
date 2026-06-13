@@ -46,10 +46,16 @@
       D.applyActiveSaveBtn,
       D.refreshSavesBtn,
       D.viewBackupsBtn,
-      D.backupSelect,
-      D.importBackupBtn,
-      D.importUploadFile,
-      D.importUploadBtn,
+      D.fullBackupSelect,
+      D.importFullBackupBtn,
+      D.deleteFullBackupBtn,
+      D.fullImportUploadFile,
+      D.importFullUploadBtn,
+      D.singleBackupSelect,
+      D.importSingleBackupBtn,
+      D.deleteSingleBackupBtn,
+      D.singleImportUploadFile,
+      D.importSingleUploadBtn,
     ];
 
     const isViewer = App.auth?.isViewer?.() || false;
@@ -90,10 +96,14 @@
         D.telnetSendBtn,
         ...D.telnetBtns,
         D.exportGameNameBtn,
-        D.backupSelect,
-        D.importBackupBtn,
-        D.importUploadFile,
-        D.importUploadBtn,
+        D.importFullBackupBtn,
+        D.deleteFullBackupBtn,
+        D.fullImportUploadFile,
+        D.importFullUploadBtn,
+        D.importSingleBackupBtn,
+        D.deleteSingleBackupBtn,
+        D.singleImportUploadFile,
+        D.importSingleUploadBtn,
         D.cfgSaveBtn,
         D.cfgSaveStartBtn,
       ];
@@ -108,12 +118,14 @@
         D.viewConfigBtn,
         D.exportSavesBtn,
         D.gwSelect,
+        D.fullBackupSelect,
+        D.singleBackupSelect,
         D.refreshSavesBtn,
         D.viewBackupsBtn,
       ];
       setDisabled(viewOnlyButtons, false);
       setGnListDisabled(false);
-      
+
       // 更新按鈕文字狀態 (例如查看配置 vs 啟動伺服器)
       if (D.configStartBtn) {
         if (gameRunning) {
@@ -149,10 +161,16 @@
         D.applyActiveSaveBtn,
         D.deleteGameNameBtn,
         D.viewBackupsBtn,
-        D.backupSelect,
-        D.importBackupBtn,
-        D.importUploadFile,
-        D.importUploadBtn,
+        D.fullBackupSelect,
+        D.importFullBackupBtn,
+        D.deleteFullBackupBtn,
+        D.fullImportUploadFile,
+        D.importFullUploadBtn,
+        D.singleBackupSelect,
+        D.importSingleBackupBtn,
+        D.deleteSingleBackupBtn,
+        D.singleImportUploadFile,
+        D.importSingleUploadBtn,
       ];
 
       const lockBecauseBackup = S.backupInProgress;
@@ -208,15 +226,20 @@
     setDisabled(
       [
         D.viewBackupsBtn,
-        D.importBackupBtn,
-        D.importUploadFile,
-        D.importUploadBtn,
+        D.importFullBackupBtn,
+        D.deleteFullBackupBtn,
+        D.fullImportUploadFile,
+        D.importFullUploadBtn,
+        D.importSingleBackupBtn,
+        D.deleteSingleBackupBtn,
+        D.singleImportUploadFile,
+        D.importSingleUploadBtn,
       ],
       !canManageSaves
     );
 
     setDisabled(
-      [D.gwSelect, D.refreshSavesBtn, D.backupSelect],
+      [D.gwSelect, D.refreshSavesBtn, D.fullBackupSelect, D.singleBackupSelect],
       false
     );
     setGnListDisabled(false);
@@ -233,7 +256,7 @@
     }
 
     syncConfigLockFromStatus();
-    
+
     updateDashboardStats({ gameVersion, onlinePlayers, fps, heap, max, zom, rss, gameRunning, statsUpdatedAt });
 
     if (D.configStartBtn) {

@@ -1,6 +1,6 @@
 (function (w) {
   const App = (w.App = w.App || {});
-  const { fetchJSON } = App.api;
+  const { fetchJSON, saves: savesApi } = App.api;
   const { escapeHTML } = App.utils;
   const S = App.state;
 
@@ -106,6 +106,125 @@
     el.textContent = t(key);
   }
 
+  function normalizeBackupGroups(backups) {
+    return {
+      full: Array.isArray(backups?.full) ? backups.full : [],
+      single: Array.isArray(backups?.single) ? backups.single : [],
+      unknown: Array.isArray(backups?.unknown) ? backups.unknown : [],
+    };
+  }
+
+  function formatBackupOptionText(_scope, backup) {
+    return backup.file;
+  }
+
+  function formatBackupSize(size) {
+    const units = ["B", "KB", "MB", "GB", "TB"];
+    let value = Number(size) || 0;
+    let unitIndex = 0;
+    while (value >= 1024 && unitIndex < units.length - 1) {
+      value /= 1024;
+      unitIndex += 1;
+    }
+    if (unitIndex === 0) return `${value} ${units[unitIndex]}`;
+    const digits = value >= 100 ? 0 : value >= 10 ? 1 : 2;
+    return `${value.toFixed(digits)} ${units[unitIndex]}`;
+  }
+
+  function setBackupMetaValue(el, fallbackKey, text) {
+    setDynamicLabel(el, fallbackKey, text || "");
+  }
+
+  function findBackupByFile(backups, file) {
+    return backups.find((backup) => backup.file === file) || null;
+  }
+
+  function renderBackupDetails(scope, backups) {
+    const isFull = scope === "full";
+    const select = document.getElementById(
+      isFull ? "fullBackupSelect" : "singleBackupSelect"
+    );
+    const fileEl = document.getElementById(
+      isFull ? "fullBackupFileValue" : "singleBackupFileValue"
+    );
+    const targetEl = document.getElementById(
+      isFull ? "fullBackupTargetValue" : "singleBackupTargetValue"
+    );
+    const timeEl = document.getElementById(
+      isFull ? "fullBackupTimeValue" : "singleBackupTimeValue"
+    );
+    const sizeEl = document.getElementById(
+      isFull ? "fullBackupSizeValue" : "singleBackupSizeValue"
+    );
+
+    if (!select) return;
+
+    const backup = findBackupByFile(backups, select.value) || backups[0] || null;
+    if (backup && select.value !== backup.file) {
+      select.value = backup.file;
+    }
+
+    if (!backup) {
+      setBackupMetaValue(fileEl, backups.length ? "common.none" : "common.noBackup", "");
+      setBackupMetaValue(targetEl, "common.none", "");
+      setBackupMetaValue(timeEl, "common.none", "");
+      setBackupMetaValue(sizeEl, "common.none", "");
+      return;
+    }
+
+    const targetText = isFull
+      ? t("card.saves.fullSavesSection")
+      : backup.world && backup.name
+        ? `${backup.world} / ${backup.name}`
+        : "";
+
+    setBackupMetaValue(fileEl, "common.none", backup.file);
+    setBackupMetaValue(targetEl, "common.none", targetText);
+    setBackupMetaValue(timeEl, "common.none", new Date(backup.mtime).toLocaleString());
+    setBackupMetaValue(sizeEl, "common.none", formatBackupSize(backup.size));
+    select.title = backup.file;
+  }
+
+  function bindBackupSelectEvents() {
+    ["full", "single"].forEach((scope) => {
+      const select = document.getElementById(
+        scope === "full" ? "fullBackupSelect" : "singleBackupSelect"
+      );
+      if (!select || select.__bound_backup_select_meta) return;
+      select.__bound_backup_select_meta = true;
+      select.addEventListener("change", () => {
+        renderBackupDetails(scope, S.saveBackups?.[scope] || []);
+      });
+    });
+  }
+
+  function fillBackupSelect(selectId, backups, scope) {
+    const el = document.getElementById(selectId);
+    if (!el) return;
+    const prev = el.value || "";
+    el.innerHTML = "";
+
+    if (!backups.length) {
+      const opt = document.createElement("option");
+      opt.value = "";
+      opt.textContent = App.i18n ? App.i18n.t("common.noBackup") : "(沒有備份)";
+      el.appendChild(opt);
+      el.title = opt.textContent;
+      return;
+    }
+
+    backups.forEach((backup) => {
+      const opt = document.createElement("option");
+      opt.value = backup.file;
+      opt.textContent = formatBackupOptionText(scope, backup);
+      el.appendChild(opt);
+    });
+
+    if (prev && backups.some((backup) => backup.file === prev)) {
+      el.value = prev;
+    }
+  }
+
   function fillNamesFor(world) {
     const list = document.getElementById("gnList");
     if (!list) return;
@@ -138,9 +257,11 @@
         btn.setAttribute("aria-pressed", isSelected ? "true" : "false");
         if (world && world === S.activeWorld && n === S.activeName) {
           btn.classList.add("save-chip--active");
-          btn.setAttribute("data-i18n-title", "card.saves.activeBadge");
-          btn.title = t("card.saves.activeBadge");
         }
+        btn.title =
+          world && world === S.activeWorld && n === S.activeName
+            ? `${n} (${t("card.saves.activeBadge")})`
+            : n;
         list.appendChild(btn);
       });
     }
@@ -160,10 +281,7 @@
     worlds.forEach((world) => {
       const opt = document.createElement("option");
       opt.value = world;
-      opt.textContent =
-        world === S.activeWorld
-          ? `${world}（${t("card.saves.activeBadge")}）`
-          : world;
+      opt.textContent = world;
       gwSel.appendChild(opt);
     });
     if (worlds.length === 0) {
@@ -173,6 +291,7 @@
       gwSel.appendChild(opt);
     }
     gwSel.value = S.selectedWorld;
+    gwSel.title = S.selectedWorld || t("common.none");
 
     fillNamesFor(S.selectedWorld);
   }
@@ -184,7 +303,10 @@
     normalizeSelection();
 
     const gwSel = document.getElementById("gwSelect");
-    if (gwSel) gwSel.value = world;
+    if (gwSel) {
+      gwSel.value = world;
+      gwSel.title = world || t("common.none");
+    }
 
     fillNamesFor(world);
     renderHomeBrowser();
@@ -518,11 +640,7 @@
   async function applyActiveSave() {
     const world = S.selectedWorld;
     const name = S.selectedName;
-    const res = await fetchJSON("/api/serverconfig", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ updates: { GameWorld: world, GameName: name } }),
-    });
+    const res = await savesApi.setActive(world, name);
     if (!res.ok) throw new Error(res.message || "寫入失敗");
 
     S.activeWorld = world;
@@ -537,11 +655,11 @@
   async function loadSaves() {
     try {
       const [resp] = await Promise.all([
-        fetchJSON("/api/saves/list", { method: "GET" }),
+        savesApi.list(),
         loadActiveConfig(),
       ]);
       const saves = resp?.data?.saves || [];
-      const backups = resp?.data?.backups || [];
+      const backupGroups = normalizeBackupGroups(resp?.data?.backups);
 
       S.worldMap = new Map();
       saves.forEach((s) => {
@@ -562,35 +680,23 @@
         ordered.set(w, names);
       }
       S.worldMap = ordered;
-      S.savesBackupCount = backups.length;
+      S.saveBackups = backupGroups;
+      S.savesBackupCount = backupGroups.full.length + backupGroups.single.length;
 
       fillWorldAndName();
       renderHomeBrowser();
       bindHomeOverviewEvents();
       bindHomePagerEvents();
       bindGnListEvents();
+      bindBackupSelectEvents();
       bindHomeSelectionSync();
       bindHomeViewportEvents();
       syncSaveControls();
 
-      const backupSelectEl = document.getElementById("backupSelect");
-      if (backupSelectEl) {
-        backupSelectEl.innerHTML = "";
-        if (backups.length === 0) {
-          const opt = document.createElement("option");
-          opt.value = "";
-          opt.textContent = App.i18n ? App.i18n.t("common.noBackup") : "(沒有備份)";
-          backupSelectEl.appendChild(opt);
-        } else {
-          backups.forEach((b) => {
-            const opt = document.createElement("option");
-            opt.value = b.file;
-            const dt = new Date(b.mtime).toLocaleString();
-            opt.textContent = `${b.file} (${dt})`;
-            backupSelectEl.appendChild(opt);
-          });
-        }
-      }
+      fillBackupSelect("fullBackupSelect", backupGroups.full, "full");
+      fillBackupSelect("singleBackupSelect", backupGroups.single, "single");
+      renderBackupDetails("full", backupGroups.full);
+      renderBackupDetails("single", backupGroups.single);
     } catch (e) {
       const msg = App.i18n
         ? App.i18n.t("messages.loadSavesFailed", { error: e.message })
@@ -613,5 +719,7 @@
   w.addEventListener("i18n:changed", () => {
     renderHomeBrowser();
     fillWorldAndName();
+    renderBackupDetails("full", S.saveBackups?.full || []);
+    renderBackupDetails("single", S.saveBackups?.single || []);
   });
 })(window);

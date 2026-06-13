@@ -68,6 +68,11 @@
 
     worldMap: new Map(),
     savesBackupCount: 0,
+    saveBackups: {
+      full: [],
+      single: [],
+      unknown: [],
+    },
     selectedWorld: "",
     selectedName: "",
     activeWorld: "",

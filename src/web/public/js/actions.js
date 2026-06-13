@@ -1,6 +1,6 @@
 (function (w) {
   const App = (w.App = w.App || {});
-  const { fetchText, fetchJSON } = App.api;
+  const { fetchText, fetchJSON, saves: savesApi } = App.api;
   const { switchTab, appendLog } = App.console;
   const { setInstalledVersion, updateVersionLockUI, applyUIState } = App.status;
   const { canonicalVersion } = App.utils;
@@ -135,144 +135,118 @@
     });
     w.sendTelnet = sendTelnet;
 
-    on(D.refreshSavesBtn, "click", () => App.saves.loadSaves());
+    async function runSaveTask(task, options = {}) {
+      const { lock = true, clearInput = null, reload = true } = options;
+      switchTab("backup");
+      if (lock) {
+        S.backupInProgress = true;
+        applyUIState(S.current);
+      }
+      try {
+        const msg = await task();
+        appendLog("backup", msg, Date.now());
+        if (reload) {
+          await App.saves.loadSaves();
+        }
+      } catch (e) {
+        appendLog("backup", `❌ ${e.message}`, Date.now());
+      } finally {
+        if (clearInput) clearInput.value = "";
+        if (lock) {
+          S.backupInProgress = false;
+          applyUIState(S.current);
+        }
+      }
+    }
 
-    on(D.exportGameNameBtn, "click", async () => {
+    function getSelectedSave() {
       const world = S.selectedWorld || "";
       const name = S.selectedName || "";
       if (!world || !name) {
         appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectWorldName") : "請選擇 GameWorld / GameName"}`, Date.now());
-        return;
+        return null;
       }
-      switchTab("backup");
-      S.backupInProgress = true;
-      applyUIState(S.current);
-      try {
-        const msg = await fetchText("/api/saves/export-one", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ world, name }),
-        });
-        appendLog("backup", msg, Date.now());
-        App.saves.loadSaves();
-      } catch (e) {
-        appendLog("backup", `❌ ${e.message}`, Date.now());
-      } finally {
-        S.backupInProgress = false;
-        applyUIState(S.current);
-      }
-    });
+      return { world, name };
+    }
 
-    on(D.importBackupBtn, "click", async () => {
-      const file = D.backupSelect.value || "";
+    function getSelectedBackup(selectEl) {
+      const file = selectEl?.value || "";
       if (!file) {
         appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectBackup") : "請選擇備份檔"}`, Date.now());
-        return;
+        return "";
       }
-      switchTab("backup");
-      try {
-        const msg = await fetchText("/api/saves/import-backup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ file }),
-        });
-        appendLog("backup", msg, Date.now());
-        App.saves.loadSaves();
-      } catch (e) {
-        appendLog("backup", `❌ ${e.message}`, Date.now());
-      }
+      return file;
+    }
+
+    on(D.refreshSavesBtn, "click", () => App.saves.loadSaves());
+
+    on(D.exportGameNameBtn, "click", async () => {
+      const selected = getSelectedSave();
+      if (!selected) return;
+      await runSaveTask(() => savesApi.exportSingle(selected.world, selected.name));
     });
 
-    on(D.importUploadBtn, "click", async () => {
-      const f = D.importUploadFile?.files?.[0];
+    on(D.importFullBackupBtn, "click", async () => {
+      const file = getSelectedBackup(D.fullBackupSelect);
+      if (!file) return;
+      await runSaveTask(() => savesApi.importBackup("full", file));
+    });
+
+    on(D.importSingleBackupBtn, "click", async () => {
+      const file = getSelectedBackup(D.singleBackupSelect);
+      if (!file) return;
+      await runSaveTask(() => savesApi.importBackup("single", file));
+    });
+
+    on(D.importFullUploadBtn, "click", async () => {
+      const f = D.fullImportUploadFile?.files?.[0];
       if (!f) {
         appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectZipFile") : "請選擇要上傳的 ZIP 檔"}`, Date.now());
         return;
       }
-      switchTab("backup");
-      try {
-        const msg = await fetchText(
-          `/api/saves/import-upload?filename=${encodeURIComponent(f.name)}`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/octet-stream" },
-            body: f,
-          }
-        );
-        appendLog("backup", msg, Date.now());
-        App.saves.loadSaves();
-      } catch (e) {
-        appendLog("backup", `❌ ${e.message}`, Date.now());
-      } finally {
-        if (D.importUploadFile) D.importUploadFile.value = "";
+      await runSaveTask(() => savesApi.importUpload("full", f), {
+        clearInput: D.fullImportUploadFile,
+      });
+    });
+
+    on(D.importSingleUploadBtn, "click", async () => {
+      const f = D.singleImportUploadFile?.files?.[0];
+      if (!f) {
+        appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectZipFile") : "請選擇要上傳的 ZIP 檔"}`, Date.now());
+        return;
       }
+      await runSaveTask(() => savesApi.importUpload("single", f), {
+        clearInput: D.singleImportUploadFile,
+      });
     });
 
     on(D.exportSavesBtn, "click", async () => {
-      switchTab("backup");
-      S.backupInProgress = true;
-      applyUIState(S.current);
-      try {
-        const msg = await fetchText("/api/backup", { method: "POST" });
-        appendLog("backup", msg, Date.now());
-        App.saves.loadSaves();
-      } catch (e) {
-        appendLog("backup", `❌ ${e.message}`, Date.now());
-      } finally {
-        S.backupInProgress = false;
-        applyUIState(S.current);
-      }
+      await runSaveTask(() => savesApi.exportFull());
     });
 
     on(D.deleteGameNameBtn, "click", async () => {
-      const world = S.selectedWorld || "";
-      const name = S.selectedName || "";
-      if (!world || !name) {
-        appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectWorldName") : "請選擇 GameWorld / GameName"}`, Date.now());
-        return;
-      }
-      switchTab("backup");
-      try {
-        const msg = await fetchText("/api/saves/delete", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ world, name }),
-        });
-        appendLog("backup", msg, Date.now());
-        App.saves.loadSaves();
-      } catch (e) {
-        appendLog("backup", `❌ ${e.message}`, Date.now());
-      }
+      const selected = getSelectedSave();
+      if (!selected) return;
+      await runSaveTask(() => savesApi.deleteSingle(selected.world, selected.name));
     });
 
-    on(D.deleteBackupBtn, "click", async () => {
-      if (!D.deleteBackupBtn) {
-        console.warn("deleteBackupBtn 元素不存在，無法綁定刪除備份事件");
-        return;
-      }
-      const file = D.backupSelect.value || "";
-      if (!file) {
-        appendLog("backup", `❌ ${App.i18n ? App.i18n.t("messages.selectBackup") : "請選擇備份檔"}`, Date.now());
-        return;
-      }
-      switchTab("backup");
-      try {
-        const msg = await fetchText("/api/saves/delete-backup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ file }),
-        });
-        appendLog("backup", msg, Date.now());
-        App.saves.loadSaves();
-      } catch (e) {
-        appendLog("backup", `❌ ${e.message}`, Date.now());
-      }
+    on(D.deleteFullBackupBtn, "click", async () => {
+      const file = getSelectedBackup(D.fullBackupSelect);
+      if (!file) return;
+      await runSaveTask(() => savesApi.deleteBackup(file));
+    });
+
+    on(D.deleteSingleBackupBtn, "click", async () => {
+      const file = getSelectedBackup(D.singleBackupSelect);
+      if (!file) return;
+      await runSaveTask(() => savesApi.deleteBackup(file));
     });
 
     on(D.versionSelect, "change", () => updateVersionLockUI());
 
     on(D.gwSelect, "change", () => {
       S.selectedWorld = D.gwSelect.value || "";
+      D.gwSelect.title = S.selectedWorld || (App.i18n ? App.i18n.t("common.none") : "(無)");
       S.selectedName = "";
       App.saves.fillNamesFor(S.selectedWorld);
     });
