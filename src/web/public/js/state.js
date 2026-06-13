@@ -67,6 +67,7 @@
     },
 
     worldMap: new Map(),
+    savesBackupCount: 0,
     selectedWorld: "",
     selectedName: "",
     activeWorld: "",

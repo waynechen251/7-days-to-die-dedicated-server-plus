@@ -1,28 +1,54 @@
 <section class="card card-saves">
   <header class="card-header">
     <h2 class="card-title" data-i18n="card.saves.title">存檔管理</h2>
-    <div class="btn-bar">
-      <button
-        id="refreshSavesBtn"
-        class="btn btn--ghost"
-        data-i18n="card.saves.refresh"
-        data-i18n-title="card.saves.refreshTitle"
-        title="重新整理存檔/備份清單"
-      >
-        🔄 重新整理
-      </button>
-    </div>
   </header>
 
-  <div class="saves-summary">
-    <span><b id="saves-sum-worlds">—</b> <span data-i18n="card.saves.sumWorlds">世界</span></span>
-    <span><b id="saves-sum-saves">—</b> <span data-i18n="card.saves.sumSaves">存檔</span></span>
-    <span><b id="saves-sum-backups">—</b> <span data-i18n="card.saves.sumBackups">備份</span></span>
-  </div>
+  <section class="game-section saves-section">
+    <div class="game-section__head">
+      <span class="field__label" data-i18n="card.saves.browserSection">世界與存檔</span>
+    </div>
 
-  <div id="saves-overview" class="saves-overview-list"></div>
+    <section class="saves-browser">
+      <div class="saves-browser__column">
+        <div class="saves-browser__header">
+          <h3 class="saves-browser__title">
+            <span data-i18n="card.saves.worldListTitle">世界列表</span>
+            <span id="saves-home-world-count" class="saves-browser__count">(0)</span>
+          </h3>
+        </div>
+        <div id="saves-home-worlds" class="saves-browser-list"></div>
+        <div id="saves-home-worlds-pager" class="saves-browser-pager"></div>
+      </div>
 
-  <div class="row">
-    <button id="saves-open-manage-btn" data-i18n="card.saves.openManageBtn">📂 開啟存檔管理</button>
-  </div>
+      <div class="saves-browser__column">
+        <div class="saves-browser__header">
+          <div>
+            <h3 class="saves-browser__title">
+              <span data-i18n="card.saves.saveListTitle">存檔列表</span>
+              <span id="saves-home-save-count" class="saves-browser__count">(0)</span>
+            </h3>
+            <p id="saves-home-selected-world" class="saves-browser__meta" data-i18n="card.saves.saveListMetaEmpty">請先選擇世界</p>
+          </div>
+        </div>
+        <div id="saves-home-names" class="saves-browser-list"></div>
+        <div id="saves-home-names-pager" class="saves-browser-pager"></div>
+      </div>
+    </section>
+
+    <div class="saves-browser-actions">
+      <div id="saves-home-selection" class="saves-browser-actions__selection" data-i18n="card.saves.homeSelectionEmpty">請先選擇世界或存檔</div>
+      <div class="btn-row">
+        <button
+          id="refreshSavesBtn"
+          class="btn btn--ghost"
+          data-i18n="card.saves.refresh"
+          data-i18n-title="card.saves.refreshTitle"
+          title="重新整理存檔/備份清單"
+        >
+          🔄 重新整理
+        </button>
+        <button id="saves-open-manage-btn" class="btn" data-i18n="card.saves.openManageBtn">管理存檔</button>
+      </div>
+    </div>
+  </section>
 </section>

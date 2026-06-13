@@ -89,7 +89,11 @@
     if (!triggerBtn) return false;
 
     if (!triggerBtn.__bound_openSavesManage) {
-      triggerBtn.addEventListener("click", () => openModal());
+      triggerBtn.addEventListener("click", () => {
+        const world = App.state?.selectedWorld || undefined;
+        const name = App.state?.selectedName || undefined;
+        openModal(world, name);
+      });
       triggerBtn.__bound_openSavesManage = true;
     }
     return true;
