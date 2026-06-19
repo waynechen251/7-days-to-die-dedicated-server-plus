@@ -43,6 +43,8 @@
 - HTML 使用 `data-i18n`、`data-i18n-placeholder`、`data-i18n-title`
 - CSS 保持現有拆分方式，避免把樣式集中回單一大檔
 - 翻譯檔位於 `src/web/public/locales/`，預設語系為 `zh-TW`
+- 若新增可翻譯文案，統一併入既有 `src/web/public/locales/zh-TW.json`、`en.json`、`zh-CN.json`
+- 不要自行新增額外語系目錄或平行語系檔（例如 `locales/sandbox/*.json`）
 
 ## 必知限制
 
@@ -107,6 +109,18 @@ const baseDir = isPkg ? path.dirname(process.execPath) : process.cwd();
 
 - 新增文案或 UI 功能時，預設同步更新 `zh-TW`、`en`、`zh-CN`
 - 不要把可翻譯內容直接硬寫在 HTML 或前端 JS 中，除非是除錯輸出或純技術字串
+- `SandboxCode` 相關翻譯目前也統一放在三個主語系檔中，鍵位於 `modal.serverconfig.sandbox.*`
+
+### SandboxCode 實作邊界
+
+- `Assembly-CSharp` 僅供比對官方規則，不可作為執行期依賴
+- 執行期 `SandboxCode` schema 來源為 `src/web/lib/data/sandbox-schema.json`
+- 後端編解碼實作位於 `src/web/lib/sandboxCode.js`
+- API 位於 `src/web/lib/routes/sandbox.js`，目前提供：
+  - `GET /api/sandbox/schema`
+  - `POST /api/sandbox/decode`
+  - `POST /api/sandbox/encode`
+- 前端 `SandboxCode` UI 目前併入 `serverconfig.xml` modal，且必須與 `SandboxCode` 欄位本身直接綁定
 
 ## 修改原則
 
