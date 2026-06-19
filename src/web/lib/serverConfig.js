@@ -1,5 +1,7 @@
 const fs = require("fs");
 const path = require("path");
+const { resolveVersionProfile } = require("./versionProfile");
+const { getCachedCatalog } = require("./versionCatalog");
 
 function stripQuotes(s) {
   return typeof s === "string" ? s.trim().replace(/^"(.*)"$/, "$1") : s;
@@ -166,6 +168,88 @@ function readValues(filePath) {
   };
 }
 
+function ensureSandboxOnlyItems(items) {
+  const existing = Array.isArray(items)
+    ? items.find((item) => item.name === "SandboxCode")
+    : null;
+  if (existing) return [existing];
+  return [
+    {
+      name: "SandboxCode",
+      value: "",
+      commented: false,
+      comment: "7DTD v3.0+ sandbox settings code",
+    },
+  ];
+}
+
+function filterItemsForProfile(items, profile) {
+  if (profile?.profile === "v3") {
+    return ensureSandboxOnlyItems(items);
+  }
+  return Array.isArray(items) ? items : [];
+}
+
+function extractSandboxCodeUpdate(updates) {
+  if (!updates || typeof updates !== "object" || Array.isArray(updates)) {
+    return null;
+  }
+  if (!Object.prototype.hasOwnProperty.call(updates, "SandboxCode")) {
+    return null;
+  }
+  return String(updates.SandboxCode ?? "");
+}
+
+function escapeXmlAttr(value) {
+  return String(value ?? "").replace(/"/g, "&quot;");
+}
+
+function upsertPropertyValue(filePath, name, value) {
+  const original = fs.readFileSync(filePath, "utf-8");
+  const eol = original.includes("\r\n") ? "\r\n" : "\n";
+  const nameEsc = name.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
+  const safeValue = escapeXmlAttr(value);
+  const activeRe = new RegExp(
+    `(<property\\s+[^>]*name="${nameEsc}"[^>]*value=")([^"]*)(")([^>]*\\/>)`,
+    "i"
+  );
+  const commentedRe = new RegExp(
+    `<!--\\s*(<property\\s+[^>]*name="${nameEsc}"[^>]*value=")([^"]*)(")([^>]*\\/>)\\s*-->`,
+    "i"
+  );
+
+  let next = original;
+  let changed = false;
+  let inserted = false;
+
+  if (activeRe.test(next)) {
+    next = next.replace(activeRe, (_m, p1, _old, p3, p4) => {
+      changed = true;
+      return `${p1}${safeValue}${p3}${p4}`;
+    });
+  } else if (commentedRe.test(next)) {
+    next = next.replace(commentedRe, (_m, p1, _old, p3, p4) => {
+      changed = true;
+      return `${p1}${safeValue}${p3}${p4}`;
+    });
+  } else {
+    const lines = next.split(/\r?\n/);
+    const insertLine = `  <property name="${name}" value="${safeValue}" />`;
+    let insertAt = lines.findIndex((line) => /^\s*<\/[^>]+>\s*$/.test(line));
+    if (insertAt === -1) insertAt = lines.length;
+    lines.splice(insertAt, 0, insertLine);
+    next = lines.join(eol);
+    changed = true;
+    inserted = true;
+  }
+
+  if (changed && next !== original) {
+    fs.writeFileSync(filePath, next, "utf-8");
+  }
+
+  return { changed, inserted };
+}
+
 function writeValues(filePath, updates) {
   let txt = fs.readFileSync(filePath, "utf-8");
   let changed = [];
@@ -202,6 +286,7 @@ function registerRoutes(
     getConfig,
     saveConfig,
     listWorldTemplates,
+    gameServerProfiles,
   }
 ) {
   if (!app || !http) throw new Error("registerRoutes 需要 app 與 http");
@@ -216,6 +301,72 @@ function registerRoutes(
     });
   }
 
+  function resolveVersionCtx(version, items) {
+    return resolveVersionProfile({
+      version,
+      items,
+      catalog: getCachedCatalog(),
+    });
+  }
+
+  function resolveProfileBackedItems(version, currentItems, profileId) {
+    const CONFIG = getConfig();
+    const root = gameServerProfiles.ensureProfilesRoot(CONFIG);
+    const versionCtx = resolveVersionCtx(version, currentItems);
+    let editableItems = filterItemsForProfile(currentItems, versionCtx);
+
+    const before = root.profiles.length;
+    const ensured = gameServerProfiles.ensureDefaultProfile({
+      CONFIG,
+      versionCtx,
+      catalog: getCachedCatalog(),
+      items: editableItems,
+    });
+    if (root.profiles.length !== before) saveConfig();
+
+    const selectedProfile = profileId
+      ? gameServerProfiles.getProfileById(root, profileId)
+      : gameServerProfiles.resolveInitialProfile(root, versionCtx.buildId) || ensured;
+    if (
+      selectedProfile &&
+      String(selectedProfile.buildId || "") === String(versionCtx.buildId || "")
+    ) {
+      editableItems = gameServerProfiles.applySnapshotToItems(
+        editableItems,
+        {
+          values: selectedProfile.values,
+          commented: selectedProfile.commented,
+        }
+      );
+    }
+    const activeProfile = gameServerProfiles.resolveActiveProfile(root, versionCtx.buildId);
+    const lastStartedProfile = gameServerProfiles.getLastStartedProfile(
+      root,
+      versionCtx.buildId
+    );
+
+    return {
+      root,
+      versionCtx,
+      editableItems,
+      selectedProfile:
+        selectedProfile &&
+        String(selectedProfile.buildId || "") === String(versionCtx.buildId || "")
+          ? selectedProfile
+          : null,
+      activeProfile:
+        activeProfile &&
+        String(activeProfile.buildId || "") === String(versionCtx.buildId || "")
+          ? activeProfile
+          : null,
+      lastStartedProfile:
+        lastStartedProfile &&
+        String(lastStartedProfile.buildId || "") === String(versionCtx.buildId || "")
+          ? lastStartedProfile
+          : null,
+    };
+  }
+
   app.get("/api/serverconfig", (req, res) => {
     try {
       const cfgPath = _resolveServerConfigPath();
@@ -227,10 +378,30 @@ function registerRoutes(
         );
       }
       const { items } = readValues(cfgPath);
-      const worlds = listWorldTemplates ? initStatus() : [];
+      const {
+        root,
+        versionCtx,
+        editableItems,
+        selectedProfile,
+        activeProfile,
+        lastStartedProfile,
+      } = resolveProfileBackedItems(req.query?.version, items, req.query?.profileId);
+      const worlds = listWorldTemplates ? listWorldTemplates() : [];
       return http.respondJson(
         res,
-        { ok: true, data: { path: cfgPath, items, worlds } },
+        {
+          ok: true,
+          data: {
+            path: cfgPath,
+            items: editableItems,
+            worlds,
+            profile: versionCtx,
+            activeProfileId: selectedProfile?.id || activeProfile?.id || null,
+            selectedProfileId: selectedProfile?.id || null,
+            lastStartedProfileId: lastStartedProfile?.id || null,
+            profiles: gameServerProfiles.getProfilesByBuildId(root, versionCtx.buildId),
+          },
+        },
         200
       );
     } catch (e) {
@@ -260,6 +431,38 @@ function registerRoutes(
         );
       }
 
+      const currentItems = readValues(cfgPath).items || [];
+      const { root, versionCtx, editableItems, activeProfile } =
+        resolveProfileBackedItems(req.body?.version, currentItems, req.body?.profileId);
+      const requestedBuildId =
+        req.body?.buildId == null ? null : String(req.body.buildId);
+      if (
+        requestedBuildId &&
+        String(versionCtx.buildId || "") !== requestedBuildId
+      ) {
+        return http.respondJson(
+          res,
+          { ok: false, message: "版本 BuildID 與目前上下文不一致" },
+          409
+        );
+      }
+      if (req.body?.mode && req.body.mode !== versionCtx.profile) {
+        return http.respondJson(
+          res,
+          { ok: false, message: "設定模式與目前版本上下文不一致" },
+          409
+        );
+      }
+      if (
+        req.body?.profileId &&
+        (!activeProfile || activeProfile.id !== req.body.profileId)
+      ) {
+        return http.respondJson(
+          res,
+          { ok: false, message: "找不到目前版本可用的設定集" },
+          404
+        );
+      }
       const updates = req.body?.updates || {};
       const toggles = req.body?.toggles || {};
       const hasUpdates =
@@ -276,6 +479,51 @@ function registerRoutes(
           res,
           { ok: false, message: "缺少 updates 或 toggles" },
           400
+        );
+      }
+
+      if (versionCtx.profile === "v3") {
+        const sandboxCode = extractSandboxCodeUpdate(updates);
+        if (sandboxCode == null) {
+          return http.respondJson(
+            res,
+            { ok: false, message: "v3.0+ 模式只接受 SandboxCode 寫入" },
+            400
+          );
+        }
+
+        upsertPropertyValue(cfgPath, "SandboxCode", sandboxCode);
+        const { items } = readValues(cfgPath);
+
+        try {
+          const CONFIG = getConfig();
+          const { synced, removed } = syncGameServerFromItems(items, CONFIG);
+          if (synced > 0 || removed > 0) {
+            saveConfig();
+            eventBus.push("system", {
+              text: `已同步 SandboxCode 至 server.json (${synced}項變更, 修正大小寫${removed}項)`,
+            });
+          }
+        } catch (e) {
+          eventBus.push("system", {
+            level: "warn",
+            text: `同步 server.json 失敗: ${e?.message || e}`,
+          });
+        }
+
+        return http.respondJson(
+          res,
+          {
+            ok: true,
+            data: {
+              path: cfgPath,
+              changed: ["SandboxCode"],
+              toggled: [],
+              items: ensureSandboxOnlyItems(items),
+              profile: versionCtx,
+            },
+          },
+          200
         );
       }
 
@@ -349,7 +597,17 @@ function registerRoutes(
 
       return http.respondJson(
         res,
-        { ok: true, data: { path: cfgPath, changed, toggled, items } },
+        {
+          ok: true,
+          data: {
+            path: cfgPath,
+            changed,
+            toggled,
+            items,
+            profile: versionCtx,
+            activeProfileId: activeProfile?.id || null,
+          },
+        },
         200
       );
     } catch (err) {
@@ -365,6 +623,10 @@ function registerRoutes(
 module.exports = {
   readValues,
   writeValues,
+  upsertPropertyValue,
+  ensureSandboxOnlyItems,
+  filterItemsForProfile,
+  extractSandboxCodeUpdate,
   registerRoutes,
   resolveServerConfigPath,
   syncGameServerFromItems,

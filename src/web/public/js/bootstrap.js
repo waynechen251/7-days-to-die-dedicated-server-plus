@@ -2,7 +2,7 @@
   const App = (w.App = w.App || {});
   const { fetchJSON } = App.api;
   const { restoreUnreadBadges } = App.console;
-  const { setInstalledVersion } = App.status;
+  const { setInstalledVersion, refreshVersionProfileUI } = App.status;
   const D = App.dom;
   const S = App.state;
 
@@ -60,9 +60,16 @@
 
         // Store version labels for later use
         S.versionLabels = {};
+        S.versionBranchProfiles = {};
         for (const ver of result.versions) {
           const key = ver.value === "public" ? "" : ver.value;
           S.versionLabels[key] = ver.label;
+          S.versionBranchProfiles[key] = {
+            buildId: ver.buildId || null,
+            profile: ver.profile,
+            configMode: ver.configMode,
+            startPolicy: ver.startPolicy,
+          };
         }
 
         // Update source badge
@@ -75,6 +82,23 @@
       setVersionSourceBadge("fallback");
     }
     return false;
+  }
+
+  async function refreshProfiles(versionOverride) {
+    const version =
+      versionOverride != null
+        ? versionOverride
+        : D.versionSelect?.value || "";
+    try {
+      const result = await App.api.profiles.list(version);
+      if (result?.ok && result.data) {
+        App.status.setProfileStore(result.data);
+      }
+      return result;
+    } catch (_) {
+      App.status.setProfileStore(null);
+      return null;
+    }
   }
 
   async function initUI() {
@@ -119,6 +143,8 @@
         D.gameSelectedVersionBadge.textContent = t("card.game.lastInstallVersionNoRecord", "上次安裝版本: 無紀錄");
       }
     }
+    await refreshVersionProfileUI();
+    await refreshProfiles();
     restoreUnreadBadges();
     App.saves.loadSaves();
     App.firewall?.refresh();
@@ -262,7 +288,7 @@
     }
   })();
 
-  App.bootstrap = { refreshStatus, setState, realBoot };
+  App.bootstrap = { refreshStatus, setState, realBoot, refreshProfiles };
 
   w.setState = setState;
 })(window);

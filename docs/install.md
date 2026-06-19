@@ -146,16 +146,13 @@
 
 ## 防火牆與連線
 
-- 若要讓外部玩家加入你的伺服器，請於 Windows 防火牆/路由器開啟:
+- 若要讓外部玩家直連你的伺服器，請於 Windows 防火牆/路由器開啟:
   - `ServerPort/TCP`
   - `ServerPort/UDP`
-  - `ServerPort+1/UDP`
-  - `ServerPort+2/UDP`
-  - `ServerPort+3/UDP`（近版跨平台/公網連線建議一併開放）
 - 若有啟用遠端管理功能，再另外開啟:
   - `TelnetPort/TCP`
   - `WebDashboardPort/TCP` 或 `ControlPanelPort/TCP`
-- 預設情況下，後台管理使用 `26901/TCP`，而遊戲衍生埠會使用 `26901/UDP`；兩者協定不同，可共存，不視為衝突。
+- `ServerPort` 是遊戲伺服器對外監聽用的埠；`TelnetPort`、`WebDashboardPort`、`ControlPanelPort` 則屬管理介面用途。
 - 具體 Port 數值請以你的 `serverconfig.xml` 為準。
 
 ---
@@ -224,8 +221,8 @@ SteamCMD 本身輸出日誌會慢一些，如果上方狀態管理的 SteamCMD �
 
 ### 玩家無法連線到伺服器
 
-1. 確認 Windows 防火牆已開啟 `ServerPort` 到 `ServerPort+3`
-   - 預設為 `26900/TCP+UDP`、`26901/UDP`、`26902/UDP`、`26903/UDP`
+1. 確認 Windows 防火牆已開啟 `ServerPort/TCP` 與 `ServerPort/UDP`
+   - 預設為 `26900/TCP+UDP`
 2. 若使用路由器，確認已設定通訊埠轉發
 3. 確認伺服器已完全啟動
 4. 玩家連線時使用正確的 IP 與 Port

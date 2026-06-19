@@ -1,6 +1,6 @@
 (function (w) {
   const App = (w.App = w.App || {});
-  const { fetchJSON, fetchText } = App.api;
+  const { fetchJSON, fetchText, profiles: profilesApi } = App.api;
   const { decideType, escapeHTML } = App.utils;
   let D = App.dom;
   const S = App.state;
@@ -14,12 +14,370 @@
     }
   }
 
+  function getSelectedVersionValue() {
+    return D.versionSelect?.value || "";
+  }
+
+  function setModalLoading() {
+    if (D.cfgBody) {
+      D.cfgBody.innerHTML =
+        `<div style='padding:8px;font-size:0.75rem;'>${t("common.loading", "讀取中...")}</div>`;
+    }
+  }
+
+  function setProfileStore(store) {
+    if (App.status?.setProfileStore) {
+      App.status.setProfileStore(store);
+      return;
+    }
+    S.profileStore = {
+      buildId: store?.buildId || null,
+      buildLabel: store?.buildLabel || "",
+      buildTag: store?.buildTag || "",
+      activeProfileId: store?.activeProfileId || null,
+      activeProfile: store?.activeProfile || null,
+      lastStartedProfileId: store?.lastStartedProfileId || null,
+      lastStartedProfile: store?.lastStartedProfile || null,
+      initialProfileId: store?.initialProfileId || null,
+      profiles: Array.isArray(store?.profiles) ? store.profiles : [],
+    };
+  }
+
+  function getActiveProfile() {
+    const activeId = S.cfg.activeProfileId || S.profileStore?.activeProfileId;
+    return (
+      S.profileStore?.profiles?.find((profile) => profile.id === activeId) ||
+      S.profileStore?.activeProfile ||
+      null
+    );
+  }
+
+  function renderProfileInfo(activeId, profiles) {
+    ensureDom();
+    if (!D.cfgProfileInfo) return;
+    const selectedProfile =
+      profiles.find((profile) => profile.id === activeId) || getActiveProfile();
+    const lastStartedProfile =
+      profiles.find((profile) => profile.id === S.profileStore?.lastStartedProfileId) ||
+      S.profileStore?.lastStartedProfile ||
+      null;
+    const modeLabel =
+      S.cfg.profile?.profile === "v3"
+        ? t("card.game.versionProfileV3", "Sandbox-only")
+        : t("card.game.versionProfileLegacy", "Legacy mode");
+    const versionLabel =
+      S.cfg.profile?.buildTag ||
+      S.cfg.profile?.buildLabel ||
+      getSelectedVersionValue() ||
+      "-";
+    const countLabel = t("modal.serverconfig.profileCountValue", "{count} 筆", {
+      count: profiles.length,
+    });
+    const lastStartedLabel =
+      lastStartedProfile?.displayName ||
+      lastStartedProfile?.name ||
+      t("modal.serverconfig.profileLastStartedNone", "尚未啟動");
+    const selectedLabel =
+      selectedProfile?.displayName ||
+      selectedProfile?.name ||
+      t("common.none", "無");
+
+    D.cfgProfileInfo.innerHTML = [
+      {
+        label: t("modal.serverconfig.profileInfoSelected", "目前選取"),
+        value: escapeHTML(selectedLabel),
+      },
+      {
+        label: t("modal.serverconfig.profileInfoLastStarted", "上次啟動"),
+        value: escapeHTML(lastStartedLabel),
+      },
+      {
+        label: t("modal.serverconfig.profileInfoMode", "模式"),
+        value: escapeHTML(modeLabel),
+      },
+      {
+        label: t("modal.serverconfig.profileInfoCount", "設定檔數"),
+        value: escapeHTML(countLabel),
+      },
+      {
+        label: t("modal.serverconfig.profileInfoVersion", "版本"),
+        value: escapeHTML(versionLabel),
+      },
+    ]
+      .map(
+        (item) =>
+          `<div class="cfg-profile-info__item"><div class="cfg-profile-info__label">${item.label}</div><div class="cfg-profile-info__value">${item.value}</div></div>`
+      )
+      .join("");
+    D.cfgProfileInfo.title = S.profileStore?.buildId
+      ? `BuildID: ${S.profileStore.buildId}`
+      : "";
+  }
+
+  function renderChecksPanel(results) {
+    const safeResults = Array.isArray(results) ? results : [];
+    const okCount = safeResults.filter((item) => item?.ok === true).length;
+    const warnCount = safeResults.filter((item) => item?.ok === "warn").length;
+    const errCount = safeResults.filter((item) => item?.ok === false).length;
+    const icon = (ok) => (ok === true ? "✅" : ok === "warn" ? "⚠️" : "❌");
+    const stateClass = (ok) => (ok === true ? "ok" : ok === "warn" ? "warn" : "err");
+
+    return (
+      `<div class="cfg-checks__panel">` +
+      `<div class="cfg-checks__header">` +
+      `<div class="cfg-checks__title">${escapeHTML(
+        t("modal.serverconfig.preStartCheck", "啟動前檢查")
+      )}</div>` +
+      `<div class="cfg-checks__summary">` +
+      `<span class="cfg-checks__summary-pill cfg-checks__summary-pill--ok">✅ ${okCount}</span>` +
+      `<span class="cfg-checks__summary-pill cfg-checks__summary-pill--warn">⚠️ ${warnCount}</span>` +
+      `<span class="cfg-checks__summary-pill cfg-checks__summary-pill--err">❌ ${errCount}</span>` +
+      `</div>` +
+      `</div>` +
+      `<ul class="cfg-checks__list">${safeResults
+        .map(
+          (item) =>
+            `<li class="check-item ${stateClass(item.ok)}">` +
+            `<span class="check-item__icon">${icon(item.ok)}</span>` +
+            `<span class="check-item__text">${escapeHTML(item.text || "")}</span>` +
+            `</li>`
+        )
+        .join("")}</ul>` +
+      `</div>`
+    );
+  }
+
+  function getFieldLabelKey(name) {
+    return `modal.serverconfig.fields.${name}.label`;
+  }
+
+  function resolveFieldLabel(name) {
+    if (!name) return "";
+    if (!App.i18n?.t) return name;
+    const key = getFieldLabelKey(name);
+    const translated = App.i18n.t(key);
+    return translated && translated !== key ? translated : name;
+  }
+
+  function createHintNode(description) {
+    const text = String(
+      description || t("modal.serverconfig.noDescription", "無說明")
+    );
+    const wrap = document.createElement("span");
+    wrap.className = "cfg-hint-wrap";
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "cfg-hint";
+    button.textContent = "?";
+    button.setAttribute("aria-label", text);
+
+    const bubble = document.createElement("span");
+    bubble.className = "cfg-hint__bubble";
+    bubble.textContent = text;
+
+    wrap.appendChild(button);
+    wrap.appendChild(bubble);
+    return wrap;
+  }
+
+  function normalizeCheckFieldName(name) {
+    const raw = String(name || "").trim();
+    if (!raw) return "";
+    return raw.replace(/\+\d+$/, "");
+  }
+
+  function collectFieldStates(results) {
+    const states = new Map();
+    (Array.isArray(results) ? results : []).forEach((result) => {
+      if (!result || result.ok === true) return;
+      const severity = result.ok === false ? "err" : "warn";
+      const fields = Array.isArray(result.fields) ? result.fields : [];
+      fields
+        .map(normalizeCheckFieldName)
+        .filter(Boolean)
+        .forEach((fieldName) => {
+          const prev = states.get(fieldName);
+          if (prev === "err") return;
+          states.set(fieldName, prev === "warn" || severity === "warn" ? severity : "err");
+          if (severity === "err") states.set(fieldName, "err");
+        });
+    });
+    return states;
+  }
+
+  function applyFieldCheckStates(results) {
+    ensureDom();
+    const states = collectFieldStates(results);
+    D.cfgBody.querySelectorAll(".cfg-field").forEach((field) => {
+      const name = field.dataset.fieldName || "";
+      field.classList.remove("cfg-field--warn", "cfg-field--err");
+      if (!name) return;
+      const state = states.get(name);
+      if (state === "warn") field.classList.add("cfg-field--warn");
+      else if (state === "err") field.classList.add("cfg-field--err");
+    });
+  }
+
+  function renderProfileBar() {
+    ensureDom();
+    if (!D.cfgProfileBar || !D.cfgProfileSelect) return;
+    const readOnly = !!S.cfg.locked || !!App.auth?.isViewer?.();
+
+    const profiles = Array.isArray(S.profileStore?.profiles)
+      ? S.profileStore.profiles
+      : [];
+    const activeId = S.cfg.activeProfileId || S.profileStore?.activeProfileId || "";
+    const deleteLocked = profiles.length <= 1;
+
+    D.cfgProfileBar.classList.remove("hidden");
+    D.cfgProfileSelect.innerHTML = profiles
+      .map((profile) => {
+        const label = escapeHTML(
+          profile.displayName || profile.name || profile.id || ""
+        );
+        const selected = profile.id === activeId ? " selected" : "";
+        return `<option value="${escapeHTML(profile.id)}"${selected}>${label}</option>`;
+      })
+      .join("");
+    D.cfgProfileSelect.disabled = readOnly || profiles.length === 0;
+    renderProfileInfo(activeId, profiles);
+
+    if (D.cfgProfileCreateBtn) {
+      D.cfgProfileCreateBtn.title = t(
+        "modal.serverconfig.profileCreate",
+        "建立新配置"
+      );
+      D.cfgProfileCreateBtn.disabled = readOnly;
+    }
+    if (D.cfgProfileRenameBtn) {
+      D.cfgProfileRenameBtn.title = t(
+        "modal.serverconfig.profileRename",
+        "重新命名目前配置"
+      );
+      D.cfgProfileRenameBtn.disabled = readOnly || !activeId;
+    }
+    if (D.cfgProfileDeleteBtn) {
+      D.cfgProfileDeleteBtn.title = deleteLocked
+        ? t(
+            "modal.serverconfig.profileDeleteDisabled",
+            "至少保留一筆設定檔，無法刪除最後一筆"
+          )
+        : t("modal.serverconfig.profileDelete", "刪除目前配置");
+      D.cfgProfileDeleteBtn.disabled = readOnly || !activeId || deleteLocked;
+    }
+  }
+
+  function buildProfileSnapshot() {
+    const { values, enables } = readCfgValuesFromUI();
+    const snapshot = {
+      values: {},
+      commented: {},
+    };
+
+    Object.keys(values).forEach((name) => {
+      snapshot.values[name] = normalizeValueForWrite(name, values[name]);
+      snapshot.commented[name] = !enables[name];
+    });
+
+    return snapshot;
+  }
+
+  function collectPendingConfigChanges() {
+    const { values, enables } = readCfgValuesFromUI();
+    const snapshot = buildProfileSnapshot();
+    const updates = {};
+    const toggles = {};
+    let changed = 0;
+    let toggleChanged = 0;
+
+    Object.keys(values).forEach((name) => {
+      if (!enables[name]) return;
+      const newVal = normalizeValueForWrite(name, values[name]);
+      const oldVal = S.cfg.original?.get(name) ?? "";
+      if (String(newVal) !== String(oldVal)) {
+        updates[name] = newVal;
+        changed++;
+      }
+    });
+
+    if (S.cfg.commentedOriginal) {
+      Object.keys(enables).forEach((name) => {
+        const oldCommented = S.cfg.commentedOriginal.get(name);
+        const newCommented = !enables[name];
+        if (oldCommented !== newCommented) {
+          toggles[name] = enables[name];
+          toggleChanged++;
+        }
+      });
+    }
+
+    return {
+      values,
+      enables,
+      snapshot,
+      updates,
+      toggles,
+      changed,
+      toggleChanged,
+      hasChanges: changed > 0 || toggleChanged > 0,
+    };
+  }
+
+  async function confirmDiscardUnsavedChanges() {
+    const pending = collectPendingConfigChanges();
+    if (!pending.hasChanges) return true;
+
+    const summary = buildChangeSummary({
+      updates: pending.updates,
+      toggles: pending.toggles,
+      enables: pending.enables,
+    });
+
+    return window.DangerConfirm
+      ? window.DangerConfirm.showConfirm(
+          t(
+            "confirm.switchProfileWithUnsaved",
+            "{summary}\n\n切換設定檔會放棄尚未保存的變更，是否仍要繼續？",
+            { summary }
+          ),
+          {
+            title: t(
+              "confirm.switchProfileWithUnsavedTitle",
+              "尚有未保存的設定變更"
+            ),
+            continueText: t("common.confirm", "繼續"),
+            cancelText: t("common.cancel", "取消"),
+          }
+        )
+      : Promise.resolve(
+          window.confirm(
+            t(
+              "confirm.switchProfileWithUnsavedFallback",
+              "切換設定檔會放棄尚未保存的變更，是否仍要繼續？"
+            )
+          )
+        );
+  }
+
   function bindButtons() {
     ensureDom();
-    D.cfgCloseBtn?.addEventListener("click", closeCfgModal);
-    D.cfgCancelBtn?.addEventListener("click", closeCfgModal);
-    D.cfgSaveBtn?.addEventListener("click", () => saveConfigValues(false));
-    D.cfgSaveStartBtn?.addEventListener("click", () => saveConfigValues(true));
+    if (D.cfgCloseBtn && !D.cfgCloseBtn.__bound_closeCfg) {
+      D.cfgCloseBtn.addEventListener("click", closeCfgModal);
+      D.cfgCloseBtn.__bound_closeCfg = true;
+    }
+    if (D.cfgCancelBtn && !D.cfgCancelBtn.__bound_cancelCfg) {
+      D.cfgCancelBtn.addEventListener("click", closeCfgModal);
+      D.cfgCancelBtn.__bound_cancelCfg = true;
+    }
+    if (D.cfgSaveBtn && !D.cfgSaveBtn.__bound_saveCfg) {
+      D.cfgSaveBtn.addEventListener("click", () => saveConfigValues(false));
+      D.cfgSaveBtn.__bound_saveCfg = true;
+    }
+    if (D.cfgSaveStartBtn && !D.cfgSaveStartBtn.__bound_saveStartCfg) {
+      D.cfgSaveStartBtn.addEventListener("click", () => saveConfigValues(true));
+      D.cfgSaveStartBtn.__bound_saveStartCfg = true;
+    }
 
     const loadBtn =
       D.cfgLoadAdminBtn || document.getElementById("cfgLoadAdminBtn");
@@ -27,10 +385,252 @@
       loadBtn.addEventListener("click", loadAdminGameServerConfig);
       loadBtn.__bound_loadAdmin = true;
     }
+
+    if (D.cfgProfileSelect && !D.cfgProfileSelect.__bound_profileSelect) {
+      D.cfgProfileSelect.addEventListener("change", async (e) => {
+        const profileId = e.target.value || "";
+        if (!profileId) return;
+        const previousProfileId =
+          S.cfg.activeProfileId || S.profileStore?.activeProfileId || "";
+        if (profileId === previousProfileId) return;
+        try {
+          const proceed = await confirmDiscardUnsavedChanges();
+          if (!proceed) {
+            e.target.value = previousProfileId;
+            return;
+          }
+          const result = await profilesApi.select({
+            version: getSelectedVersionValue(),
+            profileId,
+          });
+          if (!result?.ok) {
+            throw new Error(
+              result?.message ||
+                t("messages.selectProfileFailed", "切換配置失敗")
+            );
+          }
+          setProfileStore(result.data);
+          S.cfg.activeProfileId = result.data?.activeProfileId || null;
+          renderProfileBar();
+          await loadConfigModalData({
+            profileId,
+            skipLoadingMask: true,
+            skipInitPrompt: true,
+          });
+        } catch (err) {
+          e.target.value = previousProfileId;
+          App.console.appendLog(
+            "system",
+            `❌ ${t("messages.selectProfileFailed", "切換配置失敗: {error}", {
+              error: err.message,
+            })}`,
+            Date.now()
+          );
+        }
+      });
+      D.cfgProfileSelect.__bound_profileSelect = true;
+    }
+
+    if (D.cfgProfileCreateBtn && !D.cfgProfileCreateBtn.__bound_profileCreate) {
+      D.cfgProfileCreateBtn.addEventListener("click", async () => {
+        const name = await (App.prompt
+          ? App.prompt(
+              t("messages.profileNamePrompt", "請輸入配置名稱"),
+              "",
+              {
+                title: t("modal.serverconfig.profileCreate", "建立新配置"),
+                placeholder: t(
+                  "messages.profileNamePlaceholder",
+                  "例如: PVE / 測試服 / 活動服"
+                ),
+              }
+            )
+          : Promise.resolve(
+              window.prompt(
+                t("messages.profileNamePrompt", "請輸入配置名稱"),
+                ""
+              )
+            ));
+        if (name == null) return;
+        try {
+          const result = await profilesApi.create({
+            version: getSelectedVersionValue(),
+            name,
+            snapshot: buildProfileSnapshot(),
+          });
+          if (!result?.ok) {
+            throw new Error(
+              result?.message ||
+                t("messages.createProfileFailed", "建立配置失敗")
+            );
+          }
+          setProfileStore(result.data);
+          S.cfg.activeProfileId = result.data?.activeProfileId || null;
+          renderProfileBar();
+          await loadConfigModalData({
+            profileId: S.cfg.activeProfileId,
+            skipLoadingMask: true,
+            skipInitPrompt: true,
+          });
+          App.console.appendLog(
+            "system",
+            `✅ ${t("messages.profileCreated", "已建立配置: {name}", {
+              name: getActiveProfile()?.displayName || name,
+            })}`,
+            Date.now()
+          );
+        } catch (err) {
+          App.console.appendLog(
+            "system",
+            `❌ ${t("messages.createProfileFailed", "建立配置失敗: {error}", {
+              error: err.message,
+            })}`,
+            Date.now()
+          );
+        }
+      });
+      D.cfgProfileCreateBtn.__bound_profileCreate = true;
+    }
+
+    if (D.cfgProfileRenameBtn && !D.cfgProfileRenameBtn.__bound_profileRename) {
+      D.cfgProfileRenameBtn.addEventListener("click", async () => {
+        const activeProfile = getActiveProfile();
+        if (!activeProfile) return;
+        const nextName = await (App.prompt
+          ? App.prompt(
+              t("messages.profileRenamePrompt", "請輸入新的配置名稱"),
+              activeProfile.name || "",
+              {
+                title: t(
+                  "modal.serverconfig.profileRename",
+                  "重新命名目前配置"
+                ),
+                placeholder: t(
+                  "messages.profileNamePlaceholder",
+                  "例如: PVE / 測試服 / 活動服"
+                ),
+              }
+            )
+          : Promise.resolve(
+              window.prompt(
+                t("messages.profileRenamePrompt", "請輸入新的配置名稱"),
+                activeProfile.name || ""
+              )
+            ));
+        if (nextName == null) return;
+        try {
+          const result = await profilesApi.rename({
+            version: getSelectedVersionValue(),
+            profileId: activeProfile.id,
+            name: nextName,
+          });
+          if (!result?.ok) {
+            throw new Error(
+              result?.message ||
+                t("messages.renameProfileFailed", "配置改名失敗")
+            );
+          }
+          setProfileStore(result.data);
+          S.cfg.activeProfileId = result.data?.activeProfileId || null;
+          renderProfileBar();
+        } catch (err) {
+          App.console.appendLog(
+            "system",
+            `❌ ${t("messages.renameProfileFailed", "配置改名失敗: {error}", {
+              error: err.message,
+            })}`,
+            Date.now()
+          );
+        }
+      });
+      D.cfgProfileRenameBtn.__bound_profileRename = true;
+    }
+
+    if (D.cfgProfileDeleteBtn && !D.cfgProfileDeleteBtn.__bound_profileDelete) {
+      D.cfgProfileDeleteBtn.addEventListener("click", async () => {
+        const activeProfile = getActiveProfile();
+        if (!activeProfile) return;
+        if ((S.profileStore?.profiles || []).length <= 1) {
+          App.console.appendLog(
+            "system",
+            `⚠️ ${t(
+              "messages.deleteLastProfileBlocked",
+              "至少保留一筆設定檔，無法刪除最後一筆。"
+            )}`,
+            Date.now()
+          );
+          return;
+        }
+        const confirmed = await (window.DangerConfirm
+          ? window.DangerConfirm.showConfirm(
+              t("confirm.deleteProfile", "是否確定刪除此配置？"),
+              {
+                title: t("modal.serverconfig.profileDelete", "刪除目前配置"),
+                continueText: t("common.confirm", "繼續"),
+                cancelText: t("common.cancel", "取消"),
+              }
+            )
+          : Promise.resolve(
+              window.confirm(t("confirm.deleteProfile", "是否確定刪除此配置？"))
+            ));
+        if (!confirmed) return;
+        try {
+          const result = await profilesApi.delete({
+            version: getSelectedVersionValue(),
+            profileId: activeProfile.id,
+          });
+          if (!result?.ok) {
+            throw new Error(
+              result?.message ||
+                t("messages.deleteProfileFailed", "刪除配置失敗")
+            );
+          }
+          setProfileStore(result.data);
+          S.cfg.activeProfileId = result.data?.activeProfileId || null;
+          renderProfileBar();
+          await loadConfigModalData({
+            profileId: S.cfg.activeProfileId,
+            skipLoadingMask: true,
+            skipInitPrompt: true,
+          });
+        } catch (err) {
+          App.console.appendLog(
+            "system",
+            `❌ ${t("messages.deleteProfileFailed", "刪除配置失敗: {error}", {
+              error: err.message,
+            })}`,
+            Date.now()
+          );
+        }
+      });
+      D.cfgProfileDeleteBtn.__bound_profileDelete = true;
+    }
   }
 
   if (w.__fragmentsReady) bindButtons();
   else w.addEventListener("fragments:ready", bindButtons, { once: true });
+
+  window.addEventListener("i18n:changed", () => {
+    ensureDom();
+    if (D.cfgModal?.classList.contains("hidden")) return;
+    renderProfileBar();
+    if (S.cfg.profile?.profile === "v3") {
+      const results = [
+        {
+          ok: "warn",
+          text: t(
+            "checks.v3SandboxOnlyWarn",
+            "目前僅支援 SandboxCode 保存，啟動仍屬未完全相容。"
+          ),
+          fields: ["SandboxCode"],
+        },
+      ];
+      D.cfgChecks.innerHTML = renderChecksPanel(results);
+      applyFieldCheckStates(results);
+      return;
+    }
+    if (!S.cfg.locked) rerunChecks();
+  });
 
   function closeCfgModal() {
     D.cfgModal?.classList.add("hidden");
@@ -50,16 +650,29 @@
     ensureDom();
     D.cfgModal?.classList.remove("hidden");
     D.cfgModal?.setAttribute("aria-hidden", "false");
-    if (D.cfgBody)
-      D.cfgBody.innerHTML =
-        `<div style='padding:8px;font-size:0.75rem;'>${t("common.loading", "讀取中...")}</div>`;
+    await loadConfigModalData();
+  }
 
+  async function loadConfigModalData(options = {}) {
+    ensureDom();
+    const {
+      profileId = "",
+      skipLoadingMask = false,
+      skipInitPrompt = false,
+    } = options;
+    if (!skipLoadingMask) setModalLoading();
+    const selectedVersion = getSelectedVersionValue();
     try {
-      const [procRes, cfgRes, savesRes, appCfgRes] = await Promise.all([
+      const query = new URLSearchParams();
+      if (selectedVersion) query.set("version", selectedVersion);
+      if (profileId) query.set("profileId", profileId);
+
+      const [procRes, cfgRes, savesRes, appCfgRes, profilesRes] = await Promise.all([
         fetchJSON("/api/processManager/status").catch(() => null),
-        fetchJSON("/api/serverconfig"),
+        fetchJSON(`/api/serverconfig?${query.toString()}`),
         fetchJSON("/api/saves/list"),
         fetchJSON("/api/get-config").catch(() => null),
+        profilesApi.list(selectedVersion).catch(() => null),
       ]);
       ensureDom();
       if (!cfgRes.ok) throw new Error(cfgRes.message || t("messages.loadConfigFailed", "讀取設定失敗"));
@@ -86,15 +699,46 @@
       }
 
       const items = cfgRes.data?.items || [];
+      S.cfg.profile = cfgRes.data?.profile || null;
+      S.cfg.activeProfileId =
+        cfgRes.data?.selectedProfileId ||
+        cfgRes.data?.activeProfileId ||
+        profilesRes?.data?.activeProfileId ||
+        null;
+      const fallbackProfiles = cfgRes.data?.profiles || [];
+      const fallbackActiveProfile =
+        fallbackProfiles.find((profile) => profile.id === (profilesRes?.data?.activeProfileId || S.cfg.activeProfileId)) ||
+        null;
+      const fallbackLastStartedProfile =
+        fallbackProfiles.find(
+          (profile) => profile.id === (cfgRes.data?.lastStartedProfileId || profilesRes?.data?.lastStartedProfileId)
+        ) || null;
+      setProfileStore(profilesRes?.data || {
+        buildId: S.cfg.profile?.buildId || null,
+        buildLabel: S.cfg.profile?.buildLabel || "",
+        buildTag: S.cfg.profile?.buildTag || "",
+        activeProfileId: profilesRes?.data?.activeProfileId || S.cfg.activeProfileId,
+        activeProfile: fallbackActiveProfile,
+        lastStartedProfileId:
+          cfgRes.data?.lastStartedProfileId || profilesRes?.data?.lastStartedProfileId || null,
+        lastStartedProfile: fallbackLastStartedProfile,
+        initialProfileId:
+          cfgRes.data?.selectedProfileId ||
+          profilesRes?.data?.initialProfileId ||
+          S.cfg.activeProfileId,
+        profiles: fallbackProfiles,
+      });
       S.cfg.original = new Map(items.map((x) => [x.name, x.value]));
       S.cfg.commentedOriginal = new Map(
         items.map((x) => [x.name, !!x.commented])
       );
       S.cfg.webPort = parseInt(appCfgRes?.data?.web?.port, 10) || NaN;
+      renderProfileBar();
       renderCfgEditor(items);
 
       S.cfg.locked = App.status.computeGameRunning();
       App.status.updateCfgLockUI();
+      renderProfileBar();
 
       const loadBtn =
         D.cfgLoadAdminBtn || document.getElementById("cfgLoadAdminBtn");
@@ -106,7 +750,7 @@
 
       const gsInit =
         appCfgRes?.data?.web && appCfgRes.data.web.game_serverInit === "true";
-      if (gsInit && !S.cfg.locked) {
+      if (gsInit && !S.cfg.locked && !skipInitPrompt) {
         try {
           const proceed = await (window.DangerConfirm
             ? window.DangerConfirm.showConfirm(
@@ -158,7 +802,6 @@
       );
     }
   }
-
   const ENUM_OPTIONS = {
     Region: {
       default: "NorthAmericaEast",
@@ -413,6 +1056,11 @@
 
   function renderCfgEditor(items) {
     ensureDom();
+    if (S.cfg.profile?.profile === "v3") {
+      renderSandboxEditor(items);
+      return;
+    }
+
     const grid = document.createElement("div");
     grid.className = "cfg-grid";
 
@@ -425,29 +1073,43 @@
     });
 
     const byName = new Map(items.map((i) => [i.name, i.value]));
-    const metaMap = new Map(
-      items.map((i) => [i.name, i.comment || i.doc || ""])
-    );
 
     items.forEach((item) => {
       const { name, value, commented } = item;
-      const lab = document.createElement("label");
-      lab.className = "cfg-label";
+      const field = document.createElement("div");
+      field.className = "cfg-field";
+      field.dataset.fieldName = name;
+      const header = document.createElement("div");
+      header.className = "cfg-field__header";
 
       const enable = document.createElement("input");
       enable.type = "checkbox";
       enable.className = "cfg-enable";
       enable.dataset.enableFor = name;
       enable.checked = !commented;
-      lab.appendChild(enable);
-      lab.appendChild(document.createTextNode(" " + name));
+      enable.setAttribute("aria-label", name);
 
-      const hint = document.createElement("span");
-      hint.textContent = " [?]";
-      hint.title = (item.comment || item.doc || t("modal.serverconfig.noDescription", "無說明")).toString();
-      hint.style.cursor = "help";
-      hint.style.userSelect = "none";
-      lab.appendChild(hint);
+      const lab = document.createElement("div");
+      lab.className = "cfg-label";
+      const labelText = document.createElement("span");
+      labelText.className = "cfg-label__text cfg-field__name";
+      labelText.textContent = name;
+
+      const translatedText = document.createElement("span");
+      translatedText.className = "cfg-field__translation";
+      translatedText.dataset.i18n = getFieldLabelKey(name);
+      translatedText.textContent = resolveFieldLabel(name);
+
+      lab.appendChild(labelText);
+      lab.appendChild(translatedText);
+
+      const hint = createHintNode(
+        item.comment || item.doc || t("modal.serverconfig.noDescription", "無說明")
+      );
+
+      header.appendChild(enable);
+      header.appendChild(lab);
+      header.appendChild(hint);
 
       let inputEl;
 
@@ -576,12 +1238,80 @@
         rerunChecks();
       });
 
-      grid.appendChild(lab);
-      grid.appendChild(inputEl);
+      field.appendChild(header);
+      field.appendChild(inputEl);
+      grid.appendChild(field);
     });
 
     D.cfgBody.innerHTML = "";
     D.cfgBody.appendChild(grid);
+    if (S.cfg.locked) App.status.disableCfgInputs(true);
+  }
+
+  function renderSandboxEditor(items) {
+    const sandbox = Array.isArray(items)
+      ? items.find((item) => item.name === "SandboxCode")
+      : null;
+    const wrap = document.createElement("div");
+    wrap.className = "cfg-sandbox cfg-field";
+    wrap.dataset.fieldName = "SandboxCode";
+
+    const header = document.createElement("div");
+    header.className = "cfg-field__header";
+
+    const lab = document.createElement("div");
+    lab.className = "cfg-label";
+    const labelText = document.createElement("span");
+    labelText.className = "cfg-label__text cfg-field__name";
+    labelText.textContent = "SandboxCode";
+    const translatedText = document.createElement("span");
+    translatedText.className = "cfg-field__translation";
+    translatedText.dataset.i18n = getFieldLabelKey("SandboxCode");
+    translatedText.textContent = resolveFieldLabel("SandboxCode");
+    lab.appendChild(labelText);
+    lab.appendChild(translatedText);
+
+    const hint = createHintNode(
+      t(
+        "modal.serverconfig.sandboxCodeHint",
+        "7DTD v3.0+ 僅支援直接編輯 SandboxCode。"
+      )
+    );
+
+    header.appendChild(lab);
+    header.appendChild(hint);
+
+    const textarea = document.createElement("textarea");
+    textarea.className = "cfg-sandbox__input";
+    textarea.dataset.name = "SandboxCode";
+    textarea.dataset.type = "text";
+    textarea.setAttribute(
+      "data-i18n-placeholder",
+      "modal.serverconfig.sandboxCodePlaceholder"
+    );
+    textarea.rows = 5;
+    textarea.spellcheck = false;
+    textarea.placeholder = t(
+      "modal.serverconfig.sandboxCodePlaceholder",
+      "貼上遊戲內產生的 SandboxCode"
+    );
+    textarea.value = sandbox?.value || "";
+    textarea.addEventListener("input", rerunChecks);
+
+    const desc = document.createElement("div");
+    desc.className = "cfg-sandbox__desc";
+    desc.setAttribute("data-i18n", "modal.serverconfig.sandboxOnlyDesc");
+    desc.textContent = t(
+      "modal.serverconfig.sandboxOnlyDesc",
+      "v3.0+ 目前只提供 SandboxCode 欄位之填寫與保存。"
+    );
+
+    wrap.appendChild(header);
+    wrap.appendChild(textarea);
+    wrap.appendChild(desc);
+
+    D.cfgBody.innerHTML = "";
+    D.cfgBody.appendChild(wrap);
     if (S.cfg.locked) App.status.disableCfgInputs(true);
   }
 
@@ -600,6 +1330,11 @@
       const name = cb.dataset.enableFor;
       if (name) enables[name] = cb.checked;
     });
+    Object.keys(values).forEach((name) => {
+      if (!Object.prototype.hasOwnProperty.call(enables, name)) {
+        enables[name] = true;
+      }
+    });
     return { values, enables };
   }
 
@@ -615,16 +1350,49 @@
     ensureDom();
     if (S.cfg.locked) return S.cfg.lastCheck;
     if (!D.cfgChecks) return { passAll: true, results: [] };
+
+    if (S.cfg.profile?.profile === "v3") {
+      const results = [
+        {
+          ok: "warn",
+          text: t(
+            "checks.v3SandboxOnlyWarn",
+            "目前僅支援 SandboxCode 保存，啟動仍屬未完全相容。"
+          ),
+          fields: ["SandboxCode"],
+        },
+      ];
+      D.cfgChecks.innerHTML = renderChecksPanel(results);
+      applyFieldCheckStates(results);
+      const pending = collectPendingConfigChanges();
+      App.utils.setDisabled(
+        [D.cfgSaveStartBtn],
+        S.cfg.locked || S.versionNeedsInstall
+      );
+      App.utils.setDisabled([D.cfgSaveBtn], S.cfg.locked || !pending.hasChanges);
+      S.cfg.lastCheck = { passAll: true, results };
+      return S.cfg.lastCheck;
+    }
+
     const { values, enables } = readCfgValuesFromUI();
     const results = [];
     const webPort = Number.isFinite(S.cfg.webPort) ? S.cfg.webPort : NaN;
 
+    function pushResult(ok, text, fields) {
+      results.push({
+        ok,
+        text,
+        fields: Array.isArray(fields) ? fields.map(normalizeCheckFieldName).filter(Boolean) : [],
+      });
+    }
+
     function needEnabled(name, failMsgIfDisabled, validateFn) {
       if (!enables[name]) {
-        results.push({
-          ok: failMsgIfDisabled ? false : true,
-          text: t("checks.disabledCommented", `${name} 已停用(註解)`, { name }),
-        });
+        pushResult(
+          failMsgIfDisabled ? false : true,
+          t("checks.disabledCommented", `${name} 已停用(註解)`, { name }),
+          [name]
+        );
         return;
       }
       validateFn();
@@ -633,41 +1401,39 @@
     needEnabled("ServerPort", false, () => {
       const sp = parseInt(values.ServerPort, 10);
       if (!Number.isFinite(sp) || sp <= 0 || sp > 65535) {
-        results.push({ ok: false, text: t("checks.serverPortNotSet", "ServerPort 未設定或格式錯誤") });
+        pushResult(false, t("checks.serverPortNotSet", "ServerPort 未設定或格式錯誤"), ["ServerPort"]);
       }
     });
 
     if (!enables.TelnetEnabled)
-      results.push({
-        ok: false,
-        text: t("checks.telnetDisabled", "TelnetEnabled 已停用 (啟動需要 Telnet)"),
-      });
+      pushResult(false, t("checks.telnetDisabled", "TelnetEnabled 已停用 (啟動需要 Telnet)"), ["TelnetEnabled"]);
     else if (!/^(true)$/i.test(values.TelnetEnabled))
-      results.push({ ok: false, text: t("checks.telnetMustBeTrue", "TelnetEnabled 必須為 true") });
-    else results.push({ ok: true, text: t("checks.telnetEnabled", "TelnetEnabled 已啟用") });
+      pushResult(false, t("checks.telnetMustBeTrue", "TelnetEnabled 必須為 true"), ["TelnetEnabled"]);
+    else pushResult(true, t("checks.telnetEnabled", "TelnetEnabled 已啟用"), ["TelnetEnabled"]);
 
     if (!enables.TelnetPort)
-      results.push({ ok: false, text: t("checks.telnetPortDisabled", "TelnetPort 已停用") });
+      pushResult(false, t("checks.telnetPortDisabled", "TelnetPort 已停用"), ["TelnetPort"]);
     else {
       const tp = parseInt(values.TelnetPort, 10);
       if (!Number.isFinite(tp) || tp <= 0 || tp > 65535)
-        results.push({ ok: false, text: t("checks.telnetPortInvalid", "TelnetPort 未設定或格式錯誤") });
+        pushResult(false, t("checks.telnetPortInvalid", "TelnetPort 未設定或格式錯誤"), ["TelnetPort"]);
     }
 
     if (!enables.TelnetPassword)
-      results.push({ ok: false, text: t("checks.telnetPasswordDisabled", "TelnetPassword 已停用") });
+      pushResult(false, t("checks.telnetPasswordDisabled", "TelnetPassword 已停用"), ["TelnetPassword"]);
     else if (!String(values.TelnetPassword).trim())
-      results.push({ ok: false, text: t("checks.telnetPasswordEmpty", "TelnetPassword 不可為空") });
-    else results.push({ ok: true, text: t("checks.telnetPasswordSet", "TelnetPassword 已設定") });
+      pushResult(false, t("checks.telnetPasswordEmpty", "TelnetPassword 不可為空"), ["TelnetPassword"]);
+    else pushResult(true, t("checks.telnetPasswordSet", "TelnetPassword 已設定"), ["TelnetPassword"]);
 
     if (!enables.EACEnabled)
-      results.push({ ok: true, text: t("checks.eacDisabled", "EACEnabled 已停用(註解)") });
+      pushResult(true, t("checks.eacDisabled", "EACEnabled 已停用(註解)"), ["EACEnabled"]);
     else if (/^true$/i.test(values.EACEnabled))
-      results.push({
-        ok: "warn",
-        text: t("checks.eacEnabledWarn", "EACEnabled=true: 啟用 EAC 時無法使用模組"),
-      });
-    else results.push({ ok: true, text: t("checks.eacDisabledOk", "EACEnabled=false") });
+      pushResult(
+        "warn",
+        t("checks.eacEnabledWarn", "EACEnabled=true: 啟用 EAC 時無法使用模組"),
+        ["EACEnabled"]
+      );
+    else pushResult(true, t("checks.eacDisabledOk", "EACEnabled=false"), ["EACEnabled"]);
 
     (function equalPortGuards() {
       const portEntries = [];
@@ -693,9 +1459,6 @@
         if (Number.isFinite(sp) && sp > 0 && sp <= 65535) {
           addEntry("ServerPort", sp, "TCP");
           addEntry("ServerPort", sp, "UDP");
-          addEntry("ServerPort+1", sp + 1, "UDP");
-          addEntry("ServerPort+2", sp + 2, "UDP");
-          addEntry("ServerPort+3", sp + 3, "UDP");
         }
       }
 
@@ -708,10 +1471,11 @@
       if (Number.isFinite(webPort)) {
         for (const pe of portEntries) {
           if (pe.port === webPort && pe.protocol === "TCP") {
-            results.push({
-              ok: false,
-              text: t("checks.portConflictWithConsole", `${pe.displayName} 不可與控制台埠 ${webPort}/TCP 相同(避免衝突)`, { name: pe.displayName, port: webPort }),
-            });
+            pushResult(
+              false,
+              t("checks.portConflictWithConsole", `${pe.displayName} 不可與控制台埠 ${webPort}/TCP 相同(避免衝突)`, { name: pe.displayName, port: webPort }),
+              [pe.name]
+            );
           }
         }
       }
@@ -721,10 +1485,11 @@
           const a = portEntries[i];
           const b = portEntries[j];
           if (a.port === b.port && a.protocol === b.protocol) {
-            results.push({
-              ok: false,
-              text: t("checks.portConflictSame", `${a.displayName} 與 ${b.displayName} 不可使用相同埠 (${a.port}/${a.protocol})`, { nameA: a.displayName, nameB: b.displayName, port: `${a.port}/${a.protocol}` }),
-            });
+            pushResult(
+              false,
+              t("checks.portConflictSame", `${a.displayName} 與 ${b.displayName} 不可使用相同埠 (${a.port}/${a.protocol})`, { nameA: a.displayName, nameB: b.displayName, port: `${a.port}/${a.protocol}` }),
+              [a.name, b.name]
+            );
           }
         }
       }
@@ -734,6 +1499,10 @@
     if (enables.ServerPort) {
       const sp = parseInt(values.ServerPort, 10);
       if (Number.isFinite(sp) && sp > 0 && sp <= 65535) {
+        const coreTargets = [
+          { port: sp, protocol: "tcp" },
+          { port: sp, protocol: "udp" },
+        ];
         asyncChecks.push(
           (async () => {
             try {
@@ -742,82 +1511,129 @@
                 if (localRes?.ok) {
                   // 當 isDummy 為 true 時，視為端口可用（啟動時會自動關閉 dummy）
                   if (localRes.data?.inUse && !localRes.data?.isDummy) {
-                    results.push({
-                      ok: false,
-                      text: t("checks.serverPortLocalInUse", `ServerPort/TCP 本機 ${sp} 已被佔用`, { port: sp }),
-                    });
+                    pushResult(false, t("checks.serverPortLocalInUse", `ServerPort/TCP 本機 ${sp} 已被佔用`, { port: sp }), ["ServerPort"]);
                   } else {
-                    results.push({
-                      ok: true,
-                      text: t("checks.serverPortLocalFree", `ServerPort/TCP 本機 ${sp} 未被佔用`, { port: sp }),
-                    });
+                    pushResult(true, t("checks.serverPortLocalFree", `ServerPort/TCP 本機 ${sp} 未被佔用`, { port: sp }), ["ServerPort"]);
                   }
                 } else {
-                  results.push({
-                    ok: "warn",
-                    text: t("checks.serverPortLocalCheckFailed", `ServerPort/TCP 本機檢查失敗: ${localRes?.message || "未知錯誤"}`, { error: localRes?.message || "未知錯誤" }),
-                  });
+                  pushResult("warn", t("checks.serverPortLocalCheckFailed", `ServerPort/TCP 本機檢查失敗: ${localRes?.message || "未知錯誤"}`, { error: localRes?.message || "未知錯誤" }), ["ServerPort"]);
                 }
               } catch (e) {
-                results.push({
-                  ok: "warn",
-                  text: t("checks.serverPortLocalCheckException", `ServerPort/TCP 本機檢查例外: ${e.message}`, { error: e.message }),
-                });
+                pushResult("warn", t("checks.serverPortLocalCheckException", `ServerPort/TCP 本機檢查例外: ${e.message}`, { error: e.message }), ["ServerPort"]);
               }
 
               const ipRes = await fetchJSON("/api/public-ip");
               const pubIp = ipRes?.data?.ip;
               if (!pubIp) {
-                results.push({
-                  ok: "warn",
-                  text: t("checks.serverPortNoPublicIp", "ServerPort 檢查異常: 無法取得公網 IP"),
-                });
+                pushResult(
+                  "warn",
+                  t(
+                    "checks.externalAccessUnavailable",
+                    "外網直連測試暫時無法判定，請稍後再試。",
+                    { reason: t("checks.serverPortNoPublicIp", "ServerPort 檢查異常: 無法取得公網 IP") }
+                  ),
+                  ["ServerPort"]
+                );
                 return;
               }
-              const pfRes = await fetchJSON(
-                `/api/check-port-forward?ip=${encodeURIComponent(
-                  pubIp
-                )}&port=${sp}`
-              );
-              if (pfRes.ok) {
-                const svcErr = !!pfRes.data?.error;
-                if (pfRes.data?.open === true) {
-                  results.push({
-                    ok: true,
-                    text: t("checks.serverPortForwardOk", `ServerPort/TCP 轉發正常：${pubIp}:${sp} 可從公網連線`, { ip: pubIp, port: sp }),
+
+              const forwardChecks = [];
+              for (const target of coreTargets) {
+                try {
+                  const pfRes = await fetchJSON(
+                    `/api/check-port-forward?ip=${encodeURIComponent(pubIp)}&port=${target.port}&protocol=${target.protocol}&dummyBasePort=${sp}`
+                  );
+                  if (!pfRes?.ok) {
+                    forwardChecks.push({
+                      target,
+                      state: "error",
+                      reason: pfRes?.message || "未知錯誤",
+                    });
+                    continue;
+                  }
+                  if (pfRes.data?.error) {
+                    forwardChecks.push({
+                      target,
+                      state: "error",
+                      reason: pfRes.data.error,
+                    });
+                    continue;
+                  }
+                  forwardChecks.push({
+                    target,
+                    state: pfRes.data?.open === true ? "open" : "closed",
                   });
-                } else if (svcErr) {
-                  results.push({
-                    ok: "warn",
-                    text: t("checks.serverPortForwardServiceFailed", `ServerPort/TCP 轉發檢查服務失敗：${pfRes.data.error}`, { error: pfRes.data.error }),
-                  });
-                } else {
-                  results.push({
-                    ok: "warn",
-                    text: t("checks.serverPortForwardFailed", `ServerPort/TCP 轉發測試未通：${pubIp}:${sp}(請稍後再試或確認 NAT/防火牆)`, { ip: pubIp, port: sp }),
+                } catch (e) {
+                  forwardChecks.push({
+                    target,
+                    state: "error",
+                    reason: e.message || "未知錯誤",
                   });
                 }
+              }
+
+              const opened = forwardChecks
+                .filter((item) => item.state === "open")
+                .map((item) => `${item.target.port}/${String(item.target.protocol || "").toUpperCase()}`);
+              const failedCore = forwardChecks
+                .filter(
+                  (item) =>
+                    item.state === "closed" &&
+                    coreTargets.some(
+                      (target) =>
+                        target.port === item.target.port &&
+                        target.protocol === item.target.protocol
+                    )
+                )
+                .map((item) => `${item.target.port}/${String(item.target.protocol || "").toUpperCase()}`);
+              const errors = forwardChecks
+                .filter((item) => item.state === "error")
+                .map((item) => `${item.target.port}/${String(item.target.protocol || "").toUpperCase()}: ${item.reason}`);
+
+              if (errors.length) {
+                pushResult(
+                  "warn",
+                  t(
+                    "checks.externalAccessUnavailable",
+                    "外網直連測試暫時無法判定，請稍後再試。",
+                    { reason: errors.join("；") }
+                  ),
+                  ["ServerPort"]
+                );
+              } else if (failedCore.length === 0) {
+                pushResult(
+                  true,
+                  t(
+                    "checks.externalAccessAllOpen",
+                    "外網直連測試通過：目前可從外網加入。",
+                    { ip: pubIp, tested: opened.join(", ") }
+                  ),
+                  ["ServerPort"]
+                );
               } else {
-                results.push({
-                  ok: "warn",
-                  text: t("checks.serverPortForwardError", `ServerPort/TCP 轉發檢查錯誤: ${pfRes.message || "未知錯誤"}`, { error: pfRes.message || "未知錯誤" }),
-                });
+                pushResult(
+                  false,
+                  t(
+                    "checks.externalAccessTcpFailed",
+                    "外網直連測試未通過：目前無法從外網加入。",
+                    { failed: failedCore.join(", ") }
+                  ),
+                  ["ServerPort"]
+                );
               }
             } catch (e) {
-              results.push({
-                ok: "warn",
-                text: t("checks.serverPortCheckException", `ServerPort 檢查異常: ${e.message}`, { error: e.message }),
-              });
+              pushResult(
+                "warn",
+                t(
+                  "checks.externalAccessUnavailable",
+                  "外網直連測試暫時無法判定，請稍後再試。",
+                  { reason: t("checks.serverPortCheckException", `ServerPort 檢查異常: ${e.message}`, { error: e.message }) }
+                ),
+                ["ServerPort"]
+              );
             }
           })()
         );
-        results.push({
-          ok: "warn",
-          text: t(
-            "checks.serverPortTcpOnlyNotice",
-            "目前僅檢查 ServerPort/TCP；遊戲 UDP 與 ServerPort+1~+3/UDP 請另行確認防火牆與轉發"
-          ),
-        });
       }
     }
     if (enables.TelnetPort) {
@@ -827,14 +1643,18 @@
           fetchJSON(`/api/check-port?port=${tp}`)
             .then((r) => {
               const inUse = !!r?.data?.inUse;
-              results.push(
+              pushResult(
                 inUse
-                  ? { ok: false, text: t("checks.telnetPortInUse", `TelnetPort ${tp} 已被佔用`, { port: tp }) }
-                  : { ok: true, text: t("checks.telnetPortAvailable", `TelnetPort ${tp} 可用`, { port: tp }) }
+                  ? false
+                  : true,
+                inUse
+                  ? t("checks.telnetPortInUse", `TelnetPort ${tp} 已被佔用`, { port: tp })
+                  : t("checks.telnetPortAvailable", `TelnetPort ${tp} 可用`, { port: tp }),
+                ["TelnetPort"]
               );
             })
             .catch(() =>
-              results.push({ ok: false, text: t("checks.telnetPortCheckFailed", "TelnetPort 檢查失敗") })
+              pushResult(false, t("checks.telnetPortCheckFailed", "TelnetPort 檢查失敗"), ["TelnetPort"])
             )
         );
       }
@@ -857,33 +1677,32 @@
         /^(false)$/i.test(values.IgnoreEOSSanctions || "");
       if (!eosOk) condsMissing.push("IgnoreEOSSanctions!=false");
       if (condsMissing.length === 0) {
-        results.push({
-          ok: true,
-          text: t("checks.crossplayCompatible", "跨平台連線相容: (MaxPlayer≤8, AllowCrossplay=true, EAC=true, IgnoreEOSSanctions=false)"),
-        });
+        pushResult(
+          true,
+          t("checks.crossplayCompatible", "跨平台連線相容: (MaxPlayer≤8, AllowCrossplay=true, EAC=true, IgnoreEOSSanctions=false)"),
+          ["ServerMaxPlayerCount", "ServerAllowCrossplay", "EACEnabled", "IgnoreEOSSanctions"]
+        );
       } else {
-        results.push({
-          ok: "warn",
-          text: t("checks.crossplayIncompatible", "跨平台連線不相容: {conditions} (不會出現在跨平台搜尋)", { conditions: condsMissing.join(", ") }),
-        });
+        pushResult(
+          "warn",
+          t("checks.crossplayIncompatible", "跨平台連線不相容: {conditions} (不會出現在跨平台搜尋)", { conditions: condsMissing.join(", ") }),
+          ["ServerMaxPlayerCount", "ServerAllowCrossplay", "EACEnabled", "IgnoreEOSSanctions"]
+        );
       }
     })();
 
     await Promise.all(asyncChecks);
 
     const passAll = results.every((x) => x.ok === true || x.ok === "warn");
-    const icon = (ok) => (ok === true ? "✅" : ok === "warn" ? "⚠️" : "❌");
-    D.cfgChecks.innerHTML =
-      `<div style="margin-bottom:8px;font-weight:600">${t("modal.serverconfig.preStartCheck", "啟動前檢查")}</div>` +
-      `<ul style="margin:0;padding-left:18px">${results
-        .map((r) => `<li>${icon(r.ok)} ${r.text}</li>`)
-        .join("")}</ul>`;
+    D.cfgChecks.innerHTML = renderChecksPanel(results);
+    applyFieldCheckStates(results);
+    const pending = collectPendingConfigChanges();
 
     App.utils.setDisabled(
       [D.cfgSaveStartBtn],
       S.cfg.locked || !passAll || S.versionNeedsInstall
     );
-    App.utils.setDisabled([D.cfgSaveBtn], S.cfg.locked || !passAll);
+    App.utils.setDisabled([D.cfgSaveBtn], S.cfg.locked || !pending.hasChanges);
 
     S.cfg.lastCheck = { passAll, results };
     return S.cfg.lastCheck;
@@ -934,8 +1753,22 @@
     return lines.join("\n");
   }
 
+  function applySavedSnapshot(snapshot) {
+    const values = snapshot?.values || {};
+    const commented = snapshot?.commented || {};
+    S.cfg.original = new Map(
+      Object.keys(values).map((name) => [name, values[name]])
+    );
+    S.cfg.commentedOriginal = new Map(
+      Object.keys(commented).map((name) => [name, !!commented[name]])
+    );
+  }
+
   async function saveConfigValues(startAfter) {
     ensureDom();
+    const selectedVersion = getSelectedVersionValue();
+    const isV3Profile = S.cfg.profile?.profile === "v3";
+    const activeProfileId = S.cfg.activeProfileId || S.profileStore?.activeProfileId;
     if (S.cfg.locked) {
       closeCfgModal();
       return;
@@ -960,32 +1793,14 @@
       }
     }
 
-    const { values, enables } = readCfgValuesFromUI();
-    const updates = {};
-    const toggles = {};
-    let changed = 0,
-      toggleChanged = 0;
-
-    Object.keys(values).forEach((name) => {
-      if (!enables[name]) return;
-      const newVal = normalizeValueForWrite(name, values[name]);
-      const oldVal = S.cfg.original?.get(name) ?? "";
-      if (String(newVal) !== String(oldVal)) {
-        updates[name] = newVal;
-        changed++;
-      }
-    });
-
-    if (S.cfg.commentedOriginal) {
-      Object.keys(enables).forEach((name) => {
-        const oldCommented = S.cfg.commentedOriginal.get(name);
-        const newCommented = !enables[name];
-        if (oldCommented !== newCommented) {
-          toggles[name] = enables[name];
-          toggleChanged++;
-        }
-      });
-    }
+    const {
+      snapshot,
+      updates,
+      toggles,
+      changed,
+      toggleChanged,
+      enables,
+    } = collectPendingConfigChanges();
 
     try {
       const needPreview = changed > 0 || toggleChanged > 0;
@@ -1023,21 +1838,72 @@
       );
     }
 
+    if (startAfter && isV3Profile) {
+      try {
+        const proceed = await (window.DangerConfirm
+          ? window.DangerConfirm.showConfirm(
+              t(
+                "confirm.v3StartWarning",
+                "目前偵測為 v3.0+ Sandbox-only 模式。\n僅 SandboxCode 保存已相容，伺服器啟動仍屬未完全相容。\n是否仍要保存並啟動？"
+              ),
+              {
+                title: t("confirm.v3StartWarningTitle", "v3.0+ 相容性警告"),
+                continueText: t("confirm.saveAndStartAction", "保存並啟動"),
+                cancelText: t("common.cancel", "取消"),
+              }
+            )
+          : Promise.resolve(window.confirm("v3.0+ 相容性警告，是否仍要保存並啟動？")));
+        if (!proceed) {
+          App.console.appendLog(
+            "system",
+            `ℹ️ ${t("messages.cancelledBySave", "已取消保存 (使用者取消)")}`,
+            Date.now()
+          );
+          return;
+        }
+      } catch (_) {}
+    }
+
     try {
+      if (activeProfileId) {
+        const profileSaveRes = await profilesApi.save({
+          version: selectedVersion,
+          profileId: activeProfileId,
+          snapshot,
+        });
+        if (!profileSaveRes?.ok) {
+          throw new Error(
+            profileSaveRes?.message ||
+              t("messages.saveProfileFailed", "保存配置失敗")
+          );
+        }
+        setProfileStore(profileSaveRes.data);
+        S.cfg.activeProfileId = profileSaveRes.data?.activeProfileId || activeProfileId;
+      }
+
       if (changed > 0 || toggleChanged > 0) {
         const res = await fetchJSON("/api/serverconfig", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ updates, toggles }),
+          body: JSON.stringify({
+            version: selectedVersion,
+            profileId: S.cfg.activeProfileId || activeProfileId,
+            buildId: S.cfg.profile?.buildId || null,
+            mode: S.cfg.profile?.profile || "legacy",
+            updates,
+            toggles,
+          }),
         });
         if (!res.ok) throw new Error(res.message || "寫入失敗");
       }
-      closeCfgModal();
+      applySavedSnapshot(snapshot);
+      await runCfgChecks();
       if (startAfter) {
+        closeCfgModal();
         const msg = await fetchText("/api/start", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ nographics: false }),
+          body: JSON.stringify({ nographics: false, version: selectedVersion }),
         });
         App.console.appendLog("system", msg, Date.now());
         App.console.switchTab("game");
@@ -1045,7 +1911,7 @@
     } catch (e) {
       App.console.appendLog(
         "system",
-        `❌ ${t("messages.writeServerconfigFailed", { error: e.message }) }`,
+        `❌ ${t("messages.writeServerconfigFailed", { error: e.message })}`,
         Date.now()
       );
       return;
@@ -1068,10 +1934,10 @@
       return;
     }
     try {
-      const cfg = await fetchJSON("/api/get-config");
-      const gs = cfg?.data?.game_server || {};
-      if (!gs || typeof gs !== "object") throw new Error(t("messages.missingGameServer", "缺少 game_server"));
-      applyGameServerValuesToEditor(gs);
+      await loadConfigModalData({
+        profileId: S.cfg.activeProfileId || S.profileStore?.activeProfileId || "",
+        skipInitPrompt: true,
+      });
       App.console.appendLog(
         "system",
         `✅ ${t("messages.loadedAdminConfig", "已載入上次保存設定到編輯器 (尚未保存)")}`,

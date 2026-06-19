@@ -4,7 +4,12 @@
   const D = App.dom;
   const S = App.state;
 
-  const t = (key, def) => (App.i18n ? App.i18n.t(key) : def || key);
+  const t = (key, def, params) =>
+    App.i18n ? App.i18n.t(key, params) : def || key;
+
+  function getSelectedVersionValue() {
+    return D.versionSelect?.value || "";
+  }
 
   function setGnListDisabled(disabled) {
     if (!D.gnList) return;
@@ -13,6 +18,35 @@
 
   function setGameRuntimeVisible(visible) {
     D.gameRuntimeSection?.classList.toggle("hidden", !visible);
+  }
+
+  function applyServerControlVersionLock({ gameRunning, lockBecauseBackup }) {
+    if (App.auth?.isViewer?.()) return;
+    const versionSwitchLock = !gameRunning && S.versionNeedsInstall;
+    const lockTitle = versionSwitchLock
+      ? t(
+          "card.game.controlLockedVersionChange",
+          "已切換安裝版本選項，請先執行安裝 / 更新後再使用伺服器控制。"
+        )
+      : "";
+
+    if (D.configStartBtn) {
+      D.configStartBtn.disabled = !!(versionSwitchLock || lockBecauseBackup);
+      D.configStartBtn.title = D.configStartBtn.disabled ? lockTitle : "";
+    }
+
+    [D.stopServerBtn, D.killServerBtn, D.telnetSendBtn, ...D.telnetBtns].forEach(
+      (el) => {
+        if (!el) return;
+        if (versionSwitchLock) el.title = lockTitle;
+        else if (el.title === lockTitle) el.title = "";
+      }
+    );
+    if (D.telnetInput && versionSwitchLock) {
+      D.telnetInput.title = lockTitle;
+    } else if (D.telnetInput && D.telnetInput.title === lockTitle) {
+      D.telnetInput.title = "";
+    }
   }
 
   function applyUIState({
@@ -265,6 +299,8 @@
         : "🛠 " + t("card.game.startServer", "啟動伺服器");
     }
 
+    applyServerControlVersionLock({ gameRunning, lockBecauseBackup });
+
     App.saves?.updateApplyActiveBtnState?.();
   }
 
@@ -334,11 +370,12 @@
       S.hasInstalled = true;
     }
     updateVersionLockUI();
+    refreshVersionProfileUI().catch(() => {});
   }
 
   function updateVersionLockUI() {
     if (!D.versionSelect) return;
-    const selected = canonicalVersion(D.versionSelect.value || "");
+    const selected = canonicalVersion(getSelectedVersionValue());
     S.versionNeedsInstall = !S.hasInstalled
       ? true
       : selected !== S.installedVersion;
@@ -360,12 +397,85 @@
       }
       if (!D.gameSelectedVersionBadge) D.gameSelectedVersionBadge = badgeEl;
     }
+
+    if (S.current) {
+      applyUIState(S.current);
+    }
   }
 
   function versionLabel(v) {
     if (!v) return "";
-    if (v === "public") return "Stable (public)";
-    return v;
+    const key = v === "public" ? "" : String(v);
+    return S.versionLabels?.[key] || (v === "public" ? "Stable (public)" : v);
+  }
+
+  function refreshCurrentProfileBadge() {
+    if (!D.currentProfileBadge) return;
+    const activeProfile = S.profileStore?.activeProfile || null;
+    if (!activeProfile) {
+      D.currentProfileBadge.textContent = t(
+        "card.game.currentProfileNone",
+        "目前配置: 無"
+      );
+      D.currentProfileBadge.title = "";
+      return;
+    }
+
+    D.currentProfileBadge.textContent = t(
+      "card.game.currentProfile",
+      "目前配置: {name}",
+      { name: activeProfile.displayName || activeProfile.name || activeProfile.id }
+    );
+    const buildId = S.profileStore?.buildId || "";
+    D.currentProfileBadge.title = buildId
+      ? `BuildID: ${buildId}`
+      : "";
+  }
+
+  function setProfileStore(store) {
+    S.profileStore = {
+      buildId: store?.buildId || null,
+      buildLabel: store?.buildLabel || "",
+      buildTag: store?.buildTag || "",
+      activeProfileId: store?.activeProfileId || null,
+      activeProfile: store?.activeProfile || null,
+      lastStartedProfileId: store?.lastStartedProfileId || null,
+      lastStartedProfile: store?.lastStartedProfile || null,
+      initialProfileId: store?.initialProfileId || null,
+      profiles: Array.isArray(store?.profiles) ? store.profiles : [],
+    };
+    refreshCurrentProfileBadge();
+  }
+
+  async function refreshVersionProfileUI() {
+    if (!D.versionSelect) return;
+
+    const version = getSelectedVersionValue();
+    let profile = null;
+
+    try {
+      const result = await App.api.fetchJSON(
+        `/api/version-profile?version=${encodeURIComponent(version)}`
+      );
+      if (result?.ok && result.data) {
+        profile = result.data;
+      }
+    } catch (_) {}
+
+    if (!profile) {
+      const fallback = S.versionBranchProfiles?.[version] || {
+        profile: "legacy",
+        configMode: "legacy",
+        startPolicy: "normal",
+      };
+      profile = {
+        version: canonicalVersion(version),
+        ...fallback,
+      };
+    }
+
+    S.versionProfile = profile;
+    refreshCurrentProfileBadge();
   }
 
   function updateCfgLockUI() {
@@ -394,9 +504,12 @@
     syncConfigLockFromStatus,
     setInstalledVersion,
     updateVersionLockUI,
+    refreshVersionProfileUI,
     updateCfgLockUI,
     disableCfgInputs,
     versionLabel,
+    setProfileStore,
+    refreshCurrentProfileBadge,
   };
 
   if (w.__fragmentsReady) {

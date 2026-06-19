@@ -2,7 +2,12 @@
   const App = (w.App = w.App || {});
   const { fetchText, fetchJSON, saves: savesApi } = App.api;
   const { switchTab, appendLog } = App.console;
-  const { setInstalledVersion, updateVersionLockUI, applyUIState } = App.status;
+  const {
+    setInstalledVersion,
+    updateVersionLockUI,
+    applyUIState,
+    refreshVersionProfileUI,
+  } = App.status;
   const { canonicalVersion } = App.utils;
   const S = App.state;
 
@@ -242,7 +247,13 @@
       await runSaveTask(() => savesApi.deleteBackup(file));
     });
 
-    on(D.versionSelect, "change", () => updateVersionLockUI());
+    on(D.versionSelect, "change", () => {
+      updateVersionLockUI();
+      refreshVersionProfileUI().catch(() => {});
+      App.bootstrap?.refreshProfiles?.(D.versionSelect?.value || "").catch(
+        () => {}
+      );
+    });
 
     on(D.gwSelect, "change", () => {
       S.selectedWorld = D.gwSelect.value || "";

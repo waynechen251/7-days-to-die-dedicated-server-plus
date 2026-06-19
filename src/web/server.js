@@ -15,6 +15,8 @@ const steamcmd = require("./lib/steamcmd");
 const { sendTelnetCommand, telnetStart } = require("./lib/telnet");
 const auth = require("./lib/auth");
 const firewall = require("./lib/firewall");
+const gameServerProfiles = require("./lib/gameServerProfiles");
+const { loadConfigWithMigration } = require("./lib/configMigration");
 
 const APP_VERSION = (() => {
   try {
@@ -29,11 +31,11 @@ if (process.platform === "win32") exec("chcp 65001 >NUL");
 const isPkg = typeof process.pkg !== "undefined";
 const baseDir = isPkg ? path.dirname(process.execPath) : process.cwd();
 
-const serverJsonPath = fs.existsSync(path.join(baseDir, "server.json"))
-  ? path.join(baseDir, "server.json")
-  : path.join(baseDir, "server.sample.json");
-
-let CONFIG = loadConfig();
+const serverJsonPath = path.join(baseDir, "server.json");
+const serverSampleJsonPath = path.join(baseDir, "server.sample.json");
+const configLoad = loadConfig();
+let CONFIG = configLoad.config;
+let CONFIG_META = configLoad.meta;
 const PUBLIC_DIR = path.join(baseDir, "public");
 const BACKUP_SAVES_DIR = path.join(PUBLIC_DIR, "saves");
 const UPLOADS_DIR = path.join(BACKUP_SAVES_DIR, "_uploads");
@@ -98,6 +100,12 @@ function resolveDirCaseInsensitive(root, want) {
 function saveConfig() {
   try {
     fs.writeFileSync(serverJsonPath, JSON.stringify(CONFIG, null, 2), "utf-8");
+    CONFIG_META = {
+      ...(CONFIG_META || {}),
+      configSource: "server.json",
+      configPath: serverJsonPath,
+      configVersion: CONFIG?.configVersion || CONFIG_META?.configVersion || 1,
+    };
     return true;
   } catch (e) {
     error(`❌ 寫入設定檔失敗: ${e.message}`);
@@ -121,57 +129,48 @@ auth.initAuth(baseDir);
 
 function loadConfig() {
   try {
-    const rawData = fs
-      .readFileSync(serverJsonPath, "utf-8")
-      .replace(/^\uFEFF/, "");
-    const config = JSON.parse(rawData);
+    const result = loadConfigWithMigration({
+      baseDir,
+      serverJsonPath,
+      serverSamplePath: serverSampleJsonPath,
+    });
+    const config = result.config;
+    const meta = result.meta;
     log(
-      `✅ 成功讀取設定檔 ${serverJsonPath}:\n${JSON.stringify(config, null, 2)}`
+      `✅ 成功讀取設定檔 ${meta.configPath}:\n${JSON.stringify(config, null, 2)}`
     );
-    if (!config.web) config.web = {};
+    gameServerProfiles.ensureProfilesRoot(config);
 
-    if (
-      Object.prototype.hasOwnProperty.call(config.web, "lastInstallVersion")
-    ) {
-      if (config.web.lastInstallVersion === "") {
-        config.web.lastInstallVersion = "public";
-        log("ℹ️ 遷移 lastInstallVersion 空字串為 'public'");
-        try {
-          fs.writeFileSync(
-            serverJsonPath,
-            JSON.stringify(config, null, 2),
-            "utf-8"
-          );
-        } catch (_) {}
+    if (meta?.migration?.changed) {
+      const fromLabel =
+        meta.migration.fromVersion == null
+          ? "legacy"
+          : `v${meta.migration.fromVersion}`;
+      const line = meta.migration.createdServerJson
+        ? "ℹ️ 已依最新 schema 建立新的 server.json"
+        : `ℹ️ 已自動升級管理後台設定: ${fromLabel} -> v${meta.migration.toVersion}`;
+      log(line);
+      eventBus.push("system", { text: line });
+      if (meta.migration.backupPath) {
+        const backupLine = `ℹ️ 已備份舊版 server.json: ${meta.migration.backupPath}`;
+        log(backupLine);
+        eventBus.push("system", { text: backupLine });
+      }
+      if (meta.migration.deprecatedRemoved.length > 0) {
+        const removedLine =
+          `ℹ️ 已移除棄用設定: ${meta.migration.deprecatedRemoved.join(", ")}`;
+        log(removedLine);
+        eventBus.push("system", { level: "warn", text: removedLine });
+      }
+      if (meta.migration.unknownRemoved.length > 0) {
+        const unknownLine =
+          `ℹ️ 已移除未知設定: ${meta.migration.unknownRemoved.join(", ")}`;
+        log(unknownLine);
+        eventBus.push("system", { level: "warn", text: unknownLine });
       }
     }
 
-    try {
-      if (config.game_server) {
-        if (config.game_server.saves && !config.game_server.UserDataFolder) {
-          config.game_server.UserDataFolder = config.game_server.saves;
-          delete config.game_server.saves;
-          log("ℹ️ 遷移 game_server.saves -> game_server.UserDataFolder");
-          fs.writeFileSync(
-            serverJsonPath,
-            JSON.stringify(config, null, 2),
-            "utf-8"
-          );
-        }
-      }
-    } catch (_) {}
-
-    // 補充 firewall 預設值
-    if (!config.firewall) config.firewall = {};
-    const fw = config.firewall;
-    if (fw.autoManage === undefined) fw.autoManage = true;
-    if (fw.removeOnStop === undefined) fw.removeOnStop = true;
-    if (fw.openGamePorts === undefined) fw.openGamePorts = true;
-    if (fw.openManagementPorts === undefined) fw.openManagementPorts = false;
-    if (!fw.rulePrefix) fw.rulePrefix = "7DTD-DS-P-";
-    if (!Array.isArray(fw.appliedRules)) fw.appliedRules = [];
-
-    return config;
+    return result;
   } catch (err) {
     error(`❌ 讀取設定檔失敗: ${serverJsonPath}\n${err.message}`);
     process.exit(1);
@@ -207,6 +206,7 @@ const routeContext = {
   closeDummyGamePort: null, // Will be set by network routes
   appVersion: APP_VERSION,
   firewall,
+  gameServerProfiles,
 };
 
 // Auth 路由（公開，不需驗證）
@@ -265,7 +265,9 @@ serverConfigLib.registerRoutes(app, {
   baseDir,
   GAME_DIR,
   getConfig: () => CONFIG,
+  getConfigMeta: () => CONFIG_META,
   saveConfig,
+  gameServerProfiles,
 });
 
 // Register route modules
@@ -273,6 +275,7 @@ require("./lib/routes/network")(app, routeContext);
 require("./lib/routes/config")(app, routeContext);
 require("./lib/routes/saves")(app, routeContext);
 require("./lib/routes/game")(app, routeContext);
+require("./lib/routes/gameServerProfiles")(app, routeContext);
 require("./lib/routes/install")(app, routeContext);
 require("./lib/routes/versions")(app, routeContext);
 require("./lib/routes/updates")(app, routeContext);

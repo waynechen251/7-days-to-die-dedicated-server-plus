@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 const { format } = require("../time");
+const { canonicalVersion, resolveVersionProfile } = require("../versionProfile");
 
 const GAME_SERVER_EXE = "7DaysToDieServer.exe";
 
@@ -58,6 +59,7 @@ module.exports = function registerGameRoutes(app, ctx) {
     getStopGameTail,
     setStopGameTail,
     firewall,
+    gameServerProfiles,
   } = ctx;
 
   app.post("/api/start", async (req, res) => {
@@ -106,6 +108,32 @@ module.exports = function registerGameRoutes(app, ctx) {
       fs.writeFileSync(path.join(GAME_DIR, "steam_appid.txt"), "251570");
       process.env.SteamAppId = "251570";
       process.env.SteamGameId = "251570";
+
+      const selectedVersion = canonicalVersion(
+        req.body?.version || CONFIG?.web?.lastInstallVersion || "public"
+      );
+      let versionCtx = null;
+      try {
+        const cfgPath = serverConfigLib.resolveServerConfigPath({
+          CONFIG,
+          baseDir,
+          GAME_DIR,
+        });
+        const items = cfgPath ? serverConfigLib.readValues(cfgPath).items || [] : [];
+        versionCtx = resolveVersionProfile({
+          version: selectedVersion,
+          items,
+        });
+      } catch (_) {
+        versionCtx = resolveVersionProfile({ version: selectedVersion, items: [] });
+      }
+
+      if (versionCtx?.profile === "v3") {
+        const warn = `⚠️ 偵測到 v3.0+ Sandbox-only 模式 (${selectedVersion})。目前僅支援 SandboxCode 保存，啟動仍屬未完全相容，將繼續嘗試啟動。`;
+        log(warn);
+        eventBus.push("system", { level: "warn", text: warn });
+        eventBus.push("game", { level: "warn", text: warn });
+      }
 
       const { configPath: configArg } = serverConfigLib.loadAndSyncServerConfig({
         CONFIG,
@@ -167,6 +195,29 @@ module.exports = function registerGameRoutes(app, ctx) {
           });
         },
       });
+
+      try {
+        const root = gameServerProfiles.ensureProfilesRoot(CONFIG);
+        const startedProfile = gameServerProfiles.resolveActiveProfile(
+          root,
+          versionCtx?.buildId
+        );
+        if (
+          startedProfile &&
+          String(root.lastStartedByBuildId?.[String(versionCtx?.buildId || "")] || "") !==
+            String(startedProfile.id || "")
+        ) {
+          gameServerProfiles.setLastStartedProfile(
+            root,
+            versionCtx?.buildId,
+            startedProfile.id
+          );
+          saveConfig();
+          eventBus.push("system", {
+            text: `本次啟動使用設定檔: ${startedProfile.displayName || startedProfile.name || startedProfile.id}`,
+          });
+        }
+      } catch (_) {}
 
       const stopGameTail = getStopGameTail();
       if (stopGameTail) {

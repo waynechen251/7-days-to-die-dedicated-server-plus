@@ -103,5 +103,37 @@
     },
   };
 
-  App.api = Object.assign(App.api || {}, { fetchText, fetchJSON, saves });
+  const profiles = {
+    list(version) {
+      return fetchJSON(
+        `/api/game-server-profiles?version=${encodeURIComponent(version || "")}`
+      );
+    },
+    create(body) {
+      return fetchJSON("/api/game-server-profiles", jsonOptions("POST", body));
+    },
+    select(body) {
+      return fetchJSON(
+        "/api/game-server-profiles/select",
+        jsonOptions("POST", body)
+      );
+    },
+    save(body) {
+      return fetchJSON("/api/game-server-profiles/save", jsonOptions("POST", body));
+    },
+    rename(body) {
+      return fetchJSON(
+        "/api/game-server-profiles/rename",
+        jsonOptions("POST", body)
+      );
+    },
+    delete(body) {
+      return fetchJSON(
+        "/api/game-server-profiles/delete",
+        jsonOptions("POST", body)
+      );
+    },
+  };
+
+  App.api = Object.assign(App.api || {}, { fetchText, fetchJSON, saves, profiles });
 })(window);

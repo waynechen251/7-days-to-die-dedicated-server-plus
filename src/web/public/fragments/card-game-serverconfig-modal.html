@@ -1,38 +1,76 @@
 <div id="cfgModal" class="modal hidden" aria-hidden="true">
   <div class="modal__backdrop"></div>
   <div
-    class="modal__panel"
+    class="modal__panel cfg-modal__panel"
     role="dialog"
     aria-modal="true"
     aria-label="serverconfig.xml 設定"
     data-i18n-aria-label="modal.serverconfig.ariaLabel"
   >
-    <div class="modal__header">
-      <h3 data-i18n="modal.serverconfig.title">serverconfig.xml 設定</h3>
-      <div id="cfgLockBanner" class="cfg-lock-banner hidden" data-i18n="modal.serverconfig.lockBanner">
-        🔒 伺服器運行中，禁止修改 serverconfig.xml
+    <div class="modal__header cfg-modal__header">
+      <div class="cfg-modal__heading">
+        <h3 data-i18n="modal.serverconfig.title">serverconfig.xml 設定</h3>
+        <div id="cfgLockBanner" class="cfg-lock-banner hidden" data-i18n="modal.serverconfig.lockBanner">
+          🔒 伺服器運行中，禁止修改 serverconfig.xml
+        </div>
       </div>
-      <button id="cfgCloseBtn" class="modal__close" title="關閉" data-i18n-title="common.close">✖</button>
-    </div>
-    <div class="modal__body">
-      <div id="cfgChecks" class="cfg-checks"></div>
-      <div id="cfgBody" class="cfg-body"></div>
-    </div>
-    <div class="modal__footer">
       <button
-        id="cfgLoadAdminBtn"
-        title="從 server.json 載入 game_server 設定"
-        data-i18n="modal.serverconfig.loadAdminConfig"
-        data-i18n-title="modal.serverconfig.loadAdminConfigTitle"
-        data-danger-i18n="confirm.loadAdminConfig"
-        data-cancel-i18n="common.cancel"
-        data-continue-i18n="common.confirm"
+        id="cfgCloseBtn"
+        type="button"
+        class="modal__close cfg-modal__close"
+        title="關閉"
+        data-i18n-title="common.close"
       >
-        📥 載入上次保存設定
+        ✖
       </button>
-      <button id="cfgCancelBtn" class="btn" data-i18n="common.close">關閉</button>
-      <button id="cfgSaveBtn" class="btn" data-i18n="common.save">保存</button>
-      <button id="cfgSaveStartBtn" class="btn btn--accent" data-i18n="modal.serverconfig.saveAndStart">保存後啟動</button>
+    </div>
+    <div class="modal__body cfg-modal__body">
+      <div class="cfg-modal__workspace">
+        <section class="cfg-section cfg-profile-section">
+          <div class="cfg-profile-section__copy">
+            <div class="cfg-profile-section__title" data-i18n="modal.serverconfig.profileSectionTitle">
+              設定檔管理
+            </div>
+            <div class="cfg-profile-section__desc" data-i18n="modal.serverconfig.profileSectionDesc">
+              每個實際版本可建立多組設定檔。啟動前請確認目前選到的是你要套用的設定。
+            </div>
+          </div>
+          <div id="cfgProfileBar" class="cfg-profile-bar">
+            <div class="cfg-profile-picker">
+              <select id="cfgProfileSelect"></select>
+              <button id="cfgProfileCreateBtn" type="button" class="cfg-profile-action">➕</button>
+              <button id="cfgProfileRenameBtn" type="button" class="cfg-profile-action">✏️</button>
+              <button id="cfgProfileDeleteBtn" type="button" class="cfg-profile-action">🗑️</button>
+            </div>
+            <div id="cfgProfileInfo" class="cfg-profile-info"></div>
+          </div>
+        </section>
+        <div class="cfg-modal__content">
+          <div id="cfgChecks" class="cfg-checks"></div>
+          <div id="cfgBody" class="cfg-body cfg-section cfg-section--editor"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal__footer cfg-modal__footer">
+      <div class="cfg-modal__footer-secondary">
+        <button
+          id="cfgLoadAdminBtn"
+          type="button"
+          title="從 server.json 載入 game_server 設定"
+          data-i18n="modal.serverconfig.loadAdminConfig"
+          data-i18n-title="modal.serverconfig.loadAdminConfigTitle"
+          data-danger-i18n="confirm.loadAdminConfig"
+          data-cancel-i18n="common.cancel"
+          data-continue-i18n="common.confirm"
+        >
+          📥 載入上次保存設定
+        </button>
+      </div>
+      <div class="cfg-modal__footer-primary">
+        <button id="cfgCancelBtn" type="button" class="btn" data-i18n="common.close">關閉</button>
+        <button id="cfgSaveBtn" type="button" class="btn" data-i18n="common.save">保存</button>
+        <button id="cfgSaveStartBtn" type="button" class="btn btn--accent" data-i18n="modal.serverconfig.saveAndStart">保存後啟動</button>
+      </div>
     </div>
   </div>
 </div>

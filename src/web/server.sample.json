@@ -1,10 +1,14 @@
 {
+  "configVersion": 1,
+  "log_keep_days": 7,
   "game_server": {
     "UserDataFolder": "C:\\Windows\\system32\\config\\systemprofile\\AppData\\Roaming\\7DaysToDie"
   },
   "web": {
     "port": 26901,
-    "installUser": "<USER>"
+    "installUser": "<USER>",
+    "lastInstallVersion": "public",
+    "game_serverInit": "false"
   },
   "firewall": {
     "autoManage": true,
@@ -13,5 +17,11 @@
     "openManagementPorts": false,
     "rulePrefix": "7DTD-DS-P-",
     "appliedRules": []
+  },
+  "game_server_profiles": {
+    "activeProfileId": null,
+    "activeByBuildId": {},
+    "lastStartedByBuildId": {},
+    "profiles": []
   }
 }

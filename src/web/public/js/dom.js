@@ -11,6 +11,8 @@
       killServerBtn: $("killServerBtn"),
       versionSelect: $("versionSelect"),
       versionSourceBadge: $("versionSourceBadge"),
+      gameSelectedVersionBadge: $("gameSelectedVersionBadge"),
+      currentProfileBadge: $("currentProfileBadge"),
       gameRuntimeSection: $("gameRuntimeSection"),
       telnetInput: $("telnetInput"),
       telnetSendBtn: $("telnetSendBtn"),
@@ -46,6 +48,12 @@
       cfgSaveBtn: $("cfgSaveBtn"),
       cfgSaveStartBtn: $("cfgSaveStartBtn"),
       cfgLockBanner: $("cfgLockBanner"),
+      cfgProfileBar: $("cfgProfileBar"),
+      cfgProfileSelect: $("cfgProfileSelect"),
+      cfgProfileCreateBtn: $("cfgProfileCreateBtn"),
+      cfgProfileRenameBtn: $("cfgProfileRenameBtn"),
+      cfgProfileDeleteBtn: $("cfgProfileDeleteBtn"),
+      cfgProfileInfo: $("cfgProfileInfo"),
 
       appMask: $("appMask"),
 

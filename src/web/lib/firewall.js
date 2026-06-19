@@ -170,9 +170,6 @@ function computeDesiredRules(CONFIG, { forDisplay = false } = {}) {
     if (Number.isFinite(sp) && sp >= 1 && sp <= 65535) {
       addRule("game", "Server", sp, "TCP");
       addRule("game", "Server", sp, "UDP");
-      addRule("game", "ServerPlus1", sp + 1, "UDP");
-      addRule("game", "ServerPlus2", sp + 2, "UDP");
-      addRule("game", "ServerPlus3", sp + 3, "UDP");
     }
   }
 
