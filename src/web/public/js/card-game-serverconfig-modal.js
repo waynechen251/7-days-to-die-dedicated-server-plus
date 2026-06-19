@@ -1251,6 +1251,76 @@
     return Number.isFinite(n) ? n : NaN;
   }
 
+  function getUserDataFolderCheck(values, enables) {
+    const fieldLabel = resolveFieldLabel("UserDataFolder") || "UserDataFolder";
+    const enabled = !!enables.UserDataFolder;
+    const value = String(values.UserDataFolder || "").trim();
+
+    if (!enabled) {
+      return {
+        ok: "warn",
+        needsReminder: true,
+        text: value
+          ? t(
+              "checks.userDataFolderDisabledWithValueWarn",
+              "{name} 尚未啟用(未打勾)。目前欄位值為 {value}，但不會生效；啟動時將使用遊戲預設資料夾。",
+              { name: fieldLabel, value }
+            )
+          : t(
+              "checks.userDataFolderDisabledWarn",
+              "{name} 尚未啟用(未打勾)，將使用遊戲預設資料夾。",
+              { name: fieldLabel }
+            ),
+      };
+    }
+
+    if (!value) {
+      return {
+        ok: "warn",
+        needsReminder: true,
+        text: t(
+          "checks.userDataFolderEmptyWarn",
+          "{name} 尚未設定，將使用遊戲預設資料夾。",
+          { name: fieldLabel }
+        ),
+      };
+    }
+
+    return {
+      ok: true,
+      needsReminder: false,
+      text: t(
+        "checks.userDataFolderSet",
+        "{name} 已啟用且已設定。",
+        { name: fieldLabel }
+      ),
+    };
+  }
+
+  async function confirmUserDataFolderStartIfNeeded(values, enables) {
+    const check = getUserDataFolderCheck(values, enables);
+    if (!check.needsReminder) return true;
+
+    const message = t(
+      "confirm.userDataFolderStartWarning",
+      "{detail}\n\n未打勾或空值時仍可啟動，但會使用遊戲預設資料夾。是否仍要保存並啟動？",
+      { detail: check.text }
+    );
+    const options = {
+      title: t("confirm.userDataFolderStartWarningTitle", "UserDataFolder 提醒"),
+      continueText: t("confirm.saveAndStartAction", "保存並啟動"),
+      cancelText: t("common.cancel", "取消"),
+    };
+
+    if (window.DangerConfirm?.showConfirm) {
+      return window.DangerConfirm.showConfirm(message, options);
+    }
+    if (App.confirm) {
+      return App.confirm(message, options);
+    }
+    return Promise.resolve(window.confirm(message));
+  }
+
   async function runCfgChecks() {
     ensureDom();
     if (S.cfg.locked) return S.cfg.lastCheck;
@@ -1306,6 +1376,11 @@
     else if (!String(values.TelnetPassword).trim())
       pushResult(false, t("checks.telnetPasswordEmpty", "TelnetPassword 不可為空"), ["TelnetPassword"]);
     else pushResult(true, t("checks.telnetPasswordSet", "TelnetPassword 已設定"), ["TelnetPassword"]);
+
+    (function userDataFolderCheck() {
+      const check = getUserDataFolderCheck(values, enables);
+      pushResult(check.ok, check.text, ["UserDataFolder"]);
+    })();
 
     if (!enables.EACEnabled)
       pushResult(true, t("checks.eacDisabled", "EACEnabled 已停用(註解)"), ["EACEnabled"]);
@@ -1682,6 +1757,7 @@
       toggleChanged,
       enables,
     } = collectPendingConfigChanges();
+    const { values } = readCfgValuesFromUI();
 
     try {
       const needPreview = changed > 0 || toggleChanged > 0;
@@ -1716,7 +1792,19 @@
         "system",
         `⚠️ ${t("messages.generateSummaryFailed", { error: e.message })} (將直接保存)`,
         Date.now()
-      );
+        );
+    }
+
+    if (startAfter) {
+      const proceed = await confirmUserDataFolderStartIfNeeded(values, enables);
+      if (!proceed) {
+        App.console.appendLog(
+          "system",
+          `ℹ️ ${t("messages.cancelledBySave", "已取消保存 (使用者取消)")}`,
+          Date.now()
+        );
+        return;
+      }
     }
 
     try {
