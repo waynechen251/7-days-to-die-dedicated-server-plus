@@ -1619,7 +1619,7 @@
                 );
               } else {
                 pushResult(
-                  false,
+                  "warn",
                   t(
                     "checks.externalAccessTcpFailed",
                     "外網直連測試未通過：目前無法從外網加入。",
