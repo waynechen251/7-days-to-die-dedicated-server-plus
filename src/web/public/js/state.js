@@ -80,6 +80,7 @@
       lastCheck: { passAll: false, results: [] },
       profile: null,
       activeProfileId: null,
+      sandbox: null,
     },
 
     worldMap: new Map(),

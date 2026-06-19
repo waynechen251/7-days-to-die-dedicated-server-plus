@@ -16,6 +16,7 @@ const { sendTelnetCommand, telnetStart } = require("./lib/telnet");
 const auth = require("./lib/auth");
 const firewall = require("./lib/firewall");
 const gameServerProfiles = require("./lib/gameServerProfiles");
+const sandboxCode = require("./lib/sandboxCode");
 const { loadConfigWithMigration } = require("./lib/configMigration");
 
 const APP_VERSION = (() => {
@@ -207,6 +208,7 @@ const routeContext = {
   appVersion: APP_VERSION,
   firewall,
   gameServerProfiles,
+  sandboxCode,
 };
 
 // Auth 路由（公開，不需驗證）
@@ -268,6 +270,7 @@ serverConfigLib.registerRoutes(app, {
   getConfigMeta: () => CONFIG_META,
   saveConfig,
   gameServerProfiles,
+  sandboxCode,
 });
 
 // Register route modules
@@ -280,6 +283,7 @@ require("./lib/routes/install")(app, routeContext);
 require("./lib/routes/versions")(app, routeContext);
 require("./lib/routes/updates")(app, routeContext);
 require("./lib/routes/firewall")(app, routeContext);
+require("./lib/routes/sandbox")(app, routeContext);
 
 // SSE endpoint
 app.get("/api/stream", eventBus.sseHandler);

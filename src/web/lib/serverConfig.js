@@ -259,6 +259,7 @@ function registerRoutes(
     saveConfig,
     listWorldTemplates,
     gameServerProfiles,
+    sandboxCode,
   }
 ) {
   if (!app || !http) throw new Error("registerRoutes 需要 app 與 http");
@@ -339,6 +340,42 @@ function registerRoutes(
     };
   }
 
+  function getSandboxSummary(items) {
+    const sandboxItem = (Array.isArray(items) ? items : []).find(
+      (item) => String(item?.name || "") === "SandboxCode"
+    );
+    if (!sandboxItem) {
+      return {
+        present: false,
+        code: "",
+        commented: false,
+        valid: null,
+        errors: [],
+        warnings: [],
+      };
+    }
+    const rawCode = String(sandboxItem.value || "").trim();
+    if (!rawCode || !sandboxCode) {
+      return {
+        present: true,
+        code: rawCode,
+        commented: !!sandboxItem.commented,
+        valid: rawCode === "",
+        errors: [],
+        warnings: [],
+      };
+    }
+    const decoded = sandboxCode.decode(rawCode, { includeDefaults: false });
+    return {
+      present: true,
+      code: rawCode,
+      commented: !!sandboxItem.commented,
+      valid: decoded.valid,
+      errors: decoded.errors || [],
+      warnings: decoded.warnings || [],
+    };
+  }
+
   app.get("/api/serverconfig", (req, res) => {
     try {
       const cfgPath = _resolveServerConfigPath();
@@ -368,6 +405,7 @@ function registerRoutes(
             items: editableItems,
             worlds,
             profile: versionCtx,
+            sandbox: getSandboxSummary(editableItems),
             activeProfileId: selectedProfile?.id || activeProfile?.id || null,
             selectedProfileId: selectedProfile?.id || null,
             lastStartedProfileId: lastStartedProfile?.id || null,
@@ -445,6 +483,30 @@ function registerRoutes(
           { ok: false, message: "缺少 updates 或 toggles" },
           400
         );
+      }
+
+      if (
+        hasUpdates &&
+        Object.prototype.hasOwnProperty.call(updates, "SandboxCode") &&
+        sandboxCode
+      ) {
+        const nextSandboxCode = String(updates.SandboxCode || "").trim();
+        if (nextSandboxCode) {
+          const decoded = sandboxCode.decode(nextSandboxCode, {
+            includeDefaults: false,
+          });
+          if (!decoded.valid) {
+            return http.respondJson(
+              res,
+              {
+                ok: false,
+                message: `SandboxCode 無效: ${(decoded.errors || []).join(" | ")}`,
+                data: decoded,
+              },
+              400
+            );
+          }
+        }
       }
 
       const fs = require("fs");
@@ -525,6 +587,7 @@ function registerRoutes(
             toggled,
             items,
             profile: versionCtx,
+            sandbox: getSandboxSummary(items),
             activeProfileId: activeProfile?.id || null,
           },
         },

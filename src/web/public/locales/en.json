@@ -16,7 +16,8 @@
     "noBackup": "(No backups)",
     "selectExisting": "(Select existing)",
     "notSet": "(Not set)",
-    "custom": "(Custom)"
+    "custom": "(Custom)",
+    "default": "Default"
   },
   "topbar": {
     "brand": "7 Days To Die Dedicated Server Plus Admin Panel",
@@ -131,7 +132,7 @@
       "removeBtn": "🗑 Remove All Rules",
       "refreshBtn": "🔄 Refresh",
       "advancedBtn": "⚙️ Advanced Settings & Rule Details",
-      "rulesLabel":"Rules Currently Managed",
+      "rulesLabel": "Rules Currently Managed",
       "rulesManagedHint": "The default view shows only day-to-day decision data; raw names stay in the advanced section.",
       "rulesEmpty": "(No rules)",
       "advancedSummary": "Show advanced rules and raw names",
@@ -343,106 +344,480 @@
       "sandboxOnlyDesc": "For v3.0+, only the SandboxCode field is currently available for editing and saving.",
       "sandboxCodeHint": "7DTD v3.0+ only supports direct SandboxCode editing.",
       "sandboxCodePlaceholder": "Paste the SandboxCode generated in-game",
+      "sandboxEditorTitle": "SandboxCode Conversion",
+      "sandboxEditorDesc": "This section restores the SandboxCode field into 150 official options and can encode them back into the same field.",
+      "sandboxDecodeBtn": "Restore From SandboxCode",
+      "sandboxEncodeBtn": "Encode To SandboxCode",
+      "sandboxResetBtn": "Load Official Defaults",
+      "sandboxOptionCountValue": "{count} official options",
+      "sandboxChangedCountValue": "{count} differ from defaults",
+      "sandboxCodeLengthValue": "Current code length {count}",
+      "sandboxCodeEmptyValue": "Current code is empty",
+      "sandboxPendingValue": "Form not written back yet",
+      "sandboxSyncedValue": "Form and field are in sync",
+      "sandboxCategoryCount": "{count} options",
       "fields": {
-        "ServerName": { "label": "Server Name" },
-        "ServerDescription": { "label": "Server Description" },
-        "ServerWebsiteURL": { "label": "Server Website" },
-        "ServerPassword": { "label": "Join Password" },
-        "ServerLoginConfirmationText": { "label": "Join Confirmation Text" },
-        "Region": { "label": "Region" },
-        "Language": { "label": "Language" },
-        "ServerPort": { "label": "Server Port" },
-        "ServerVisibility": { "label": "Server Visibility" },
-        "ServerDisabledNetworkProtocols": { "label": "Disabled Network Protocols" },
-        "ServerMaxWorldTransferSpeedKiBs": { "label": "World Transfer Speed Limit" },
-        "ServerMaxPlayerCount": { "label": "Max Players" },
-        "ServerReservedSlots": { "label": "Reserved Slots" },
-        "ServerReservedSlotsPermission": { "label": "Reserved Slot Permission" },
-        "ServerAdminSlots": { "label": "Admin Slots" },
-        "ServerAdminSlotsPermission": { "label": "Admin Slot Permission" },
-        "WebDashboardEnabled": { "label": "Web Dashboard" },
-        "WebDashboardPort": { "label": "Web Dashboard Port" },
-        "WebDashboardUrl": { "label": "Web Dashboard URL" },
-        "EnableMapRendering": { "label": "Map Rendering" },
-        "TelnetEnabled": { "label": "Telnet Enabled" },
-        "TelnetPort": { "label": "Telnet Port" },
-        "TelnetPassword": { "label": "Telnet Password" },
-        "TelnetFailedLoginLimit": { "label": "Telnet Failed Login Limit" },
-        "TelnetFailedLoginsBlocktime": { "label": "Telnet Block Time" },
-        "TerminalWindowEnabled": { "label": "Terminal Window" },
-        "AdminFileName": { "label": "Admin File Name" },
-        "UserDataFolder": { "label": "User Data Folder" },
-        "ServerAllowCrossplay": { "label": "Crossplay" },
-        "EACEnabled": { "label": "EAC Anti-Cheat" },
-        "IgnoreEOSSanctions": { "label": "Ignore EOS Sanctions" },
-        "HideCommandExecutionLog": { "label": "Hide Command Log" },
-        "MaxUncoveredMapChunksPerPlayer": { "label": "Max Map Chunks Per Player" },
-        "PersistentPlayerProfiles": { "label": "Persistent Player Profiles" },
-        "MaxChunkAge": { "label": "Chunk Reset Age" },
-        "SaveDataLimit": { "label": "Save Data Limit" },
-        "GameWorld": { "label": "Game World" },
-        "WorldGenSeed": { "label": "World Seed" },
-        "WorldGenSize": { "label": "World Size" },
-        "GameName": { "label": "Save Name" },
-        "GameMode": { "label": "Game Mode" },
-        "GameDifficulty": { "label": "Difficulty" },
-        "BlockDamagePlayer": { "label": "Player Block Damage" },
-        "BlockDamageAI": { "label": "AI Block Damage" },
-        "BlockDamageAIBM": { "label": "Blood Moon AI Block Damage" },
-        "XPMultiplier": { "label": "XP Multiplier" },
-        "PlayerSafeZoneLevel": { "label": "Safe Zone Level" },
-        "PlayerSafeZoneHours": { "label": "Safe Zone Hours" },
-        "BuildCreate": { "label": "Creative Mode" },
-        "DayNightLength": { "label": "Day Length Minutes" },
-        "DayLightLength": { "label": "Daylight Hours" },
-        "BiomeProgression": { "label": "Biome Progression" },
-        "StormFreq": { "label": "Storm Frequency" },
-        "DeathPenalty": { "label": "Death Penalty" },
-        "DropOnDeath": { "label": "Drop On Death" },
-        "DropOnQuit": { "label": "Drop On Quit" },
-        "BedrollDeadZoneSize": { "label": "Bedroll Safe Zone" },
-        "BedrollExpiryTime": { "label": "Bedroll Expiry Days" },
-        "AllowSpawnNearFriend": { "label": "Spawn Near Friend" },
-        "CameraRestrictionMode": { "label": "Camera Restriction" },
-        "JarRefund": { "label": "Jar Refund Rate" },
-        "MaxSpawnedZombies": { "label": "Max Zombies" },
-        "MaxSpawnedAnimals": { "label": "Max Animals" },
-        "ServerMaxAllowedViewDistance": { "label": "Max View Distance" },
-        "MaxQueuedMeshLayers": { "label": "Max Mesh Queue" },
-        "EnemySpawnMode": { "label": "Enemy Spawning" },
-        "EnemyDifficulty": { "label": "Enemy Difficulty" },
-        "ZombieFeralSense": { "label": "Feral Sense" },
-        "ZombieMove": { "label": "Zombie Day Speed" },
-        "ZombieMoveNight": { "label": "Zombie Night Speed" },
-        "ZombieFeralMove": { "label": "Feral Zombie Speed" },
-        "ZombieBMMove": { "label": "Blood Moon Zombie Speed" },
-        "AISmellMode": { "label": "Scent Tracking" },
-        "BloodMoonFrequency": { "label": "Blood Moon Frequency" },
-        "BloodMoonRange": { "label": "Blood Moon Range" },
-        "BloodMoonWarning": { "label": "Blood Moon Warning Hour" },
-        "BloodMoonEnemyCount": { "label": "Blood Moon Zombie Count" },
-        "LootAbundance": { "label": "Loot Abundance" },
-        "LootRespawnDays": { "label": "Loot Respawn Days" },
-        "AirDropFrequency": { "label": "Airdrop Frequency" },
-        "AirDropMarker": { "label": "Airdrop Marker" },
-        "PartySharedKillRange": { "label": "Party Shared Kill Range" },
-        "PlayerKillingMode": { "label": "PvP Mode" },
-        "LandClaimCount": { "label": "Land Claim Count" },
-        "LandClaimSize": { "label": "Land Claim Size" },
-        "LandClaimDeadZone": { "label": "Land Claim Dead Zone" },
-        "LandClaimExpiryTime": { "label": "Land Claim Expiry Days" },
-        "LandClaimDecayMode": { "label": "Land Claim Decay Mode" },
-        "LandClaimOnlineDurabilityModifier": { "label": "Land Claim Online Durability" },
-        "LandClaimOfflineDurabilityModifier": { "label": "Land Claim Offline Durability" },
-        "LandClaimOfflineDelay": { "label": "Land Claim Offline Delay" },
-        "DynamicMeshEnabled": { "label": "Dynamic Mesh" },
-        "DynamicMeshLandClaimOnly": { "label": "Dynamic Mesh in Claims Only" },
-        "DynamicMeshLandClaimBuffer": { "label": "Dynamic Mesh Buffer" },
-        "DynamicMeshMaxItemCache": { "label": "Dynamic Mesh Item Cache" },
-        "TwitchServerPermission": { "label": "Twitch Permission Level" },
-        "TwitchBloodMoonAllowed": { "label": "Twitch Blood Moon" },
-        "QuestProgressionDailyLimit": { "label": "Daily Quest Progress Limit" },
-        "SandboxCode": { "label": "Sandbox Code" }
+        "ServerName": {
+          "label": "Server Name"
+        },
+        "ServerDescription": {
+          "label": "Server Description"
+        },
+        "ServerWebsiteURL": {
+          "label": "Server Website"
+        },
+        "ServerPassword": {
+          "label": "Join Password"
+        },
+        "ServerLoginConfirmationText": {
+          "label": "Join Confirmation Text"
+        },
+        "Region": {
+          "label": "Region"
+        },
+        "Language": {
+          "label": "Language"
+        },
+        "ServerPort": {
+          "label": "Server Port"
+        },
+        "ServerVisibility": {
+          "label": "Server Visibility"
+        },
+        "ServerDisabledNetworkProtocols": {
+          "label": "Disabled Network Protocols"
+        },
+        "ServerMaxWorldTransferSpeedKiBs": {
+          "label": "World Transfer Speed Limit"
+        },
+        "ServerMaxPlayerCount": {
+          "label": "Max Players"
+        },
+        "ServerReservedSlots": {
+          "label": "Reserved Slots"
+        },
+        "ServerReservedSlotsPermission": {
+          "label": "Reserved Slot Permission"
+        },
+        "ServerAdminSlots": {
+          "label": "Admin Slots"
+        },
+        "ServerAdminSlotsPermission": {
+          "label": "Admin Slot Permission"
+        },
+        "WebDashboardEnabled": {
+          "label": "Web Dashboard"
+        },
+        "WebDashboardPort": {
+          "label": "Web Dashboard Port"
+        },
+        "WebDashboardUrl": {
+          "label": "Web Dashboard URL"
+        },
+        "EnableMapRendering": {
+          "label": "Map Rendering"
+        },
+        "TelnetEnabled": {
+          "label": "Telnet Enabled"
+        },
+        "TelnetPort": {
+          "label": "Telnet Port"
+        },
+        "TelnetPassword": {
+          "label": "Telnet Password"
+        },
+        "TelnetFailedLoginLimit": {
+          "label": "Telnet Failed Login Limit"
+        },
+        "TelnetFailedLoginsBlocktime": {
+          "label": "Telnet Block Time"
+        },
+        "TerminalWindowEnabled": {
+          "label": "Terminal Window"
+        },
+        "AdminFileName": {
+          "label": "Admin File Name"
+        },
+        "UserDataFolder": {
+          "label": "User Data Folder"
+        },
+        "ServerAllowCrossplay": {
+          "label": "Crossplay"
+        },
+        "EACEnabled": {
+          "label": "EAC Anti-Cheat"
+        },
+        "IgnoreEOSSanctions": {
+          "label": "Ignore EOS Sanctions"
+        },
+        "HideCommandExecutionLog": {
+          "label": "Hide Command Log"
+        },
+        "MaxUncoveredMapChunksPerPlayer": {
+          "label": "Max Map Chunks Per Player"
+        },
+        "PersistentPlayerProfiles": {
+          "label": "Persistent Player Profiles"
+        },
+        "MaxChunkAge": {
+          "label": "Chunk Reset Age"
+        },
+        "SaveDataLimit": {
+          "label": "Save Data Limit"
+        },
+        "GameWorld": {
+          "label": "Game World"
+        },
+        "WorldGenSeed": {
+          "label": "World Seed"
+        },
+        "WorldGenSize": {
+          "label": "World Size"
+        },
+        "GameName": {
+          "label": "Save Name"
+        },
+        "GameMode": {
+          "label": "Game Mode"
+        },
+        "GameDifficulty": {
+          "label": "Difficulty"
+        },
+        "BlockDamagePlayer": {
+          "label": "Player Block Damage"
+        },
+        "BlockDamageAI": {
+          "label": "AI Block Damage"
+        },
+        "BlockDamageAIBM": {
+          "label": "Blood Moon AI Block Damage"
+        },
+        "XPMultiplier": {
+          "label": "XP Multiplier"
+        },
+        "PlayerSafeZoneLevel": {
+          "label": "Safe Zone Level"
+        },
+        "PlayerSafeZoneHours": {
+          "label": "Safe Zone Hours"
+        },
+        "BuildCreate": {
+          "label": "Creative Mode"
+        },
+        "DayNightLength": {
+          "label": "Day Length Minutes"
+        },
+        "DayLightLength": {
+          "label": "Daylight Hours"
+        },
+        "BiomeProgression": {
+          "label": "Biome Progression"
+        },
+        "StormFreq": {
+          "label": "Storm Frequency"
+        },
+        "DeathPenalty": {
+          "label": "Death Penalty"
+        },
+        "DropOnDeath": {
+          "label": "Drop On Death"
+        },
+        "DropOnQuit": {
+          "label": "Drop On Quit"
+        },
+        "BedrollDeadZoneSize": {
+          "label": "Bedroll Safe Zone"
+        },
+        "BedrollExpiryTime": {
+          "label": "Bedroll Expiry Days"
+        },
+        "AllowSpawnNearFriend": {
+          "label": "Spawn Near Friend"
+        },
+        "CameraRestrictionMode": {
+          "label": "Camera Restriction"
+        },
+        "JarRefund": {
+          "label": "Jar Refund Rate"
+        },
+        "MaxSpawnedZombies": {
+          "label": "Max Zombies"
+        },
+        "MaxSpawnedAnimals": {
+          "label": "Max Animals"
+        },
+        "ServerMaxAllowedViewDistance": {
+          "label": "Max View Distance"
+        },
+        "MaxQueuedMeshLayers": {
+          "label": "Max Mesh Queue"
+        },
+        "EnemySpawnMode": {
+          "label": "Enemy Spawning"
+        },
+        "EnemyDifficulty": {
+          "label": "Enemy Difficulty"
+        },
+        "ZombieFeralSense": {
+          "label": "Feral Sense"
+        },
+        "ZombieMove": {
+          "label": "Zombie Day Speed"
+        },
+        "ZombieMoveNight": {
+          "label": "Zombie Night Speed"
+        },
+        "ZombieFeralMove": {
+          "label": "Feral Zombie Speed"
+        },
+        "ZombieBMMove": {
+          "label": "Blood Moon Zombie Speed"
+        },
+        "AISmellMode": {
+          "label": "Scent Tracking"
+        },
+        "BloodMoonFrequency": {
+          "label": "Blood Moon Frequency"
+        },
+        "BloodMoonRange": {
+          "label": "Blood Moon Range"
+        },
+        "BloodMoonWarning": {
+          "label": "Blood Moon Warning Hour"
+        },
+        "BloodMoonEnemyCount": {
+          "label": "Blood Moon Zombie Count"
+        },
+        "LootAbundance": {
+          "label": "Loot Abundance"
+        },
+        "LootRespawnDays": {
+          "label": "Loot Respawn Days"
+        },
+        "AirDropFrequency": {
+          "label": "Airdrop Frequency"
+        },
+        "AirDropMarker": {
+          "label": "Airdrop Marker"
+        },
+        "PartySharedKillRange": {
+          "label": "Party Shared Kill Range"
+        },
+        "PlayerKillingMode": {
+          "label": "PvP Mode"
+        },
+        "LandClaimCount": {
+          "label": "Land Claim Count"
+        },
+        "LandClaimSize": {
+          "label": "Land Claim Size"
+        },
+        "LandClaimDeadZone": {
+          "label": "Land Claim Dead Zone"
+        },
+        "LandClaimExpiryTime": {
+          "label": "Land Claim Expiry Days"
+        },
+        "LandClaimDecayMode": {
+          "label": "Land Claim Decay Mode"
+        },
+        "LandClaimOnlineDurabilityModifier": {
+          "label": "Land Claim Online Durability"
+        },
+        "LandClaimOfflineDurabilityModifier": {
+          "label": "Land Claim Offline Durability"
+        },
+        "LandClaimOfflineDelay": {
+          "label": "Land Claim Offline Delay"
+        },
+        "DynamicMeshEnabled": {
+          "label": "Dynamic Mesh"
+        },
+        "DynamicMeshLandClaimOnly": {
+          "label": "Dynamic Mesh in Claims Only"
+        },
+        "DynamicMeshLandClaimBuffer": {
+          "label": "Dynamic Mesh Buffer"
+        },
+        "DynamicMeshMaxItemCache": {
+          "label": "Dynamic Mesh Item Cache"
+        },
+        "TwitchServerPermission": {
+          "label": "Twitch Permission Level"
+        },
+        "TwitchBloodMoonAllowed": {
+          "label": "Twitch Blood Moon"
+        },
+        "QuestProgressionDailyLimit": {
+          "label": "Daily Quest Progress Limit"
+        },
+        "SandboxCode": {
+          "label": "Sandbox Code"
+        }
+      },
+      "sandbox": {
+        "categories": {
+          "General": "General",
+          "Entities": "Entities",
+          "World": "World",
+          "Resources": "Resources",
+          "Crafting": "Crafting",
+          "Traders": "Traders",
+          "Tasks": "Tasks",
+          "Misc": "Misc"
+        },
+        "options": {
+          "RangedDamage": "Ranged Damage",
+          "MeleeDamage": "Melee Damage",
+          "BlockDamage": "Block Damage",
+          "TerrainDamage": "Terrain Damage",
+          "HeadshotMultiplier": "Headshot Multiplier",
+          "IncomingDamage": "Incoming Damage",
+          "WalkSpeed": "Walk Speed",
+          "RunSpeed": "Run Speed",
+          "CrouchSpeed": "Crouch Speed",
+          "JumpStrength": "Jump Height",
+          "StaminaRegen": "Stamina Regen",
+          "StaminaUsage": "Stamina Usage",
+          "XPMultiplier": "XP Multiplier",
+          "ShowXP": "Show XP",
+          "PlayerLevelBonusApplied": "Level Health/Stam Bonus",
+          "SkillGainRate": "Skill Gain Rate",
+          "SkillPointsPerLevel": "Skill Gain Amount",
+          "DeathPenalty": "Death Penalty",
+          "LoseItemsOnDeathType": "Lose Items Death Type",
+          "LoseItemsOnDeathCount": "Lose Items Death Count",
+          "DegradeItemsOnDeath": "Degrade Items On Death",
+          "DegradeAmountOnDeath": "Degrade Amount On Death",
+          "DropOnDeath": "Drop On Death",
+          "DropOnQuit": "Drop On Quit",
+          "InfectionRate": "Infection Rate",
+          "NewbieCoat": "Allow Newbie Coat",
+          "EncumbranceModifier": "Encumbrance Modifier",
+          "JarRefund": "Jar Refund",
+          "EnemySpawnMode": "Enemy Spawn",
+          "MaxEnemyTier": "Max Enemy Type",
+          "BiomeEnemyDensity": "Biome Enemy Density",
+          "BiomeZombieRespawn": "Biome Enemy Respawn",
+          "BiomeAnimalRespawn": "Biome Animal Respawn",
+          "EntityDamage": "Entity Damage",
+          "EntityIncomingDamage": "Entity Incoming Damage",
+          "BlockDamageAI": "Entity Block Damage",
+          "BlockDamageAIBM": "Blood Moon Block Damage",
+          "HeadshotMode": "Headshot Mode",
+          "ShowHealthBars": "Entity Health Bars",
+          "ShowEnemyDamage": "Show Entity Damage",
+          "ZombieMove": "Zombie Day Speed",
+          "ZombieMoveNight": "Zombie Night Speed",
+          "ZombieFeralMove": "Zombie Feral Speed",
+          "ZombieBMMove": "Zombie Blood Moon Speed",
+          "ZombieFeralSense": "Zombie Feral Sense",
+          "AISmellMode": "Zombie AI Smell Mode",
+          "ZombieRageChance": "Zombie Rage Chance",
+          "AllowZombieDigging": "Allow Zombie Digging",
+          "ZombiesEatAnimals": "Zombies Eat Animals",
+          "GlobalGSModifier": "Global GameStage",
+          "BiomeGSModifier": "Biome GameStage",
+          "BiomeProgression": "Biome Progression",
+          "TemperatureSurvival": "Temperature Survival",
+          "MaxTechType": "Max Tech Type",
+          "WorkstationsInTheWild": "Workstations in the Wild",
+          "BloodMoonFrequency": "Blood Moon Frequency",
+          "BloodMoonRange": "Blood Moon Range",
+          "BloodMoonEnemyCount": "Blood Moon Count",
+          "BloodMoonWarning": "Blood Moon Warning",
+          "AirDropFrequency": "Air Drops",
+          "AirDropRandomTime": "Air Drop Random Time",
+          "StormFreq": "Storm Frequency",
+          "StormWarning": "Storm Warning",
+          "HeatMapSensitivity": "Heatmap Sensitivity",
+          "DayNightLength": "24 Day Cycle",
+          "DayLightLength": "Day Light Length",
+          "AirDropMarker": "Mark Air Drops",
+          "AllowMap": "Allow Map",
+          "AllowCompass": "Allow Compass",
+          "AllowScreenMarkers": "Allow Screen Markers",
+          "ShowLocationInfo": "Show Location Info",
+          "ShowDayTime": "Show Day/Time",
+          "LootMaxTier": "Loot Max Tier",
+          "GlobalLSModifier": "Global LootStage",
+          "BiomeLSModifier": "Biome LootStage",
+          "POITierLSModifier": "POI Tier LootStage",
+          "LootRespawnDays": "Loot Respawn Days",
+          "LootTimer": "Loot Time",
+          "LootBagChance": "Loot Bag Chance",
+          "GlobalLootCount": "Global Loot Abundance",
+          "FoodLootCount": "Food Abundance",
+          "DrinkLootCount": "Drink Abundance",
+          "MedicalLootCount": "Medical Abundance",
+          "AmmoLootCount": "Ammo Abundance",
+          "ResourceLootCount": "Resource Abundance",
+          "ArmorLootCount": "Armor Abundance",
+          "MeleeLootCount": "Melee Abundance",
+          "RangedLootCount": "Ranged Abundance",
+          "DukesLootCount": "Dukes Abundance",
+          "CraftingMagazinesLootCount": "Magazines Abundance",
+          "TreasureMapChance": "Treasure Map Chance",
+          "MiningOutput": "Mining Output",
+          "CropOutput": "Crop Output",
+          "SeedDropOutput": "Seed Drop Output",
+          "HarvestingOutput": "Harvesting Output",
+          "CropGrowthSpeed": "Crop Growth",
+          "CraftingProgression": "Crafting Progression",
+          "CraftingMaxTier": "Crafting Max Tier",
+          "PointsPerMagazine": "Magazine Points",
+          "BackpackCrafting": "Backpack Crafting",
+          "WorkstationCrafting": "Workstation Crafting",
+          "SmeltingType": "Smelter Type",
+          "CraftingTime": "Crafting Time",
+          "CraftingInput": "Crafting Input",
+          "CraftingOutput": "Crafting Output",
+          "ScrappingOutput": "Scrapping Output",
+          "DewCollectorTime": "Dew Collector Time",
+          "DewCollectorOutput": "Dew Collector Output",
+          "DewCollectorInput": "Dew Collector Input",
+          "ApiaryTime": "Apiary Time",
+          "ApiaryOutput": "Apiary Output",
+          "ApiaryInput": "Apiary Input",
+          "ItemDegradation": "Item Degradation",
+          "RepairTypes": "Item Repair Types",
+          "MaxDegradationAmount": "Max Degrade Amount",
+          "TradersEnabled": "Trading Enabled",
+          "VendingEnabled": "Vending Machines Enabled",
+          "TraderHours": "Trader Hours",
+          "TraderProtection": "Trader Protection",
+          "TraderDialog": "Trading Dialog",
+          "GlobalTSModifier": "Global TraderStage",
+          "TraderMaxTier": "Trader Max Tier",
+          "TraderItemAbundance": "Trader Item Abundance",
+          "VendingItemAbundance": "Vending Item Abundance",
+          "TraderResetInterval": "Trader Reset Interval",
+          "VendingResetInterval": "Vending Reset Interval",
+          "TraderSellPrices": "Traders Sell Price",
+          "TraderBuyPrices": "Traders Buy Price",
+          "TraderBuyLimit": "Trader Buy Limit",
+          "ChallengesEnabled": "Challenges Enabled",
+          "QuestsEnabled": "Quests Enabled",
+          "IntroChallengesEnabled": "Intro Challenges Enabled",
+          "IntroQuestEnabled": "Intro Quest Enabled",
+          "TraderToTraderQuestsEnabled": "Trader to Trader Quests",
+          "BuriedQuestsEnabled": "Buried Quests Enabled",
+          "POIQuestsEnabled": "POI Quests Enabled",
+          "QuestsPerTier": "Quests per Tier",
+          "QuestProgressionDailyLimit": "Quests per Day",
+          "StarterSkillPoints": "Starter Skill Points",
+          "VehicleFuelUsage": "Vehicle Fuel Usage",
+          "VehicleEntityDamage": "Vehicle Entity Damage",
+          "VehicleBlockDamage": "Vehicle Block Damage",
+          "VehicleSelfDamage": "Vehicle Self Damage",
+          "ElectricalOutput": "Electrical Output",
+          "SillyCelebrate": "Celebrate Kills",
+          "SillyBigHeads": "Big Heads",
+          "SillyTinyZombies": "Tiny Zombies",
+          "SillyLowGravity": "Gravity",
+          "SillySounds": "Silly Sounds",
+          "SillyBlackandWhite": "Black and White"
+        }
       }
     }
   },
@@ -497,6 +872,16 @@
     "missingGameServer": "Missing game_server",
     "loadedAdminConfig": "Loaded last saved settings to editor (not saved yet)",
     "loadAdminConfigFailed": "Failed to load last saved settings: {error}",
+    "sandboxSchemaUnavailable": "SandboxCode schema could not be loaded",
+    "sandboxDecodeFailed": "SandboxCode decode failed",
+    "sandboxDecoded": "Restored the form from SandboxCode",
+    "sandboxDecodedInitial": "Restored the form from the current SandboxCode",
+    "sandboxEncoded": "Wrote the SandboxCode form back to the field",
+    "sandboxLoadedDefaults": "SandboxCode is empty. Official defaults were loaded",
+    "sandboxDefaultsApplied": "Official SandboxCode defaults were applied but not written back yet",
+    "sandboxPendingEncode": "The SandboxCode form was changed. Encode it back to the field or save directly",
+    "sandboxCodeChanged": "The SandboxCode field changed. Click 'Restore From SandboxCode' to rebuild the form",
+    "sandboxEncodeFailed": "SandboxCode encode failed",
     "profileNamePrompt": "Enter a profile name",
     "profileNamePlaceholder": "Example: PVE / Test / Event",
     "profileRenamePrompt": "Enter a new profile name",

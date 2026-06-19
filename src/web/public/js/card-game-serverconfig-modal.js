@@ -1,11 +1,24 @@
 (function (w) {
   const App = (w.App = w.App || {});
-  const { fetchJSON, fetchText, profiles: profilesApi } = App.api;
+  const {
+    fetchJSON,
+    fetchText,
+    profiles: profilesApi,
+  } = App.api;
   const { decideType, escapeHTML } = App.utils;
   let D = App.dom;
   const S = App.state;
 
   const t = (key, def, params) => (App.i18n ? App.i18n.t(key, params) : def || key);
+  const sandboxEditor = App.sandboxEditor.createController({
+    cfgState: S.cfg,
+    api: App.api.sandbox,
+    t,
+    escapeHTML,
+    getLocked: () => !!S.cfg.locked,
+    rerunChecks: () => rerunChecks(),
+    appendLog: (...args) => App.console.appendLog(...args),
+  });
 
   function ensureDom() {
     if (!D.cfgBody || !D.cfgModal) {
@@ -280,6 +293,7 @@
     const snapshot = buildProfileSnapshot();
     const updates = {};
     const toggles = {};
+    const sandboxDirty = sandboxEditor.getDirty();
     let changed = 0;
     let toggleChanged = 0;
 
@@ -312,7 +326,8 @@
       toggles,
       changed,
       toggleChanged,
-      hasChanges: changed > 0 || toggleChanged > 0,
+      sandboxDirty,
+      hasChanges: changed > 0 || toggleChanged > 0 || sandboxDirty,
     };
   }
 
@@ -324,6 +339,7 @@
       updates: pending.updates,
       toggles: pending.toggles,
       enables: pending.enables,
+      sandboxDirty: pending.sandboxDirty,
     });
 
     return window.DangerConfirm
@@ -445,6 +461,9 @@
             ));
         if (name == null) return;
         try {
+          if (sandboxEditor.getDirty()) {
+            await sandboxEditor.syncCodeFieldFromEditor();
+          }
           const result = await profilesApi.create({
             version: getSelectedVersionValue(),
             name,
@@ -632,6 +651,7 @@
 
   async function loadConfigModalData(options = {}) {
     ensureDom();
+    sandboxEditor.resetStore();
     const {
       profileId = "",
       skipLoadingMask = false,
@@ -644,12 +664,15 @@
       if (selectedVersion) query.set("version", selectedVersion);
       if (profileId) query.set("profileId", profileId);
 
-      const [procRes, cfgRes, savesRes, appCfgRes, profilesRes] = await Promise.all([
+      const [procRes, cfgRes, savesRes, appCfgRes, profilesRes, sandboxSchemaRes] = await Promise.all([
         fetchJSON("/api/processManager/status").catch(() => null),
         fetchJSON(`/api/serverconfig?${query.toString()}`),
         fetchJSON("/api/saves/list"),
         fetchJSON("/api/get-config").catch(() => null),
         profilesApi.list(selectedVersion).catch(() => null),
+        App.api.sandbox?.schema
+          ? App.api.sandbox.schema().catch(() => null)
+          : Promise.resolve(null),
       ]);
       ensureDom();
       if (!cfgRes.ok) throw new Error(cfgRes.message || t("messages.loadConfigFailed", "讀取設定失敗"));
@@ -676,6 +699,7 @@
       }
 
       const items = cfgRes.data?.items || [];
+      sandboxEditor.attachSchema(sandboxSchemaRes?.ok ? sandboxSchemaRes.data : null);
       S.cfg.profile = cfgRes.data?.profile || null;
       S.cfg.activeProfileId =
         cfgRes.data?.selectedProfileId ||
@@ -712,10 +736,15 @@
       S.cfg.webPort = parseInt(appCfgRes?.data?.web?.port, 10) || NaN;
       renderProfileBar();
       renderCfgEditor(items);
+      const sandboxCodeValue = items.find((item) => item.name === "SandboxCode")?.value || "";
+      if (S.cfg.sandbox?.ui?.boundInput) {
+        await sandboxEditor.restoreFromCode(sandboxCodeValue, { initial: true });
+      }
 
       S.cfg.locked = App.status.computeGameRunning();
       App.status.updateCfgLockUI();
       renderProfileBar();
+      sandboxEditor.setControlsDisabled();
 
       const loadBtn =
         D.cfgLoadAdminBtn || document.getElementById("cfgLoadAdminBtn");
@@ -1051,6 +1080,10 @@
       const field = document.createElement("div");
       field.className = "cfg-field";
       field.dataset.fieldName = name;
+      let sandboxPanel = null;
+      if (name === "SandboxCode") {
+        field.classList.add("cfg-field--wide");
+      }
       const header = document.createElement("div");
       header.className = "cfg-field__header";
 
@@ -1188,8 +1221,21 @@
         t.value = value;
         t.dataset.name = name;
         t.dataset.type = "text";
+        if (name === "SandboxCode") {
+          t.placeholder = App.i18n?.t(
+            "modal.serverconfig.sandboxCodePlaceholder"
+          );
+        }
         t.addEventListener("input", rerunChecks);
         inputEl = t;
+      }
+
+      if (name === "SandboxCode") {
+        sandboxEditor.attachBoundField(inputEl, enable);
+        inputEl.addEventListener("input", () => {
+          sandboxEditor.handleCodeInputChanged();
+        });
+        sandboxPanel = sandboxEditor.createPanel();
       }
 
       if (commented) {
@@ -1207,11 +1253,15 @@
             .querySelectorAll("input,select")
             .forEach((e) => (e.disabled = !enabled || S.cfg.locked));
         } else inputEl.disabled = !enabled || S.cfg.locked;
+        if (name === "SandboxCode") sandboxEditor.setControlsDisabled();
         rerunChecks();
       });
 
       field.appendChild(header);
       field.appendChild(inputEl);
+      if (sandboxPanel) {
+        field.appendChild(sandboxPanel);
+      }
       grid.appendChild(field);
     });
 
@@ -1673,7 +1723,7 @@
     return vTrim;
   }
 
-  function buildChangeSummary({ updates, toggles, enables }) {
+  function buildChangeSummary({ updates, toggles, enables, sandboxDirty }) {
     const lines = [];
     const originalVals = S.cfg.original || new Map();
     const commentedOrig = S.cfg.commentedOriginal || new Map();
@@ -1706,6 +1756,15 @@
       }
     });
 
+    if (sandboxDirty) {
+      lines.push(
+        `• SandboxCode: ${t(
+          "messages.sandboxPendingEncode",
+          "SandboxCode 表單已修改，請編碼回欄位或直接保存"
+        )}`
+      );
+    }
+
     if (!lines.length) return t("messages.noChanges", "無任何參數變更。");
     return lines.join("\n");
   }
@@ -1719,6 +1778,7 @@
     S.cfg.commentedOriginal = new Map(
       Object.keys(commented).map((name) => [name, !!commented[name]])
     );
+    sandboxEditor.applySavedValues(values);
   }
 
   async function saveConfigValues(startAfter) {
@@ -1749,23 +1809,49 @@
       }
     }
 
-    const {
+    let {
       snapshot,
       updates,
       toggles,
       changed,
       toggleChanged,
       enables,
+      sandboxDirty,
     } = collectPendingConfigChanges();
+
+    if (sandboxDirty) {
+      try {
+        await sandboxEditor.syncCodeFieldFromEditor();
+      } catch (err) {
+        App.console.appendLog(
+          "system",
+          `❌ ${t("messages.sandboxEncodeFailed", "SandboxCode 編碼失敗: {error}", {
+            error: err.message,
+          })}`,
+          Date.now()
+        );
+        return;
+      }
+      ({
+        snapshot,
+        updates,
+        toggles,
+        changed,
+        toggleChanged,
+        enables,
+        sandboxDirty,
+      } = collectPendingConfigChanges());
+    }
     const { values } = readCfgValuesFromUI();
 
     try {
-      const needPreview = changed > 0 || toggleChanged > 0;
+      const needPreview = changed > 0 || toggleChanged > 0 || sandboxDirty;
       if (needPreview) {
         const summary = buildChangeSummary({
           updates,
           toggles,
           enables,
+          sandboxDirty,
         });
         const actionLabel = startAfter ? t("confirm.saveAndStartAction", "保存並啟動") : t("common.save", "保存");
         const proceed = await (window.DangerConfirm
