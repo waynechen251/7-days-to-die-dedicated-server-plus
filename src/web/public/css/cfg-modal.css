@@ -380,8 +380,7 @@
 }
 .cfg-grid input[type="text"],
 .cfg-grid input[type="number"],
-.cfg-grid select,
-.cfg-sandbox__input {
+.cfg-grid select {
   width: 100%;
   padding: 0.65rem 0.75rem;
   background: #fff;
@@ -391,14 +390,12 @@
 }
 .cfg-field--warn input[type="text"],
 .cfg-field--warn input[type="number"],
-.cfg-field--warn select,
-.cfg-field--warn .cfg-sandbox__input {
+.cfg-field--warn select {
   border-color: rgba(245, 158, 11, 0.38);
 }
 .cfg-field--err input[type="text"],
 .cfg-field--err input[type="number"],
-.cfg-field--err select,
-.cfg-field--err .cfg-sandbox__input {
+.cfg-field--err select {
   border-color: rgba(239, 68, 68, 0.38);
 }
 .cfg-field--warn .cfg-field__name,
@@ -415,28 +412,6 @@
   white-space: normal;
 }
 
-.cfg-sandbox {
-  display: grid;
-  gap: 12px;
-  padding: 0;
-}
-
-.cfg-sandbox__input {
-  min-height: 15rem;
-  resize: vertical;
-  font-family: var(--mono);
-  letter-spacing: 0.01em;
-}
-
-.cfg-sandbox__desc {
-  color: var(--c-text-sec);
-  font-size: 0.85rem;
-  line-height: 1.5;
-  padding: 12px 14px;
-  border: 1px solid var(--c-border-soft);
-  border-radius: 12px;
-  background: rgba(148, 163, 184, 0.06);
-}
 .cfg-modal__footer {
   justify-content: space-between;
   align-items: center;
@@ -476,7 +451,6 @@
   }
   .cfg-profile-picker,
   .cfg-field,
-  .cfg-sandbox__desc,
   .cfg-checks__summary-pill {
     background: rgba(15, 23, 42, 0.42);
   }
@@ -514,8 +488,7 @@
   .cfg-grid input[type="text"],
   .cfg-grid input[type="number"],
   .cfg-grid select,
-  .cfg-profile-bar select,
-  .cfg-sandbox__input {
+  .cfg-profile-bar select {
     background: #0f172a;
     border-color: var(--c-border);
     color: var(--c-text);

@@ -168,36 +168,8 @@ function readValues(filePath) {
   };
 }
 
-function ensureSandboxOnlyItems(items) {
-  const existing = Array.isArray(items)
-    ? items.find((item) => item.name === "SandboxCode")
-    : null;
-  if (existing) return [existing];
-  return [
-    {
-      name: "SandboxCode",
-      value: "",
-      commented: false,
-      comment: "7DTD v3.0+ sandbox settings code",
-    },
-  ];
-}
-
 function filterItemsForProfile(items, profile) {
-  if (profile?.profile === "v3") {
-    return ensureSandboxOnlyItems(items);
-  }
   return Array.isArray(items) ? items : [];
-}
-
-function extractSandboxCodeUpdate(updates) {
-  if (!updates || typeof updates !== "object" || Array.isArray(updates)) {
-    return null;
-  }
-  if (!Object.prototype.hasOwnProperty.call(updates, "SandboxCode")) {
-    return null;
-  }
-  return String(updates.SandboxCode ?? "");
 }
 
 function escapeXmlAttr(value) {
@@ -446,13 +418,6 @@ function registerRoutes(
           409
         );
       }
-      if (req.body?.mode && req.body.mode !== versionCtx.profile) {
-        return http.respondJson(
-          res,
-          { ok: false, message: "設定模式與目前版本上下文不一致" },
-          409
-        );
-      }
       if (
         req.body?.profileId &&
         (!activeProfile || activeProfile.id !== req.body.profileId)
@@ -479,51 +444,6 @@ function registerRoutes(
           res,
           { ok: false, message: "缺少 updates 或 toggles" },
           400
-        );
-      }
-
-      if (versionCtx.profile === "v3") {
-        const sandboxCode = extractSandboxCodeUpdate(updates);
-        if (sandboxCode == null) {
-          return http.respondJson(
-            res,
-            { ok: false, message: "v3.0+ 模式只接受 SandboxCode 寫入" },
-            400
-          );
-        }
-
-        upsertPropertyValue(cfgPath, "SandboxCode", sandboxCode);
-        const { items } = readValues(cfgPath);
-
-        try {
-          const CONFIG = getConfig();
-          const { synced, removed } = syncGameServerFromItems(items, CONFIG);
-          if (synced > 0 || removed > 0) {
-            saveConfig();
-            eventBus.push("system", {
-              text: `已同步 SandboxCode 至 server.json (${synced}項變更, 修正大小寫${removed}項)`,
-            });
-          }
-        } catch (e) {
-          eventBus.push("system", {
-            level: "warn",
-            text: `同步 server.json 失敗: ${e?.message || e}`,
-          });
-        }
-
-        return http.respondJson(
-          res,
-          {
-            ok: true,
-            data: {
-              path: cfgPath,
-              changed: ["SandboxCode"],
-              toggled: [],
-              items: ensureSandboxOnlyItems(items),
-              profile: versionCtx,
-            },
-          },
-          200
         );
       }
 
@@ -624,9 +544,7 @@ module.exports = {
   readValues,
   writeValues,
   upsertPropertyValue,
-  ensureSandboxOnlyItems,
   filterItemsForProfile,
-  extractSandboxCodeUpdate,
   registerRoutes,
   resolveServerConfigPath,
   syncGameServerFromItems,

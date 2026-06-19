@@ -61,10 +61,6 @@
       profiles.find((profile) => profile.id === S.profileStore?.lastStartedProfileId) ||
       S.profileStore?.lastStartedProfile ||
       null;
-    const modeLabel =
-      S.cfg.profile?.profile === "v3"
-        ? t("card.game.versionProfileV3", "Sandbox-only")
-        : t("card.game.versionProfileLegacy", "Legacy mode");
     const versionLabel =
       S.cfg.profile?.buildTag ||
       S.cfg.profile?.buildLabel ||
@@ -90,10 +86,6 @@
       {
         label: t("modal.serverconfig.profileInfoLastStarted", "上次啟動"),
         value: escapeHTML(lastStartedLabel),
-      },
-      {
-        label: t("modal.serverconfig.profileInfoMode", "模式"),
-        value: escapeHTML(modeLabel),
       },
       {
         label: t("modal.serverconfig.profileInfoCount", "設定檔數"),
@@ -614,21 +606,6 @@
     ensureDom();
     if (D.cfgModal?.classList.contains("hidden")) return;
     renderProfileBar();
-    if (S.cfg.profile?.profile === "v3") {
-      const results = [
-        {
-          ok: "warn",
-          text: t(
-            "checks.v3SandboxOnlyWarn",
-            "目前僅支援 SandboxCode 保存，啟動仍屬未完全相容。"
-          ),
-          fields: ["SandboxCode"],
-        },
-      ];
-      D.cfgChecks.innerHTML = renderChecksPanel(results);
-      applyFieldCheckStates(results);
-      return;
-    }
     if (!S.cfg.locked) rerunChecks();
   });
 
@@ -1056,11 +1033,6 @@
 
   function renderCfgEditor(items) {
     ensureDom();
-    if (S.cfg.profile?.profile === "v3") {
-      renderSandboxEditor(items);
-      return;
-    }
-
     const grid = document.createElement("div");
     grid.className = "cfg-grid";
 
@@ -1248,73 +1220,6 @@
     if (S.cfg.locked) App.status.disableCfgInputs(true);
   }
 
-  function renderSandboxEditor(items) {
-    const sandbox = Array.isArray(items)
-      ? items.find((item) => item.name === "SandboxCode")
-      : null;
-    const wrap = document.createElement("div");
-    wrap.className = "cfg-sandbox cfg-field";
-    wrap.dataset.fieldName = "SandboxCode";
-
-    const header = document.createElement("div");
-    header.className = "cfg-field__header";
-
-    const lab = document.createElement("div");
-    lab.className = "cfg-label";
-    const labelText = document.createElement("span");
-    labelText.className = "cfg-label__text cfg-field__name";
-    labelText.textContent = "SandboxCode";
-    const translatedText = document.createElement("span");
-    translatedText.className = "cfg-field__translation";
-    translatedText.dataset.i18n = getFieldLabelKey("SandboxCode");
-    translatedText.textContent = resolveFieldLabel("SandboxCode");
-    lab.appendChild(labelText);
-    lab.appendChild(translatedText);
-
-    const hint = createHintNode(
-      t(
-        "modal.serverconfig.sandboxCodeHint",
-        "7DTD v3.0+ 僅支援直接編輯 SandboxCode。"
-      )
-    );
-
-    header.appendChild(lab);
-    header.appendChild(hint);
-
-    const textarea = document.createElement("textarea");
-    textarea.className = "cfg-sandbox__input";
-    textarea.dataset.name = "SandboxCode";
-    textarea.dataset.type = "text";
-    textarea.setAttribute(
-      "data-i18n-placeholder",
-      "modal.serverconfig.sandboxCodePlaceholder"
-    );
-    textarea.rows = 5;
-    textarea.spellcheck = false;
-    textarea.placeholder = t(
-      "modal.serverconfig.sandboxCodePlaceholder",
-      "貼上遊戲內產生的 SandboxCode"
-    );
-    textarea.value = sandbox?.value || "";
-    textarea.addEventListener("input", rerunChecks);
-
-    const desc = document.createElement("div");
-    desc.className = "cfg-sandbox__desc";
-    desc.setAttribute("data-i18n", "modal.serverconfig.sandboxOnlyDesc");
-    desc.textContent = t(
-      "modal.serverconfig.sandboxOnlyDesc",
-      "v3.0+ 目前只提供 SandboxCode 欄位之填寫與保存。"
-    );
-
-    wrap.appendChild(header);
-    wrap.appendChild(textarea);
-    wrap.appendChild(desc);
-
-    D.cfgBody.innerHTML = "";
-    D.cfgBody.appendChild(wrap);
-    if (S.cfg.locked) App.status.disableCfgInputs(true);
-  }
-
   const rerunChecks = App.utils.debounce(() => runCfgChecks(), 250);
 
   function readCfgValuesFromUI() {
@@ -1350,29 +1255,6 @@
     ensureDom();
     if (S.cfg.locked) return S.cfg.lastCheck;
     if (!D.cfgChecks) return { passAll: true, results: [] };
-
-    if (S.cfg.profile?.profile === "v3") {
-      const results = [
-        {
-          ok: "warn",
-          text: t(
-            "checks.v3SandboxOnlyWarn",
-            "目前僅支援 SandboxCode 保存，啟動仍屬未完全相容。"
-          ),
-          fields: ["SandboxCode"],
-        },
-      ];
-      D.cfgChecks.innerHTML = renderChecksPanel(results);
-      applyFieldCheckStates(results);
-      const pending = collectPendingConfigChanges();
-      App.utils.setDisabled(
-        [D.cfgSaveStartBtn],
-        S.cfg.locked || S.versionNeedsInstall
-      );
-      App.utils.setDisabled([D.cfgSaveBtn], S.cfg.locked || !pending.hasChanges);
-      S.cfg.lastCheck = { passAll: true, results };
-      return S.cfg.lastCheck;
-    }
 
     const { values, enables } = readCfgValuesFromUI();
     const results = [];
@@ -1767,7 +1649,6 @@
   async function saveConfigValues(startAfter) {
     ensureDom();
     const selectedVersion = getSelectedVersionValue();
-    const isV3Profile = S.cfg.profile?.profile === "v3";
     const activeProfileId = S.cfg.activeProfileId || S.profileStore?.activeProfileId;
     if (S.cfg.locked) {
       closeCfgModal();
@@ -1836,32 +1717,6 @@
         `⚠️ ${t("messages.generateSummaryFailed", { error: e.message })} (將直接保存)`,
         Date.now()
       );
-    }
-
-    if (startAfter && isV3Profile) {
-      try {
-        const proceed = await (window.DangerConfirm
-          ? window.DangerConfirm.showConfirm(
-              t(
-                "confirm.v3StartWarning",
-                "目前偵測為 v3.0+ Sandbox-only 模式。\n僅 SandboxCode 保存已相容，伺服器啟動仍屬未完全相容。\n是否仍要保存並啟動？"
-              ),
-              {
-                title: t("confirm.v3StartWarningTitle", "v3.0+ 相容性警告"),
-                continueText: t("confirm.saveAndStartAction", "保存並啟動"),
-                cancelText: t("common.cancel", "取消"),
-              }
-            )
-          : Promise.resolve(window.confirm("v3.0+ 相容性警告，是否仍要保存並啟動？")));
-        if (!proceed) {
-          App.console.appendLog(
-            "system",
-            `ℹ️ ${t("messages.cancelledBySave", "已取消保存 (使用者取消)")}`,
-            Date.now()
-          );
-          return;
-        }
-      } catch (_) {}
     }
 
     try {

@@ -84,19 +84,6 @@ function hasSandboxCode(items) {
 }
 
 function makeProfile(profile, source, version, extra = {}) {
-  if (profile === "v3") {
-    return {
-      version,
-      profile: "v3",
-      configMode: "sandbox-only",
-      startPolicy: "warn",
-      source,
-      isV3: true,
-      isLegacy: false,
-      ...extra,
-    };
-  }
-
   return {
     version,
     profile: "legacy",
@@ -111,15 +98,6 @@ function makeProfile(profile, source, version, extra = {}) {
 
 function resolveBranchProfile(version) {
   const normalized = canonicalVersion(version);
-  if (normalized === "latest_experimental") {
-    return makeProfile("v3", "branch", normalized);
-  }
-
-  const parsed = parseNumericBranch(normalized);
-  if (parsed && parsed.major >= 3) {
-    return makeProfile("v3", "branch", normalized, { major: parsed.major });
-  }
-
   return makeProfile("legacy", "branch", normalized);
 }
 
@@ -190,13 +168,8 @@ function resolveVersionProfile({ version, items, catalog } = {}) {
   const buildTag = getBuildDisplayTag(buildEntries);
   const branchHints = buildEntries.map((entry) => canonicalVersion(entry.value));
 
-  let profile = branchProfile;
-  if (branchProfile.profile !== "v3" && sandboxDetected) {
-    profile = makeProfile("v3", "xml", normalized, { sandboxDetected: true });
-  }
-
   return {
-    ...profile,
+    ...branchProfile,
     buildId,
     buildLabel,
     buildTag,

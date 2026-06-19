@@ -128,13 +128,6 @@ module.exports = function registerGameRoutes(app, ctx) {
         versionCtx = resolveVersionProfile({ version: selectedVersion, items: [] });
       }
 
-      if (versionCtx?.profile === "v3") {
-        const warn = `⚠️ 偵測到 v3.0+ Sandbox-only 模式 (${selectedVersion})。目前僅支援 SandboxCode 保存，啟動仍屬未完全相容，將繼續嘗試啟動。`;
-        log(warn);
-        eventBus.push("system", { level: "warn", text: warn });
-        eventBus.push("game", { level: "warn", text: warn });
-      }
-
       const { configPath: configArg } = serverConfigLib.loadAndSyncServerConfig({
         CONFIG,
         baseDir,
