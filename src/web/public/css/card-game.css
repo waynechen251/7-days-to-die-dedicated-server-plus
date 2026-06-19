@@ -115,6 +115,17 @@
   white-space: nowrap;
 }
 
+.card-game-main #currentProfileBadge {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-game-main .badge.badge--warn {
+  background: var(--c-warn);
+}
+
 .card-game-main #telnetInput {
   flex: 1 1 16rem;
 }

@@ -1,0 +1,5415 @@
+{
+  "schemaVersion": 1,
+  "codeVersion": "A",
+  "generatedAt": "2026-06-19T11:17:15.555Z",
+  "source": {
+    "enum": "Assembly-CSharp/SandboxOptions/SandboxOptions.cs",
+    "manager": "Assembly-CSharp/SandboxOptions/SandboxOptionManager.cs"
+  },
+  "categories": [
+    "General",
+    "Entities",
+    "World",
+    "Resources",
+    "Crafting",
+    "Traders",
+    "Tasks",
+    "Misc"
+  ],
+  "valueSets": [
+    {
+      "id": "DamageValues",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.25f",
+          "value": 0.25
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.35f",
+          "value": 0.35
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "0.65f",
+          "value": 0.65
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "0.75f",
+          "value": 0.75
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "0.85f",
+          "value": 0.85
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "1.25f",
+          "value": 1.25
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 11,
+          "code": "L",
+          "rawValue": "2.5f",
+          "value": 2.5
+        },
+        {
+          "index": 12,
+          "code": "M",
+          "rawValue": "3f",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "DamageValuesNoNone",
+      "type": "float",
+      "displayValues": [],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0.25f",
+          "value": 0.25
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.35f",
+          "value": 0.35
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.65f",
+          "value": 0.65
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "0.75f",
+          "value": 0.75
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "0.85f",
+          "value": 0.85
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "1.25f",
+          "value": 1.25
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "2.5f",
+          "value": 2.5
+        },
+        {
+          "index": 11,
+          "code": "L",
+          "rawValue": "3f",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "PlayerSpeedValues",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.25f",
+          "value": 0.25
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.6f",
+          "value": 0.6
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "0.7f",
+          "value": 0.7
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "0.8f",
+          "value": 0.8
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "0.9f",
+          "value": 0.9
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "1.1f",
+          "value": 1.1
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "1.2f",
+          "value": 1.2
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "1.3f",
+          "value": 1.3
+        },
+        {
+          "index": 11,
+          "code": "L",
+          "rawValue": "1.4f",
+          "value": 1.4
+        },
+        {
+          "index": 12,
+          "code": "M",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 13,
+          "code": "N",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 14,
+          "code": "O",
+          "rawValue": "3f",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "PlayerSpeedValuesWithNone",
+      "type": "float",
+      "displayValues": [],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0.25f",
+          "value": 0.25
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.6f",
+          "value": 0.6
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.7f",
+          "value": 0.7
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "0.8f",
+          "value": 0.8
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "0.9f",
+          "value": 0.9
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "1.1f",
+          "value": 1.1
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "1.2f",
+          "value": 1.2
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "1.3f",
+          "value": 1.3
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "1.4f",
+          "value": 1.4
+        },
+        {
+          "index": 11,
+          "code": "L",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 12,
+          "code": "M",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 13,
+          "code": "N",
+          "rawValue": "3f",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "SpeedValues",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.25f",
+          "value": 0.25
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.75f",
+          "value": 0.75
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "1.25f",
+          "value": 1.25
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "3f",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "StaminaUsage",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.25f",
+          "value": 0.25
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.75f",
+          "value": 0.75
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "1.25f",
+          "value": 1.25
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "1.75f",
+          "value": 1.75
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "2f",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "LootAbundanceValues",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.25f",
+          "value": 0.25
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.35f",
+          "value": 0.35
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "0.65f",
+          "value": 0.65
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "0.75f",
+          "value": 0.75
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "0.85f",
+          "value": 0.85
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "1.25f",
+          "value": 1.25
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 11,
+          "code": "L",
+          "rawValue": "3f",
+          "value": 3
+        },
+        {
+          "index": 12,
+          "code": "M",
+          "rawValue": "4f",
+          "value": 4
+        },
+        {
+          "index": 13,
+          "code": "N",
+          "rawValue": "5f",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "ZombieRageChance",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.15f",
+          "value": 0.15
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.3f",
+          "value": 0.3
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.35f",
+          "value": 0.35
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "0.4f",
+          "value": 0.4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "0.6f",
+          "value": 0.6
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "0.75f",
+          "value": 0.75
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "0.9f",
+          "value": 0.9
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "1f",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "ZombieSpeeds",
+      "type": "int",
+      "displayValues": [
+        "goZMWalk",
+        "goZMJog",
+        "goZMRun",
+        "goZMSprint",
+        "goZMNightmare"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "AISmellMode",
+      "type": "int",
+      "displayValues": [
+        "none",
+        "goZMWalk",
+        "goZMJog",
+        "goZMRun",
+        "goZMSprint",
+        "goZMNightmare"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "JumpStrength",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "1.25f",
+          "value": 1.25
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "3f",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "StaminaRegen",
+      "type": "float",
+      "displayValues": [],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0.25f",
+          "value": 0.25
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.75f",
+          "value": 0.75
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "1.25f",
+          "value": 1.25
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "3f",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "XPGain",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.25f",
+          "value": 0.25
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.75f",
+          "value": 0.75
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "1.25f",
+          "value": 1.25
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "1.75f",
+          "value": 1.75
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "3f",
+          "value": 3
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "5f",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "JarRefund",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.05f",
+          "value": 0.05
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.1f",
+          "value": 0.1
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.2f",
+          "value": 0.2
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "0.3f",
+          "value": 0.3
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "0.4f",
+          "value": 0.4
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "0.6f",
+          "value": 0.6
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "0.7f",
+          "value": 0.7
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "0.8f",
+          "value": 0.8
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "0.9f",
+          "value": 0.9
+        },
+        {
+          "index": 11,
+          "code": "L",
+          "rawValue": "1f",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "BarterValues",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.25f",
+          "value": 0.25
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.75f",
+          "value": 0.75
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "1.25f",
+          "value": 1.25
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "1.75f",
+          "value": 1.75
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "3f",
+          "value": 3
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "4f",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "DisabledLowDefaultHigh",
+      "type": "float",
+      "displayValues": [
+        "goDisabled",
+        "goVeryLow",
+        "goLow",
+        "goDefault",
+        "goHigh",
+        "goVeryHigh"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.25f",
+          "value": 0.25
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "2f",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "LowDefaultHigh",
+      "type": "float",
+      "displayValues": [
+        "goVeryLow",
+        "goLow",
+        "goDefault",
+        "goHigh",
+        "goVeryHigh"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0.25f",
+          "value": 0.25
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "2f",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "Encumbrance",
+      "type": "float",
+      "displayValues": [
+        "goDisabled",
+        "goLow",
+        "goDefault",
+        "goHigh",
+        "goVeryHigh",
+        "xuiOptionsVideoTexQualityFull"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "10f",
+          "value": 10
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1.35f",
+          "value": 1.35
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.7f",
+          "value": 0.7
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "0.35f",
+          "value": 0.35
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "0f",
+          "value": 0
+        }
+      ]
+    },
+    {
+      "id": "SkillGainRate",
+      "type": "int",
+      "displayValues": [],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "5",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "PointsPer",
+      "type": "int",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "6",
+          "value": 6
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "7",
+          "value": 7
+        }
+      ]
+    },
+    {
+      "id": "StarterSkillPoints",
+      "type": "int",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "6",
+          "value": 6
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "7",
+          "value": 7
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "8",
+          "value": 8
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "9",
+          "value": 9
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "10",
+          "value": 10
+        }
+      ]
+    },
+    {
+      "id": "BloodMoonFrequency",
+      "type": "int",
+      "displayValues": [
+        "goDisabled",
+        "goDay"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goDays",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "6",
+          "value": 6
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "7",
+          "value": 7
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "8",
+          "value": 8
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "9",
+          "value": 9
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "10",
+          "value": 10
+        },
+        {
+          "index": 11,
+          "code": "L",
+          "rawValue": "14",
+          "value": 14
+        },
+        {
+          "index": 12,
+          "code": "M",
+          "rawValue": "20",
+          "value": 20
+        },
+        {
+          "index": 13,
+          "code": "N",
+          "rawValue": "30",
+          "value": 30
+        }
+      ]
+    },
+    {
+      "id": "BloodMoonRange",
+      "type": "int",
+      "displayValues": [
+        "goDays",
+        "goDay"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goDays",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "7",
+          "value": 7
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "10",
+          "value": 10
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "14",
+          "value": 14
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "20",
+          "value": 20
+        }
+      ]
+    },
+    {
+      "id": "BloodMoonWarning",
+      "type": "int",
+      "displayValues": [
+        "goDisabled",
+        "goMorning",
+        "goEvening"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "BloodMoonCount",
+      "type": "int",
+      "displayValues": [],
+      "alternateDisplayValues": [],
+      "displayFormat": "goEnemies",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "6",
+          "value": 6
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "8",
+          "value": 8
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "10",
+          "value": 10
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "12",
+          "value": 12
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "16",
+          "value": 16
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "24",
+          "value": 24
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "32",
+          "value": 32
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "64",
+          "value": 64
+        }
+      ]
+    },
+    {
+      "id": "AirDrops",
+      "type": "int",
+      "displayValues": [
+        "goDisabled",
+        "goAirDropValue"
+      ],
+      "alternateDisplayValues": [
+        "",
+        "1",
+        "1-3",
+        "3",
+        "3-7",
+        "7",
+        "1-7"
+      ],
+      "displayFormat": "goDays",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "6",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "id": "AirDropRandomTime",
+      "type": "int",
+      "displayValues": [
+        "none",
+        "goMorning",
+        "goMidDayOnly",
+        "goEvening",
+        "goNightOnly",
+        "goAllDay",
+        "goAnyValue"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "6",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "id": "StormFrequency",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "3f",
+          "value": 3
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "4f",
+          "value": 4
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "5f",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "QuestPerTier",
+      "type": "int",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "6",
+          "value": 6
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "7",
+          "value": 7
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "8",
+          "value": 8
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "9",
+          "value": 9
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "10",
+          "value": 10
+        },
+        {
+          "index": 11,
+          "code": "L",
+          "rawValue": "11",
+          "value": 11
+        },
+        {
+          "index": 12,
+          "code": "M",
+          "rawValue": "12",
+          "value": 12
+        },
+        {
+          "index": 13,
+          "code": "N",
+          "rawValue": "13",
+          "value": 13
+        },
+        {
+          "index": 14,
+          "code": "O",
+          "rawValue": "14",
+          "value": 14
+        },
+        {
+          "index": 15,
+          "code": "P",
+          "rawValue": "15",
+          "value": 15
+        }
+      ]
+    },
+    {
+      "id": "QuestPerDay",
+      "type": "int",
+      "displayValues": [
+        "goUnlimited"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "-1",
+          "value": -1
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "6",
+          "value": 6
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "7",
+          "value": 7
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "8",
+          "value": 8
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "9",
+          "value": 9
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "10",
+          "value": 10
+        }
+      ]
+    },
+    {
+      "id": "TraderArea",
+      "type": "int",
+      "displayValues": [
+        "xuiYes",
+        "goClaimable",
+        "goNotClaimable"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "TraderResetInterval",
+      "type": "int",
+      "displayValues": [
+        "xuiDefault",
+        "goDay"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goDays",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "-1",
+          "value": -1
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "6",
+          "value": 6
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "7",
+          "value": 7
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "14",
+          "value": 14
+        }
+      ]
+    },
+    {
+      "id": "ItemTierOptions",
+      "type": "int",
+      "displayValues": [],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "6",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "id": "DewCollectorInput",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3f",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "ApiaryInput",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.2f",
+          "value": 0.2
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.4f",
+          "value": 0.4
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.6f",
+          "value": 0.6
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "0.8f",
+          "value": 0.8
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "3f",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "CollectorOutput",
+      "type": "float",
+      "displayValues": [],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "3f",
+          "value": 3
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "4f",
+          "value": 4
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "5f",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "BackpackCrafting",
+      "type": "int",
+      "displayValues": [
+        "xuiNo",
+        "xuiYes",
+        "goLimited",
+        "goWorkbenchOnly"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "DeathPenalty",
+      "type": "int",
+      "displayValues": [
+        "none",
+        "goXPOnly",
+        "goInjured",
+        "goPermaDeath"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "DropOnDeath",
+      "type": "int",
+      "displayValues": [
+        "none",
+        "lblAll",
+        "goToolbelt",
+        "goBackpack",
+        "goDeleteAll"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "DropOnQuit",
+      "type": "int",
+      "displayValues": [
+        "none",
+        "lblAll",
+        "goToolbelt",
+        "goBackpack"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "LoseItemsOnDeathType",
+      "type": "int",
+      "displayValues": [
+        "none",
+        "lblAll",
+        "goToolbelt",
+        "goBackpack",
+        "goEquipment",
+        "goCarriedOnly"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "DegradeItemsOnDeath",
+      "type": "int",
+      "displayValues": [
+        "none",
+        "xuiDurability",
+        "xuiMaxDurability",
+        "xuiBoth"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "TraderHourPresets",
+      "type": "int",
+      "displayValues": [
+        "xuiDefault",
+        "goMorning",
+        "goMidDayOnly",
+        "goEvening",
+        "goNightOnly",
+        "goOnlyClosedOnBM",
+        "goAlwaysOpen"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "6",
+          "value": 6
+        }
+      ]
+    },
+    {
+      "id": "YesNo",
+      "type": "bool",
+      "displayValues": [
+        "xuiNo",
+        "xuiYes"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "false",
+          "value": false
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "true",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "Celebrate",
+      "type": "int",
+      "displayValues": [
+        "xuiNo",
+        "xuiYes",
+        "goHeadshotOnly"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "ShowXP",
+      "type": "int",
+      "displayValues": [
+        "lblAll",
+        "goBarOnly",
+        "goNotificationsOnly",
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "HeadshotMode",
+      "type": "int",
+      "displayValues": [
+        "none",
+        "goHeadshotOnly",
+        "goHeadshotFinisher"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        }
+      ]
+    },
+    {
+      "id": "MaxEnemyType",
+      "type": "int",
+      "displayValues": [
+        "goNormals",
+        "goStrongs",
+        "goSpecials",
+        "goFerals",
+        "goRadiated",
+        "goElites"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "MaxTechType",
+      "type": "int",
+      "displayValues": [
+        "none",
+        "goTech0",
+        "goTech1",
+        "goTech2",
+        "goTech3"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        }
+      ]
+    },
+    {
+      "id": "LoseItemCount",
+      "type": "int",
+      "displayValues": [
+        "1-3",
+        "1-5",
+        "1-10",
+        "1-20",
+        "3-5",
+        "5-7",
+        "5-10",
+        "7-10",
+        "10-15",
+        "15-20"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "6",
+          "value": 6
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "7",
+          "value": 7
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "8",
+          "value": 8
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "9",
+          "value": 9
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "10",
+          "value": 10
+        }
+      ]
+    },
+    {
+      "id": "DayNightLength",
+      "type": "int",
+      "displayValues": [],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "10",
+          "value": 10
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "20",
+          "value": 20
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "30",
+          "value": 30
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "40",
+          "value": 40
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "50",
+          "value": 50
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "60",
+          "value": 60
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "90",
+          "value": 90
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "120",
+          "value": 120
+        }
+      ]
+    },
+    {
+      "id": "DayLightLength",
+      "type": "int",
+      "displayValues": [
+        "goAlwaysNight",
+        "4",
+        "6",
+        "8",
+        "10",
+        "12",
+        "14",
+        "16",
+        "18",
+        "20",
+        "goAlwaysDay"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "6",
+          "value": 6
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "8",
+          "value": 8
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "10",
+          "value": 10
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "12",
+          "value": 12
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "14",
+          "value": 14
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "16",
+          "value": 16
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "18",
+          "value": 18
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "20",
+          "value": 20
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "24",
+          "value": 24
+        }
+      ]
+    },
+    {
+      "id": "LootRespawnDays",
+      "type": "int",
+      "displayValues": [
+        "goDisabled"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "-1",
+          "value": -1
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "7",
+          "value": 7
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "10",
+          "value": 10
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "15",
+          "value": 15
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "20",
+          "value": 20
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "30",
+          "value": 30
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "40",
+          "value": 40
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "50",
+          "value": 50
+        }
+      ]
+    },
+    {
+      "id": "MaxChunkAge",
+      "type": "int",
+      "displayValues": [
+        "goDisabled"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "-1",
+          "value": -1
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "5",
+          "value": 5
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "7",
+          "value": 7
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "10",
+          "value": 10
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "20",
+          "value": 20
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "30",
+          "value": 30
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "40",
+          "value": 40
+        },
+        {
+          "index": 9,
+          "code": "J",
+          "rawValue": "50",
+          "value": 50
+        },
+        {
+          "index": 10,
+          "code": "K",
+          "rawValue": "75",
+          "value": 75
+        },
+        {
+          "index": 11,
+          "code": "L",
+          "rawValue": "100",
+          "value": 100
+        }
+      ]
+    },
+    {
+      "id": "Gravity",
+      "type": "float",
+      "displayValues": [],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.6f",
+          "value": 0.6
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.7f",
+          "value": 0.7
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.8f",
+          "value": 0.8
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "0.9f",
+          "value": 0.9
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "1f",
+          "value": 1
+        }
+      ]
+    },
+    {
+      "id": "SlowToFast",
+      "type": "int",
+      "displayValues": [
+        "xuiDefault",
+        "goVerySlow",
+        "goSlow",
+        "goNormal",
+        "goFast",
+        "goVeryFast"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "BiomeEnemyDensity",
+      "type": "int",
+      "displayValues": [
+        "xuiDefault",
+        "goVeryLow",
+        "goLow",
+        "goMedium",
+        "goHigh",
+        "goVeryHigh"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "4",
+          "value": 4
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "5",
+          "value": 5
+        }
+      ]
+    },
+    {
+      "id": "SmeltingType",
+      "type": "bool",
+      "displayValues": [
+        "goSmelter",
+        "lblContextActionRecipes"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "false",
+          "value": false
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "true",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": "RepairTypes",
+      "type": "int",
+      "displayValues": [
+        "none",
+        "goRepairOnly",
+        "goCombineOnly",
+        "xuiBoth"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "MaxDegradationAmounts",
+      "type": "float",
+      "displayValues": [
+        "none"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0.05f",
+          "value": 0.05
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.1f",
+          "value": 0.1
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.15f",
+          "value": 0.15
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "0.2f",
+          "value": 0.2
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "0.25f",
+          "value": 0.25
+        }
+      ]
+    },
+    {
+      "id": "CropGrowthSpeed",
+      "type": "float",
+      "displayValues": [
+        "none",
+        "xuiInstant"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": "goPercent",
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "1000f",
+          "value": 1000
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "0f",
+          "value": 0
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "0.2f",
+          "value": 0.2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "0.5f",
+          "value": 0.5
+        },
+        {
+          "index": 4,
+          "code": "E",
+          "rawValue": "0.75f",
+          "value": 0.75
+        },
+        {
+          "index": 5,
+          "code": "F",
+          "rawValue": "1f",
+          "value": 1
+        },
+        {
+          "index": 6,
+          "code": "G",
+          "rawValue": "1.5f",
+          "value": 1.5
+        },
+        {
+          "index": 7,
+          "code": "H",
+          "rawValue": "2f",
+          "value": 2
+        },
+        {
+          "index": 8,
+          "code": "I",
+          "rawValue": "3f",
+          "value": 3
+        }
+      ]
+    },
+    {
+      "id": "ZombieFeralSense",
+      "type": "int",
+      "displayValues": [
+        "goDisabled",
+        "goZMDay",
+        "goZMNight",
+        "goZMAll"
+      ],
+      "alternateDisplayValues": [],
+      "displayFormat": null,
+      "values": [
+        {
+          "index": 0,
+          "code": "A",
+          "rawValue": "0",
+          "value": 0
+        },
+        {
+          "index": 1,
+          "code": "B",
+          "rawValue": "1",
+          "value": 1
+        },
+        {
+          "index": 2,
+          "code": "C",
+          "rawValue": "2",
+          "value": 2
+        },
+        {
+          "index": 3,
+          "code": "D",
+          "rawValue": "3",
+          "value": 3
+        }
+      ]
+    }
+  ],
+  "options": [
+    {
+      "id": "RangedDamage",
+      "enumIndex": 0,
+      "codeKey": "AA",
+      "type": "float",
+      "label": "Ranged Damage",
+      "category": "General",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "MeleeDamage",
+      "enumIndex": 1,
+      "codeKey": "AB",
+      "type": "float",
+      "label": "Melee Damage",
+      "category": "General",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "BlockDamage",
+      "enumIndex": 2,
+      "codeKey": "AC",
+      "type": "float",
+      "label": "Block Damage",
+      "category": "General",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "TerrainDamage",
+      "enumIndex": 3,
+      "codeKey": "AD",
+      "type": "float",
+      "label": "Terrain Damage",
+      "category": "General",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "HeadshotMultiplier",
+      "enumIndex": 4,
+      "codeKey": "AE",
+      "type": "float",
+      "label": "Headshot Multiplier",
+      "category": "General",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "IncomingDamage",
+      "enumIndex": 17,
+      "codeKey": "AR",
+      "type": "float",
+      "label": "Incoming Damage",
+      "category": "General",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "WalkSpeed",
+      "enumIndex": 6,
+      "codeKey": "AG",
+      "type": "float",
+      "label": "Walk Speed",
+      "category": "General",
+      "valueSetId": "PlayerSpeedValuesWithNone",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 6
+    },
+    {
+      "id": "RunSpeed",
+      "enumIndex": 7,
+      "codeKey": "AH",
+      "type": "float",
+      "label": "Run Speed",
+      "category": "General",
+      "valueSetId": "PlayerSpeedValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "CrouchSpeed",
+      "enumIndex": 5,
+      "codeKey": "AF",
+      "type": "float",
+      "label": "Crouch Speed",
+      "category": "General",
+      "valueSetId": "PlayerSpeedValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "JumpStrength",
+      "enumIndex": 8,
+      "codeKey": "AI",
+      "type": "float",
+      "label": "Jump Height",
+      "category": "General",
+      "valueSetId": "JumpStrength",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 2
+    },
+    {
+      "id": "StaminaRegen",
+      "enumIndex": 10,
+      "codeKey": "AK",
+      "type": "float",
+      "label": "Stamina Regen",
+      "category": "General",
+      "valueSetId": "StaminaRegen",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 3
+    },
+    {
+      "id": "StaminaUsage",
+      "enumIndex": 9,
+      "codeKey": "AJ",
+      "type": "float",
+      "label": "Stamina Usage",
+      "category": "General",
+      "valueSetId": "StaminaUsage",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 4
+    },
+    {
+      "id": "XPMultiplier",
+      "enumIndex": 18,
+      "codeKey": "AS",
+      "type": "float",
+      "label": "XP Multiplier",
+      "category": "General",
+      "valueSetId": "XPGain",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 4
+    },
+    {
+      "id": "ShowXP",
+      "enumIndex": 19,
+      "codeKey": "AT",
+      "type": "int",
+      "label": "Show XP",
+      "category": "General",
+      "valueSetId": "ShowXP",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "PlayerLevelBonusApplied",
+      "enumIndex": 11,
+      "codeKey": "AL",
+      "type": "bool",
+      "label": "Level Health/Stam Bonus",
+      "category": "General",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "SkillGainRate",
+      "enumIndex": 116,
+      "codeKey": "EM",
+      "type": "int",
+      "label": "Skill Gain Rate",
+      "category": "General",
+      "valueSetId": "SkillGainRate",
+      "defaultRawValue": "1",
+      "defaultValue": 1,
+      "defaultIndex": 0
+    },
+    {
+      "id": "SkillPointsPerLevel",
+      "enumIndex": 117,
+      "codeKey": "EN",
+      "type": "int",
+      "label": "Skill Gain Amount",
+      "category": "General",
+      "valueSetId": "PointsPer",
+      "defaultRawValue": "1",
+      "defaultValue": 1,
+      "defaultIndex": 1
+    },
+    {
+      "id": "DeathPenalty",
+      "enumIndex": 26,
+      "codeKey": "BA",
+      "type": "int",
+      "label": "Death Penalty",
+      "category": "General",
+      "valueSetId": "DeathPenalty",
+      "defaultRawValue": "1",
+      "defaultValue": 1,
+      "defaultIndex": 1
+    },
+    {
+      "id": "LoseItemsOnDeathType",
+      "enumIndex": 22,
+      "codeKey": "AW",
+      "type": "int",
+      "label": "Lose Items Death Type",
+      "category": "General",
+      "valueSetId": "LoseItemsOnDeathType",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "LoseItemsOnDeathCount",
+      "enumIndex": 23,
+      "codeKey": "AX",
+      "type": "int",
+      "label": "Lose Items Death Count",
+      "category": "General",
+      "valueSetId": "LoseItemCount",
+      "defaultRawValue": "1",
+      "defaultValue": 1,
+      "defaultIndex": 0
+    },
+    {
+      "id": "DegradeItemsOnDeath",
+      "enumIndex": 24,
+      "codeKey": "AY",
+      "type": "int",
+      "label": "Degrade Items On Death",
+      "category": "General",
+      "valueSetId": "DegradeItemsOnDeath",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "DegradeAmountOnDeath",
+      "enumIndex": 25,
+      "codeKey": "AZ",
+      "type": "float",
+      "label": "Degrade Amount On Death",
+      "category": "General",
+      "valueSetId": "MaxDegradationAmounts",
+      "defaultRawValue": "0.1f",
+      "defaultValue": 0.1,
+      "defaultIndex": 2
+    },
+    {
+      "id": "DropOnDeath",
+      "enumIndex": 27,
+      "codeKey": "BB",
+      "type": "int",
+      "label": "Drop On Death",
+      "category": "General",
+      "valueSetId": "DropOnDeath",
+      "defaultRawValue": "1",
+      "defaultValue": 1,
+      "defaultIndex": 1
+    },
+    {
+      "id": "DropOnQuit",
+      "enumIndex": 28,
+      "codeKey": "BC",
+      "type": "int",
+      "label": "Drop On Quit",
+      "category": "General",
+      "valueSetId": "DropOnQuit",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "InfectionRate",
+      "enumIndex": 29,
+      "codeKey": "BD",
+      "type": "float",
+      "label": "Infection Rate",
+      "category": "General",
+      "valueSetId": "SpeedValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 4
+    },
+    {
+      "id": "NewbieCoat",
+      "enumIndex": 15,
+      "codeKey": "AP",
+      "type": "bool",
+      "label": "Allow Newbie Coat",
+      "category": "General",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "EncumbranceModifier",
+      "enumIndex": 20,
+      "codeKey": "AU",
+      "type": "float",
+      "label": "Encumbrance Modifier",
+      "category": "General",
+      "valueSetId": "Encumbrance",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 2
+    },
+    {
+      "id": "JarRefund",
+      "enumIndex": 12,
+      "codeKey": "AM",
+      "type": "float",
+      "label": "Jar Refund",
+      "category": "General",
+      "valueSetId": "JarRefund",
+      "defaultRawValue": "0.6f",
+      "defaultValue": 0.6,
+      "defaultIndex": 7
+    },
+    {
+      "id": "EnemySpawnMode",
+      "enumIndex": 30,
+      "codeKey": "BE",
+      "type": "bool",
+      "label": "Enemy Spawn",
+      "category": "Entities",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "MaxEnemyTier",
+      "enumIndex": 43,
+      "codeKey": "BR",
+      "type": "int",
+      "label": "Max Enemy Type",
+      "category": "Entities",
+      "valueSetId": "MaxEnemyType",
+      "defaultRawValue": "5",
+      "defaultValue": 5,
+      "defaultIndex": 5
+    },
+    {
+      "id": "BiomeEnemyDensity",
+      "enumIndex": 46,
+      "codeKey": "BU",
+      "type": "int",
+      "label": "Biome Enemy Density",
+      "category": "Entities",
+      "valueSetId": "BiomeEnemyDensity",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "BiomeZombieRespawn",
+      "enumIndex": 44,
+      "codeKey": "BS",
+      "type": "int",
+      "label": "Biome Enemy Respawn",
+      "category": "Entities",
+      "valueSetId": "SlowToFast",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "BiomeAnimalRespawn",
+      "enumIndex": 45,
+      "codeKey": "BT",
+      "type": "int",
+      "label": "Biome Animal Respawn",
+      "category": "Entities",
+      "valueSetId": "SlowToFast",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "EntityDamage",
+      "enumIndex": 31,
+      "codeKey": "BF",
+      "type": "float",
+      "label": "Entity Damage",
+      "category": "Entities",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "EntityIncomingDamage",
+      "enumIndex": 42,
+      "codeKey": "BQ",
+      "type": "float",
+      "label": "Entity Incoming Damage",
+      "category": "Entities",
+      "valueSetId": "DamageValuesNoNone",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 6
+    },
+    {
+      "id": "BlockDamageAI",
+      "enumIndex": 32,
+      "codeKey": "BG",
+      "type": "float",
+      "label": "Entity Block Damage",
+      "category": "Entities",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "BlockDamageAIBM",
+      "enumIndex": 33,
+      "codeKey": "BH",
+      "type": "float",
+      "label": "Blood Moon Block Damage",
+      "category": "Entities",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "HeadshotMode",
+      "enumIndex": 16,
+      "codeKey": "AQ",
+      "type": "int",
+      "label": "Headshot Mode",
+      "category": "Entities",
+      "valueSetId": "HeadshotMode",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "ShowHealthBars",
+      "enumIndex": 13,
+      "codeKey": "AN",
+      "type": "bool",
+      "label": "Entity Health Bars",
+      "category": "Entities",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "false",
+      "defaultValue": false,
+      "defaultIndex": 0
+    },
+    {
+      "id": "ShowEnemyDamage",
+      "enumIndex": 14,
+      "codeKey": "AO",
+      "type": "bool",
+      "label": "Show Entity Damage",
+      "category": "Entities",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "false",
+      "defaultValue": false,
+      "defaultIndex": 0
+    },
+    {
+      "id": "ZombieMove",
+      "enumIndex": 34,
+      "codeKey": "BI",
+      "type": "int",
+      "label": "Zombie Day Speed",
+      "category": "Entities",
+      "valueSetId": "ZombieSpeeds",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "ZombieMoveNight",
+      "enumIndex": 35,
+      "codeKey": "BJ",
+      "type": "int",
+      "label": "Zombie Night Speed",
+      "category": "Entities",
+      "valueSetId": "ZombieSpeeds",
+      "defaultRawValue": "3",
+      "defaultValue": 3,
+      "defaultIndex": 3
+    },
+    {
+      "id": "ZombieFeralMove",
+      "enumIndex": 36,
+      "codeKey": "BK",
+      "type": "int",
+      "label": "Zombie Feral Speed",
+      "category": "Entities",
+      "valueSetId": "ZombieSpeeds",
+      "defaultRawValue": "3",
+      "defaultValue": 3,
+      "defaultIndex": 3
+    },
+    {
+      "id": "ZombieBMMove",
+      "enumIndex": 37,
+      "codeKey": "BL",
+      "type": "int",
+      "label": "Zombie Blood Moon Speed",
+      "category": "Entities",
+      "valueSetId": "ZombieSpeeds",
+      "defaultRawValue": "3",
+      "defaultValue": 3,
+      "defaultIndex": 3
+    },
+    {
+      "id": "ZombieFeralSense",
+      "enumIndex": 38,
+      "codeKey": "BM",
+      "type": "int",
+      "label": "Zombie Feral Sense",
+      "category": "Entities",
+      "valueSetId": "ZombieFeralSense",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "AISmellMode",
+      "enumIndex": 39,
+      "codeKey": "BN",
+      "type": "int",
+      "label": "Zombie AI Smell Mode",
+      "category": "Entities",
+      "valueSetId": "AISmellMode",
+      "defaultRawValue": "3",
+      "defaultValue": 3,
+      "defaultIndex": 3
+    },
+    {
+      "id": "ZombieRageChance",
+      "enumIndex": 41,
+      "codeKey": "BP",
+      "type": "float",
+      "label": "Zombie Rage Chance",
+      "category": "Entities",
+      "valueSetId": "ZombieRageChance",
+      "defaultRawValue": "0.15f",
+      "defaultValue": 0.15,
+      "defaultIndex": 1
+    },
+    {
+      "id": "AllowZombieDigging",
+      "enumIndex": 40,
+      "codeKey": "BO",
+      "type": "bool",
+      "label": "Allow Zombie Digging",
+      "category": "Entities",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "ZombiesEatAnimals",
+      "enumIndex": 47,
+      "codeKey": "BV",
+      "type": "bool",
+      "label": "Zombies Eat Animals",
+      "category": "Entities",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "GlobalGSModifier",
+      "enumIndex": 60,
+      "codeKey": "CI",
+      "type": "float",
+      "label": "Global GameStage",
+      "category": "World",
+      "valueSetId": "LowDefaultHigh",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 2
+    },
+    {
+      "id": "BiomeGSModifier",
+      "enumIndex": 61,
+      "codeKey": "CJ",
+      "type": "float",
+      "label": "Biome GameStage",
+      "category": "World",
+      "valueSetId": "LowDefaultHigh",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 2
+    },
+    {
+      "id": "BiomeProgression",
+      "enumIndex": 55,
+      "codeKey": "CD",
+      "type": "bool",
+      "label": "Biome Progression",
+      "category": "World",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "TemperatureSurvival",
+      "enumIndex": 56,
+      "codeKey": "CE",
+      "type": "bool",
+      "label": "Temperature Survival",
+      "category": "World",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "MaxTechType",
+      "enumIndex": 74,
+      "codeKey": "CW",
+      "type": "int",
+      "label": "Max Tech Type",
+      "category": "World",
+      "valueSetId": "MaxTechType",
+      "defaultRawValue": "4",
+      "defaultValue": 4,
+      "defaultIndex": 4
+    },
+    {
+      "id": "WorkstationsInTheWild",
+      "enumIndex": 73,
+      "codeKey": "CV",
+      "type": "float",
+      "label": "Workstations in the Wild",
+      "category": "World",
+      "valueSetId": "JarRefund",
+      "defaultRawValue": "0f",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "BloodMoonFrequency",
+      "enumIndex": 48,
+      "codeKey": "BW",
+      "type": "int",
+      "label": "Blood Moon Frequency",
+      "category": "World",
+      "valueSetId": "BloodMoonFrequency",
+      "defaultRawValue": "7",
+      "defaultValue": 7,
+      "defaultIndex": 7
+    },
+    {
+      "id": "BloodMoonRange",
+      "enumIndex": 49,
+      "codeKey": "BX",
+      "type": "int",
+      "label": "Blood Moon Range",
+      "category": "World",
+      "valueSetId": "BloodMoonRange",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "BloodMoonEnemyCount",
+      "enumIndex": 51,
+      "codeKey": "BZ",
+      "type": "int",
+      "label": "Blood Moon Count",
+      "category": "World",
+      "valueSetId": "BloodMoonCount",
+      "defaultRawValue": "8",
+      "defaultValue": 8,
+      "defaultIndex": 2
+    },
+    {
+      "id": "BloodMoonWarning",
+      "enumIndex": 50,
+      "codeKey": "BY",
+      "type": "int",
+      "label": "Blood Moon Warning",
+      "category": "World",
+      "valueSetId": "BloodMoonWarning",
+      "defaultRawValue": "1",
+      "defaultValue": 1,
+      "defaultIndex": 1
+    },
+    {
+      "id": "AirDropFrequency",
+      "enumIndex": 52,
+      "codeKey": "CA",
+      "type": "int",
+      "label": "Air Drops",
+      "category": "World",
+      "valueSetId": "AirDrops",
+      "defaultRawValue": "3",
+      "defaultValue": 3,
+      "defaultIndex": 3
+    },
+    {
+      "id": "AirDropRandomTime",
+      "enumIndex": 54,
+      "codeKey": "CC",
+      "type": "int",
+      "label": "Air Drop Random Time",
+      "category": "World",
+      "valueSetId": "AirDropRandomTime",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "StormFreq",
+      "enumIndex": 57,
+      "codeKey": "CF",
+      "type": "float",
+      "label": "Storm Frequency",
+      "category": "World",
+      "valueSetId": "StormFrequency",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 2
+    },
+    {
+      "id": "StormWarning",
+      "enumIndex": 58,
+      "codeKey": "CG",
+      "type": "bool",
+      "label": "Storm Warning",
+      "category": "World",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "HeatMapSensitivity",
+      "enumIndex": 59,
+      "codeKey": "CH",
+      "type": "float",
+      "label": "Heatmap Sensitivity",
+      "category": "World",
+      "valueSetId": "DisabledLowDefaultHigh",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 3
+    },
+    {
+      "id": "DayNightLength",
+      "enumIndex": 66,
+      "codeKey": "CO",
+      "type": "int",
+      "label": "24 Day Cycle",
+      "category": "World",
+      "valueSetId": "DayNightLength",
+      "defaultRawValue": "60",
+      "defaultValue": 60,
+      "defaultIndex": 5
+    },
+    {
+      "id": "DayLightLength",
+      "enumIndex": 67,
+      "codeKey": "CP",
+      "type": "int",
+      "label": "Day Light Length",
+      "category": "World",
+      "valueSetId": "DayLightLength",
+      "defaultRawValue": "18",
+      "defaultValue": 18,
+      "defaultIndex": 8
+    },
+    {
+      "id": "AirDropMarker",
+      "enumIndex": 53,
+      "codeKey": "CB",
+      "type": "bool",
+      "label": "Mark Air Drops",
+      "category": "World",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "AllowMap",
+      "enumIndex": 68,
+      "codeKey": "CQ",
+      "type": "bool",
+      "label": "Allow Map",
+      "category": "World",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "AllowCompass",
+      "enumIndex": 69,
+      "codeKey": "CR",
+      "type": "bool",
+      "label": "Allow Compass",
+      "category": "World",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "AllowScreenMarkers",
+      "enumIndex": 70,
+      "codeKey": "CS",
+      "type": "bool",
+      "label": "Allow Screen Markers",
+      "category": "World",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "ShowLocationInfo",
+      "enumIndex": 71,
+      "codeKey": "CT",
+      "type": "bool",
+      "label": "Show Location Info",
+      "category": "World",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "ShowDayTime",
+      "enumIndex": 72,
+      "codeKey": "CU",
+      "type": "bool",
+      "label": "Show Day/Time",
+      "category": "World",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "LootMaxTier",
+      "enumIndex": 77,
+      "codeKey": "CZ",
+      "type": "int",
+      "label": "Loot Max Tier",
+      "category": "Resources",
+      "valueSetId": "ItemTierOptions",
+      "defaultRawValue": "6",
+      "defaultValue": 6,
+      "defaultIndex": 5
+    },
+    {
+      "id": "GlobalLSModifier",
+      "enumIndex": 62,
+      "codeKey": "CK",
+      "type": "float",
+      "label": "Global LootStage",
+      "category": "Resources",
+      "valueSetId": "LowDefaultHigh",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 2
+    },
+    {
+      "id": "BiomeLSModifier",
+      "enumIndex": 63,
+      "codeKey": "CL",
+      "type": "float",
+      "label": "Biome LootStage",
+      "category": "Resources",
+      "valueSetId": "LowDefaultHigh",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 2
+    },
+    {
+      "id": "POITierLSModifier",
+      "enumIndex": 64,
+      "codeKey": "CM",
+      "type": "float",
+      "label": "POI Tier LootStage",
+      "category": "Resources",
+      "valueSetId": "LowDefaultHigh",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 2
+    },
+    {
+      "id": "LootRespawnDays",
+      "enumIndex": 75,
+      "codeKey": "CX",
+      "type": "int",
+      "label": "Loot Respawn Days",
+      "category": "Resources",
+      "valueSetId": "LootRespawnDays",
+      "defaultRawValue": "7",
+      "defaultValue": 7,
+      "defaultIndex": 2
+    },
+    {
+      "id": "LootTimer",
+      "enumIndex": 76,
+      "codeKey": "CY",
+      "type": "float",
+      "label": "Loot Time",
+      "category": "Resources",
+      "valueSetId": "SpeedValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 4
+    },
+    {
+      "id": "LootBagChance",
+      "enumIndex": 90,
+      "codeKey": "DM",
+      "type": "float",
+      "label": "Loot Bag Chance",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "GlobalLootCount",
+      "enumIndex": 78,
+      "codeKey": "DA",
+      "type": "float",
+      "label": "Global Loot Abundance",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "FoodLootCount",
+      "enumIndex": 79,
+      "codeKey": "DB",
+      "type": "float",
+      "label": "Food Abundance",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "DrinkLootCount",
+      "enumIndex": 80,
+      "codeKey": "DC",
+      "type": "float",
+      "label": "Drink Abundance",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "MedicalLootCount",
+      "enumIndex": 81,
+      "codeKey": "DD",
+      "type": "float",
+      "label": "Medical Abundance",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "AmmoLootCount",
+      "enumIndex": 82,
+      "codeKey": "DE",
+      "type": "float",
+      "label": "Ammo Abundance",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "ResourceLootCount",
+      "enumIndex": 83,
+      "codeKey": "DF",
+      "type": "float",
+      "label": "Resource Abundance",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "ArmorLootCount",
+      "enumIndex": 84,
+      "codeKey": "DG",
+      "type": "float",
+      "label": "Armor Abundance",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "MeleeLootCount",
+      "enumIndex": 85,
+      "codeKey": "DH",
+      "type": "float",
+      "label": "Melee Abundance",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "RangedLootCount",
+      "enumIndex": 86,
+      "codeKey": "DI",
+      "type": "float",
+      "label": "Ranged Abundance",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "DukesLootCount",
+      "enumIndex": 87,
+      "codeKey": "DJ",
+      "type": "float",
+      "label": "Dukes Abundance",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "CraftingMagazinesLootCount",
+      "enumIndex": 88,
+      "codeKey": "DK",
+      "type": "float",
+      "label": "Magazines Abundance",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "TreasureMapChance",
+      "enumIndex": 89,
+      "codeKey": "DL",
+      "type": "float",
+      "label": "Treasure Map Chance",
+      "category": "Resources",
+      "valueSetId": "PlayerSpeedValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "MiningOutput",
+      "enumIndex": 101,
+      "codeKey": "DX",
+      "type": "float",
+      "label": "Mining Output",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "CropOutput",
+      "enumIndex": 91,
+      "codeKey": "DN",
+      "type": "float",
+      "label": "Crop Output",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "SeedDropOutput",
+      "enumIndex": 92,
+      "codeKey": "DO",
+      "type": "float",
+      "label": "Seed Drop Output",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "HarvestingOutput",
+      "enumIndex": 102,
+      "codeKey": "DY",
+      "type": "float",
+      "label": "Harvesting Output",
+      "category": "Resources",
+      "valueSetId": "LootAbundanceValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "CropGrowthSpeed",
+      "enumIndex": 93,
+      "codeKey": "DP",
+      "type": "float",
+      "label": "Crop Growth",
+      "category": "Resources",
+      "valueSetId": "CropGrowthSpeed",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 5
+    },
+    {
+      "id": "CraftingProgression",
+      "enumIndex": 96,
+      "codeKey": "DS",
+      "type": "bool",
+      "label": "Crafting Progression",
+      "category": "Crafting",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "CraftingMaxTier",
+      "enumIndex": 100,
+      "codeKey": "DW",
+      "type": "int",
+      "label": "Crafting Max Tier",
+      "category": "Crafting",
+      "valueSetId": "ItemTierOptions",
+      "defaultRawValue": "6",
+      "defaultValue": 6,
+      "defaultIndex": 5
+    },
+    {
+      "id": "PointsPerMagazine",
+      "enumIndex": 115,
+      "codeKey": "EL",
+      "type": "int",
+      "label": "Magazine Points",
+      "category": "Crafting",
+      "valueSetId": "PointsPer",
+      "defaultRawValue": "1",
+      "defaultValue": 1,
+      "defaultIndex": 1
+    },
+    {
+      "id": "BackpackCrafting",
+      "enumIndex": 94,
+      "codeKey": "DQ",
+      "type": "int",
+      "label": "Backpack Crafting",
+      "category": "Crafting",
+      "valueSetId": "BackpackCrafting",
+      "defaultRawValue": "1",
+      "defaultValue": 1,
+      "defaultIndex": 1
+    },
+    {
+      "id": "WorkstationCrafting",
+      "enumIndex": 95,
+      "codeKey": "DR",
+      "type": "bool",
+      "label": "Workstation Crafting",
+      "category": "Crafting",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "SmeltingType",
+      "enumIndex": 104,
+      "codeKey": "EA",
+      "type": "bool",
+      "label": "Smelter Type",
+      "category": "Crafting",
+      "valueSetId": "SmeltingType",
+      "defaultRawValue": "false",
+      "defaultValue": false,
+      "defaultIndex": 0
+    },
+    {
+      "id": "CraftingTime",
+      "enumIndex": 97,
+      "codeKey": "DT",
+      "type": "float",
+      "label": "Crafting Time",
+      "category": "Crafting",
+      "valueSetId": "SpeedValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 4
+    },
+    {
+      "id": "CraftingInput",
+      "enumIndex": 98,
+      "codeKey": "DU",
+      "type": "float",
+      "label": "Crafting Input",
+      "category": "Crafting",
+      "valueSetId": "SpeedValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 4
+    },
+    {
+      "id": "CraftingOutput",
+      "enumIndex": 99,
+      "codeKey": "DV",
+      "type": "float",
+      "label": "Crafting Output",
+      "category": "Crafting",
+      "valueSetId": "StaminaRegen",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 3
+    },
+    {
+      "id": "ScrappingOutput",
+      "enumIndex": 103,
+      "codeKey": "DZ",
+      "type": "float",
+      "label": "Scrapping Output",
+      "category": "Crafting",
+      "valueSetId": "SpeedValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 4
+    },
+    {
+      "id": "DewCollectorTime",
+      "enumIndex": 105,
+      "codeKey": "EB",
+      "type": "float",
+      "label": "Dew Collector Time",
+      "category": "Crafting",
+      "valueSetId": "SpeedValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 4
+    },
+    {
+      "id": "DewCollectorOutput",
+      "enumIndex": 106,
+      "codeKey": "EC",
+      "type": "float",
+      "label": "Dew Collector Output",
+      "category": "Crafting",
+      "valueSetId": "CollectorOutput",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 0
+    },
+    {
+      "id": "DewCollectorInput",
+      "enumIndex": 107,
+      "codeKey": "ED",
+      "type": "float",
+      "label": "Dew Collector Input",
+      "category": "Crafting",
+      "valueSetId": "DewCollectorInput",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 1
+    },
+    {
+      "id": "ApiaryTime",
+      "enumIndex": 108,
+      "codeKey": "EE",
+      "type": "float",
+      "label": "Apiary Time",
+      "category": "Crafting",
+      "valueSetId": "SpeedValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 4
+    },
+    {
+      "id": "ApiaryOutput",
+      "enumIndex": 109,
+      "codeKey": "EF",
+      "type": "float",
+      "label": "Apiary Output",
+      "category": "Crafting",
+      "valueSetId": "CollectorOutput",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 0
+    },
+    {
+      "id": "ApiaryInput",
+      "enumIndex": 110,
+      "codeKey": "EG",
+      "type": "float",
+      "label": "Apiary Input",
+      "category": "Crafting",
+      "valueSetId": "ApiaryInput",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 5
+    },
+    {
+      "id": "ItemDegradation",
+      "enumIndex": 21,
+      "codeKey": "AV",
+      "type": "float",
+      "label": "Item Degradation",
+      "category": "Crafting",
+      "valueSetId": "DisabledLowDefaultHigh",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 3
+    },
+    {
+      "id": "RepairTypes",
+      "enumIndex": 113,
+      "codeKey": "EJ",
+      "type": "int",
+      "label": "Item Repair Types",
+      "category": "Crafting",
+      "valueSetId": "RepairTypes",
+      "defaultRawValue": "3",
+      "defaultValue": 3,
+      "defaultIndex": 3
+    },
+    {
+      "id": "MaxDegradationAmount",
+      "enumIndex": 114,
+      "codeKey": "EK",
+      "type": "float",
+      "label": "Max Degrade Amount",
+      "category": "Crafting",
+      "valueSetId": "MaxDegradationAmounts",
+      "defaultRawValue": "0f",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "TradersEnabled",
+      "enumIndex": 128,
+      "codeKey": "EY",
+      "type": "bool",
+      "label": "Trading Enabled",
+      "category": "Traders",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "VendingEnabled",
+      "enumIndex": 129,
+      "codeKey": "EZ",
+      "type": "bool",
+      "label": "Vending Machines Enabled",
+      "category": "Traders",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "TraderHours",
+      "enumIndex": 127,
+      "codeKey": "EX",
+      "type": "int",
+      "label": "Trader Hours",
+      "category": "Traders",
+      "valueSetId": "TraderHourPresets",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "TraderProtection",
+      "enumIndex": 132,
+      "codeKey": "FC",
+      "type": "int",
+      "label": "Trader Protection",
+      "category": "Traders",
+      "valueSetId": "TraderArea",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "TraderDialog",
+      "enumIndex": 126,
+      "codeKey": "EW",
+      "type": "bool",
+      "label": "Trading Dialog",
+      "category": "Traders",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "GlobalTSModifier",
+      "enumIndex": 65,
+      "codeKey": "CN",
+      "type": "float",
+      "label": "Global TraderStage",
+      "category": "Traders",
+      "valueSetId": "LowDefaultHigh",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 2
+    },
+    {
+      "id": "TraderMaxTier",
+      "enumIndex": 136,
+      "codeKey": "FG",
+      "type": "int",
+      "label": "Trader Max Tier",
+      "category": "Traders",
+      "valueSetId": "ItemTierOptions",
+      "defaultRawValue": "6",
+      "defaultValue": 6,
+      "defaultIndex": 5
+    },
+    {
+      "id": "TraderItemAbundance",
+      "enumIndex": 134,
+      "codeKey": "FE",
+      "type": "float",
+      "label": "Trader Item Abundance",
+      "category": "Traders",
+      "valueSetId": "LowDefaultHigh",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 2
+    },
+    {
+      "id": "VendingItemAbundance",
+      "enumIndex": 138,
+      "codeKey": "FI",
+      "type": "float",
+      "label": "Vending Item Abundance",
+      "category": "Traders",
+      "valueSetId": "LowDefaultHigh",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 2
+    },
+    {
+      "id": "TraderResetInterval",
+      "enumIndex": 133,
+      "codeKey": "FD",
+      "type": "int",
+      "label": "Trader Reset Interval",
+      "category": "Traders",
+      "valueSetId": "TraderResetInterval",
+      "defaultRawValue": "-1",
+      "defaultValue": -1,
+      "defaultIndex": 0
+    },
+    {
+      "id": "VendingResetInterval",
+      "enumIndex": 137,
+      "codeKey": "FH",
+      "type": "int",
+      "label": "Vending Reset Interval",
+      "category": "Traders",
+      "valueSetId": "TraderResetInterval",
+      "defaultRawValue": "-1",
+      "defaultValue": -1,
+      "defaultIndex": 0
+    },
+    {
+      "id": "TraderSellPrices",
+      "enumIndex": 130,
+      "codeKey": "FA",
+      "type": "float",
+      "label": "Traders Sell Price",
+      "category": "Traders",
+      "valueSetId": "BarterValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 4
+    },
+    {
+      "id": "TraderBuyPrices",
+      "enumIndex": 131,
+      "codeKey": "FB",
+      "type": "float",
+      "label": "Traders Buy Price",
+      "category": "Traders",
+      "valueSetId": "BarterValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 4
+    },
+    {
+      "id": "TraderBuyLimit",
+      "enumIndex": 135,
+      "codeKey": "FF",
+      "type": "int",
+      "label": "Trader Buy Limit",
+      "category": "Traders",
+      "valueSetId": "StarterSkillPoints",
+      "defaultRawValue": "3",
+      "defaultValue": 3,
+      "defaultIndex": 3
+    },
+    {
+      "id": "ChallengesEnabled",
+      "enumIndex": 139,
+      "codeKey": "FJ",
+      "type": "bool",
+      "label": "Challenges Enabled",
+      "category": "Tasks",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "QuestsEnabled",
+      "enumIndex": 118,
+      "codeKey": "EO",
+      "type": "bool",
+      "label": "Quests Enabled",
+      "category": "Tasks",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "IntroChallengesEnabled",
+      "enumIndex": 140,
+      "codeKey": "FK",
+      "type": "bool",
+      "label": "Intro Challenges Enabled",
+      "category": "Tasks",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "IntroQuestEnabled",
+      "enumIndex": 119,
+      "codeKey": "EP",
+      "type": "bool",
+      "label": "Intro Quest Enabled",
+      "category": "Tasks",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "TraderToTraderQuestsEnabled",
+      "enumIndex": 120,
+      "codeKey": "EQ",
+      "type": "bool",
+      "label": "Trader to Trader Quests",
+      "category": "Tasks",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "BuriedQuestsEnabled",
+      "enumIndex": 124,
+      "codeKey": "EU",
+      "type": "bool",
+      "label": "Buried Quests Enabled",
+      "category": "Tasks",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "POIQuestsEnabled",
+      "enumIndex": 125,
+      "codeKey": "EV",
+      "type": "bool",
+      "label": "POI Quests Enabled",
+      "category": "Tasks",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "true",
+      "defaultValue": true,
+      "defaultIndex": 1
+    },
+    {
+      "id": "QuestsPerTier",
+      "enumIndex": 122,
+      "codeKey": "ES",
+      "type": "int",
+      "label": "Quests per Tier",
+      "category": "Tasks",
+      "valueSetId": "QuestPerTier",
+      "defaultRawValue": "10",
+      "defaultValue": 10,
+      "defaultIndex": 10
+    },
+    {
+      "id": "QuestProgressionDailyLimit",
+      "enumIndex": 123,
+      "codeKey": "ET",
+      "type": "int",
+      "label": "Quests per Day",
+      "category": "Tasks",
+      "valueSetId": "QuestPerDay",
+      "defaultRawValue": "4",
+      "defaultValue": 4,
+      "defaultIndex": 4
+    },
+    {
+      "id": "StarterSkillPoints",
+      "enumIndex": 121,
+      "codeKey": "ER",
+      "type": "int",
+      "label": "Starter Skill Points",
+      "category": "Tasks",
+      "valueSetId": "StarterSkillPoints",
+      "defaultRawValue": "4",
+      "defaultValue": 4,
+      "defaultIndex": 4
+    },
+    {
+      "id": "VehicleFuelUsage",
+      "enumIndex": 141,
+      "codeKey": "FL",
+      "type": "float",
+      "label": "Vehicle Fuel Usage",
+      "category": "Misc",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "VehicleEntityDamage",
+      "enumIndex": 142,
+      "codeKey": "FM",
+      "type": "float",
+      "label": "Vehicle Entity Damage",
+      "category": "Misc",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "VehicleBlockDamage",
+      "enumIndex": 143,
+      "codeKey": "FN",
+      "type": "float",
+      "label": "Vehicle Block Damage",
+      "category": "Misc",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "VehicleSelfDamage",
+      "enumIndex": 144,
+      "codeKey": "FO",
+      "type": "float",
+      "label": "Vehicle Self Damage",
+      "category": "Misc",
+      "valueSetId": "DamageValues",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 7
+    },
+    {
+      "id": "ElectricalOutput",
+      "enumIndex": 145,
+      "codeKey": "FP",
+      "type": "float",
+      "label": "Electrical Output",
+      "category": "Misc",
+      "valueSetId": "StaminaRegen",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 3
+    },
+    {
+      "id": "SillyCelebrate",
+      "enumIndex": 146,
+      "codeKey": "FQ",
+      "type": "int",
+      "label": "Celebrate Kills",
+      "category": "Misc",
+      "valueSetId": "Celebrate",
+      "defaultRawValue": "0",
+      "defaultValue": 0,
+      "defaultIndex": 0
+    },
+    {
+      "id": "SillyBigHeads",
+      "enumIndex": 147,
+      "codeKey": "FR",
+      "type": "bool",
+      "label": "Big Heads",
+      "category": "Misc",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "false",
+      "defaultValue": false,
+      "defaultIndex": 0
+    },
+    {
+      "id": "SillyTinyZombies",
+      "enumIndex": 148,
+      "codeKey": "FS",
+      "type": "bool",
+      "label": "Tiny Zombies",
+      "category": "Misc",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "false",
+      "defaultValue": false,
+      "defaultIndex": 0
+    },
+    {
+      "id": "SillyLowGravity",
+      "enumIndex": 150,
+      "codeKey": "FU",
+      "type": "float",
+      "label": "Gravity",
+      "category": "Misc",
+      "valueSetId": "Gravity",
+      "defaultRawValue": "1f",
+      "defaultValue": 1,
+      "defaultIndex": 5
+    },
+    {
+      "id": "SillySounds",
+      "enumIndex": 149,
+      "codeKey": "FT",
+      "type": "bool",
+      "label": "Silly Sounds",
+      "category": "Misc",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "false",
+      "defaultValue": false,
+      "defaultIndex": 0
+    },
+    {
+      "id": "SillyBlackandWhite",
+      "enumIndex": 151,
+      "codeKey": "FV",
+      "type": "bool",
+      "label": "Black and White",
+      "category": "Misc",
+      "valueSetId": "YesNo",
+      "defaultRawValue": "false",
+      "defaultValue": false,
+      "defaultIndex": 0
+    }
+  ]
+}

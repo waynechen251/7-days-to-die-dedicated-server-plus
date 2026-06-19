@@ -57,6 +57,20 @@
     installedVersion: "",
     hasInstalled: false,
     versionNeedsInstall: false,
+    versionLabels: {},
+    versionBranchProfiles: {},
+    versionProfile: null,
+    profileStore: {
+      buildId: null,
+      buildLabel: "",
+      buildTag: "",
+      activeProfileId: null,
+      activeProfile: null,
+      lastStartedProfileId: null,
+      lastStartedProfile: null,
+      initialProfileId: null,
+      profiles: [],
+    },
 
     cfg: {
       original: null,
@@ -64,6 +78,9 @@
       locked: false,
       worldList: [],
       lastCheck: { passAll: false, results: [] },
+      profile: null,
+      activeProfileId: null,
+      sandbox: null,
     },
 
     worldMap: new Map(),

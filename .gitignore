@@ -1,6 +1,7 @@
 .vscode/
 node_modules/
 output/
+temp/
 
 src/inno-setup/version.iss
 

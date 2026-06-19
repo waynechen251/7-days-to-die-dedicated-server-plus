@@ -1,9 +1,10 @@
 module.exports = function registerConfigRoutes(app, ctx) {
-  const { http, eventBus, getConfig, saveConfig } = ctx;
+  const { http, eventBus, getConfig, getConfigMeta, saveConfig } = ctx;
 
   app.get("/api/get-config", (req, res) => {
     const CONFIG = getConfig();
-    return http.respondJson(res, { ok: true, data: CONFIG }, 200);
+    const meta = typeof getConfigMeta === "function" ? getConfigMeta() : {};
+    return http.respondJson(res, { ok: true, data: CONFIG, meta }, 200);
   });
 
   app.post("/api/clear-game-server-init", (req, res) => {

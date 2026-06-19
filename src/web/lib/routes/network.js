@@ -1,4 +1,5 @@
 const net = require("net");
+const dgram = require("dgram");
 
 function tryConnectOnce(port, host, timeout = 500) {
   return new Promise((resolve) => {
@@ -33,83 +34,167 @@ async function checkPortInUse(port) {
 module.exports = function registerNetworkRoutes(app, ctx) {
   const { http, eventBus, processManager, getConfig, log, error } = ctx;
 
-  let dummyGamePortServer = null;
-  let dummyGamePort = null;
+  let dummyGamePorts = null;
 
-  function closeDummyGamePort(reason = "start") {
-    if (dummyGamePortServer) {
-      try {
-        const p = dummyGamePort;
-        dummyGamePortServer.close(() => {
-          log(`ℹ️ 已關閉 dummy ServerPort 監聽 (${p}) 原因: ${reason}`);
-        });
-        eventBus.push("system", {
-          text: `關閉暫時 ServerPort 測試監聽 (${dummyGamePort}) (${reason})`,
-        });
-      } catch (_) {}
-      dummyGamePortServer = null;
-      dummyGamePort = null;
+  function getDummyGameTargets(basePort) {
+    if (!Number.isFinite(basePort) || basePort <= 0 || basePort > 65535) {
+      return [];
     }
+    return [
+      { port: basePort, protocol: "tcp", label: `${basePort}/TCP` },
+      { port: basePort, protocol: "udp", label: `${basePort}/UDP` },
+    ];
   }
 
-  async function ensureDummyGamePort(wantedPortOverride) {
+  function listenTcpServer(port) {
+    return new Promise((resolve, reject) => {
+      const srv = net.createServer((socket) => {
+        socket.destroy();
+      });
+      srv.once("error", (e) => reject(e));
+      srv.listen(port, "0.0.0.0", () => resolve(srv));
+    });
+  }
+
+  function bindUdpSocket(port) {
+    return new Promise((resolve, reject) => {
+      const socket = dgram.createSocket("udp4");
+      let settled = false;
+
+      function done(err) {
+        if (settled) return;
+        settled = true;
+        if (err) reject(err);
+        else resolve(socket);
+      }
+
+      socket.once("error", (err) => {
+        try {
+          socket.close();
+        } catch (_) {}
+        done(err);
+      });
+      socket.bind(port, "0.0.0.0", () => done());
+    });
+  }
+
+  function closeDummyBundle(bundle, reason = "start") {
+    if (!bundle) return;
+    const labels = Array.isArray(bundle.targets)
+      ? bundle.targets.map((target) => target.label).join(", ")
+      : "";
+
+    try {
+      bundle.tcpServer?.close(() => {
+        if (labels) log(`ℹ️ 已關閉 dummy 遊戲端口監聽 (${labels}) 原因: ${reason}`);
+      });
+    } catch (_) {}
+
+    (Array.isArray(bundle.udpSockets) ? bundle.udpSockets : []).forEach((socket) => {
+      try {
+        socket.close();
+      } catch (_) {}
+    });
+
+    eventBus.push("system", {
+      text: `關閉暫時遊戲端口測試監聽 (${labels || bundle.basePort || "-"}) (${reason})`,
+    });
+  }
+
+  function isDummyGamePort(port, protocol) {
+    if (!dummyGamePorts) return false;
+    const p = parseInt(port, 10);
+    const proto = String(protocol || "").toLowerCase();
+    return dummyGamePorts.targets.some(
+      (target) => target.port === p && target.protocol === proto
+    );
+  }
+
+  function closeDummyGamePort(reason = "start") {
+    if (!dummyGamePorts) return;
+    closeDummyBundle(dummyGamePorts, reason);
+    dummyGamePorts = null;
+  }
+
+  async function ensureDummyGamePort(basePortOverride) {
     try {
       if (processManager.gameServer.isRunning) {
-        if (dummyGamePortServer) closeDummyGamePort("game-running");
+        if (dummyGamePorts) closeDummyGamePort("game-running");
         return { listening: false, started: false };
       }
 
       const CONFIG = getConfig();
-      let wantedPort = Number.isFinite(parseInt(wantedPortOverride, 10))
-        ? parseInt(wantedPortOverride, 10)
+      let basePort = Number.isFinite(parseInt(basePortOverride, 10))
+        ? parseInt(basePortOverride, 10)
         : NaN;
 
-      if (!Number.isFinite(wantedPort)) {
+      if (!Number.isFinite(basePort)) {
         const pRaw =
           CONFIG?.game_server?.ServerPort ||
           CONFIG?.game_server?.serverPort ||
           CONFIG?.game_server?.serverport;
-        wantedPort = parseInt(pRaw, 10);
+        basePort = parseInt(pRaw, 10);
       }
 
-      if (!Number.isFinite(wantedPort) || wantedPort <= 0 || wantedPort > 65535) {
-        if (dummyGamePortServer) closeDummyGamePort("invalid-port");
+      const targets = getDummyGameTargets(basePort);
+      if (!targets.length) {
+        if (dummyGamePorts) closeDummyGamePort("invalid-port");
         return { listening: false, started: false };
       }
 
-      if (dummyGamePortServer && dummyGamePort !== wantedPort) {
-        closeDummyGamePort(`port-changed ${dummyGamePort}→${wantedPort}`);
+      if (dummyGamePorts && dummyGamePorts.basePort !== basePort) {
+        closeDummyGamePort(`port-changed ${dummyGamePorts.basePort}→${basePort}`);
       }
 
-      if (dummyGamePortServer) {
+      if (dummyGamePorts) {
         return { listening: true, started: false };
       }
 
-      if (await checkPortInUse(wantedPort)) {
+      if (await checkPortInUse(basePort)) {
         return { listening: false, started: false };
       }
 
-      await new Promise((resolve, reject) => {
-        const srv = net.createServer((socket) => {
-          socket.destroy();
-        });
-        srv.once("error", (e) => reject(e));
-        srv.listen(wantedPort, "0.0.0.0", () => {
-          dummyGamePortServer = srv;
-          dummyGamePort = wantedPort;
-          log(
-            `ℹ️ 已啟動假的 ServerPort 監聽 (dummy) 於 ${wantedPort} (等待實際伺服器啟動)`
-          );
-          eventBus.push("system", {
-            text: `啟動暫時 ServerPort 測試監聽 (dummy) 於 ${wantedPort}`,
-          });
-          resolve();
-        });
+      const tcpServer = await listenTcpServer(basePort);
+      const udpSockets = [];
+      try {
+        for (const target of targets.filter((item) => item.protocol === "udp")) {
+          const socket = await bindUdpSocket(target.port);
+          udpSockets.push(socket);
+        }
+      } catch (e) {
+        closeDummyBundle(
+          {
+            basePort,
+            targets,
+            tcpServer,
+            udpSockets,
+          },
+          "startup-failed"
+        );
+        throw e;
+      }
+
+      dummyGamePorts = {
+        basePort,
+        targets,
+        tcpServer,
+        udpSockets,
+      };
+
+      log(
+        `ℹ️ 已啟動假的遊戲端口監聽 (dummy) ${targets
+          .map((target) => target.label)
+          .join(", ")} (等待實際伺服器啟動)`
+      );
+      eventBus.push("system", {
+        text: `啟動暫時遊戲端口測試監聽 (dummy) ${targets
+          .map((target) => target.label)
+          .join(", ")}`,
       });
 
       return { listening: true, started: true };
     } catch (e) {
-      error(`❌ 啟動/切換 dummy ServerPort 失敗: ${e.message}`);
+      error(`❌ 啟動/切換 dummy 遊戲端口失敗: ${e.message}`);
       return { listening: false, started: false, error: e.message };
     }
   }
@@ -133,7 +218,7 @@ module.exports = function registerNetworkRoutes(app, ctx) {
       // 僅檢查 TCP 連線可否建立，不代表 UDP 端口是否可用。
       const inUse = await checkPortInUse(p);
       // 判斷是否為 dummy 監聽器佔用
-      const isDummy = !!(dummyGamePortServer && dummyGamePort === p);
+      const isDummy = isDummyGamePort(p, "tcp");
       return http.respondJson(
         res,
         { ok: true, data: { inUse, isDummy, protocol: "tcp" } },
@@ -150,7 +235,7 @@ module.exports = function registerNetworkRoutes(app, ctx) {
 
   app.post("/api/close-dummy-port", (req, res) => {
     try {
-      if (dummyGamePortServer) {
+      if (dummyGamePorts) {
         closeDummyGamePort("ui-close");
       }
       return http.respondJson(res, { ok: true }, 200);
@@ -187,6 +272,7 @@ module.exports = function registerNetworkRoutes(app, ctx) {
       const ip = String(req.query.ip || "").trim();
       const port = parseInt(req.query.port, 10);
       const protocol = (req.query.protocol || "tcp").toString().toLowerCase();
+      const dummyBasePort = parseInt(req.query.dummyBasePort, 10);
       if (!ip)
         return http.respondJson(res, { ok: false, message: "缺少 ip" }, 400);
       if (!Number.isFinite(port) || port <= 0 || port > 65535)
@@ -198,7 +284,9 @@ module.exports = function registerNetworkRoutes(app, ctx) {
           400
         );
 
-      const dummyState = await ensureDummyGamePort(port);
+      const dummyState = await ensureDummyGamePort(
+        Number.isFinite(dummyBasePort) ? dummyBasePort : port
+      );
 
       let open = false;
       let raw = null;

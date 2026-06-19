@@ -16,7 +16,8 @@
     "noBackup": "(没有备份)",
     "selectExisting": "(选择现有)",
     "notSet": "(未设置)",
-    "custom": "(自定义)"
+    "custom": "(自定义)",
+    "default": "默认"
   },
   "topbar": {
     "brand": "7 Days To Die Dedicated Server Plus 管理后台",
@@ -71,6 +72,7 @@
       "rss": "RSS:",
       "startServer": "启动服务器",
       "viewServerconfig": "查看 serverconfig.xml",
+      "controlLockedVersionChange": "已切换安装版本选项，请先执行安装 / 更新后再使用服务器控制。",
       "stopServer": "正常结束",
       "killServer": "强制结束",
       "telnetPlaceholder": "输入 Telnet 指令…",
@@ -80,6 +82,12 @@
       "sectionRuntime": "服务器状态",
       "sectionControl": "服务器控制",
       "sectionTelnet": "Telnet 指令",
+      "currentProfile": "当前配置: {name}",
+      "currentProfileNone": "当前配置: 无",
+      "versionProfileLegacy": "Legacy mode",
+      "versionProfileLegacyHint": "使用旧版 serverconfig.xml 参数编辑流程。",
+      "versionProfileV3": "Sandbox-only",
+      "versionProfileV3Hint": "此版本仅提供 SandboxCode 编辑；当前启动仍属未完全兼容。",
       "statPlayers": "玩家",
       "statFps": "FPS",
       "statZombies": "僵尸",
@@ -115,7 +123,7 @@
       "autoManageHint": "每次启动游戏服务器时，自动执行「同步所有规则」",
       "removeOnStop": "游戏服务器停止时自动移除规则",
       "removeOnStopHint": "游戏服务器停止后，只自动移除游戏端口规则，不移除管理端口规则",
-      "openGamePorts": "游戏端口（按 ServerPort 开放 TCP+UDP，并开放 ServerPort+1~+3 的 UDP）",
+      "openGamePorts": "游戏端口（按 ServerPort 开放 TCP+UDP）",
       "openMgmtPorts": "管理端口（按后台/Telnet/WebDashboard 设置值开放 TCP）",
       "scopeGameHint": "对外玩家连接主要依赖这组规则。",
       "scopeMgmtHint": "仅在需要远程运维时开启，避免暴露多余入口。",
@@ -296,17 +304,521 @@
       "title": "管理后台设置 (server.json)",
       "ariaLabel": "管理后台设置文件",
       "reload": "重新读取",
-      "copy": "复制"
+      "copy": "复制",
+      "statusConfigVersion": "Schema {version}",
+      "sourceServer": "来源: server.json",
+      "sourceSample": "来源: server.sample.json",
+      "versionLegacy": "legacy",
+      "migrationChanged": "已自动升级设置: {from} -> {to}",
+      "migrationCreatedFromSample": "已依最新 schema 建立新的 server.json",
+      "migrationUpToDate": "设置已是最新 schema",
+      "migrationBackup": "备份文件: {path}",
+      "migrationMoved": "已搬移设置",
+      "migrationDefaulted": "已补默认值",
+      "migrationDeprecatedRemoved": "已移除弃用设置",
+      "migrationUnknownRemoved": "已移除未知设置",
+      "migrationNone": "本次启动没有升级动作。"
     },
     "serverconfig": {
       "title": "serverconfig.xml 设置",
       "ariaLabel": "serverconfig.xml 设置",
       "lockBanner": "服务器运行中，禁止修改 serverconfig.xml",
+      "profileSectionTitle": "配置管理",
+      "profileSectionDesc": "同一个实际版本可建立多组配置。启动前请确认当前选中的就是你要套用的配置。",
       "loadAdminConfig": "加载上次保存设置",
-      "loadAdminConfigTitle": "从 server.json 加载 game_server 设置",
+      "loadAdminConfigTitle": "从当前配置加载已保存设置",
+      "profileCreate": "创建新配置",
+      "profileRename": "重命名当前配置",
+      "profileDelete": "删除当前配置",
+      "profileDeleteDisabled": "至少保留一笔配置，无法删除最后一笔",
+      "profileInfoSelected": "当前选取",
+      "profileInfoLastStarted": "上次启动",
+      "profileInfoMode": "模式",
+      "profileInfoCount": "配置数量",
+      "profileInfoVersion": "版本",
+      "profileCountValue": "{count} 笔",
+      "profileLastStartedNone": "尚未启动",
       "saveAndStart": "保存后启动",
       "preStartCheck": "启动前检查",
-      "noDescription": "无说明"
+      "noDescription": "无说明",
+      "sandboxOnlyDesc": "v3.0+ 当前只提供 SandboxCode 字段的填写与保存。",
+      "sandboxCodeHint": "7DTD v3.0+ 仅支持直接编辑 SandboxCode。",
+      "sandboxCodePlaceholder": "粘贴游戏内生成的 SandboxCode",
+      "sandboxEditorTitle": "SandboxCode 转换",
+      "sandboxEditorDesc": "这一区会把 SandboxCode 字段还原成 150 项官方选项，并可再编码回同一字段。",
+      "sandboxDecodeBtn": "从 SandboxCode 还原",
+      "sandboxEncodeBtn": "编码回 SandboxCode",
+      "sandboxResetBtn": "载入官方默认值",
+      "sandboxOptionCountValue": "官方字段 {count} 项",
+      "sandboxChangedCountValue": "偏离默认值 {count} 项",
+      "sandboxCodeLengthValue": "当前代码长度 {count}",
+      "sandboxCodeEmptyValue": "当前代码为空",
+      "sandboxPendingValue": "表单尚未回写",
+      "sandboxSyncedValue": "表单与字段已同步",
+      "sandboxCategoryCount": "{count} 项",
+      "fields": {
+        "ServerName": {
+          "label": "服务器名称"
+        },
+        "ServerDescription": {
+          "label": "服务器描述"
+        },
+        "ServerWebsiteURL": {
+          "label": "服务器网站"
+        },
+        "ServerPassword": {
+          "label": "加入密码"
+        },
+        "ServerLoginConfirmationText": {
+          "label": "入服确认文字"
+        },
+        "Region": {
+          "label": "区域"
+        },
+        "Language": {
+          "label": "语言"
+        },
+        "ServerPort": {
+          "label": "游戏连接端口"
+        },
+        "ServerVisibility": {
+          "label": "服务器可见度"
+        },
+        "ServerDisabledNetworkProtocols": {
+          "label": "停用网络协议"
+        },
+        "ServerMaxWorldTransferSpeedKiBs": {
+          "label": "世界传输上限"
+        },
+        "ServerMaxPlayerCount": {
+          "label": "最大玩家数"
+        },
+        "ServerReservedSlots": {
+          "label": "保留席位数"
+        },
+        "ServerReservedSlotsPermission": {
+          "label": "保留席位权限"
+        },
+        "ServerAdminSlots": {
+          "label": "管理员保留席位"
+        },
+        "ServerAdminSlotsPermission": {
+          "label": "管理员席位权限"
+        },
+        "WebDashboardEnabled": {
+          "label": "Web 控制台"
+        },
+        "WebDashboardPort": {
+          "label": "Web 控制台端口"
+        },
+        "WebDashboardUrl": {
+          "label": "Web 控制台网址"
+        },
+        "EnableMapRendering": {
+          "label": "地图渲染"
+        },
+        "TelnetEnabled": {
+          "label": "Telnet 启用"
+        },
+        "TelnetPort": {
+          "label": "Telnet 端口"
+        },
+        "TelnetPassword": {
+          "label": "Telnet 密码"
+        },
+        "TelnetFailedLoginLimit": {
+          "label": "Telnet 失败次数上限"
+        },
+        "TelnetFailedLoginsBlocktime": {
+          "label": "Telnet 封锁秒数"
+        },
+        "TerminalWindowEnabled": {
+          "label": "终端窗口"
+        },
+        "AdminFileName": {
+          "label": "管理员文件名"
+        },
+        "UserDataFolder": {
+          "label": "用户数据文件夹"
+        },
+        "ServerAllowCrossplay": {
+          "label": "跨平台联机"
+        },
+        "EACEnabled": {
+          "label": "EAC 反作弊"
+        },
+        "IgnoreEOSSanctions": {
+          "label": "忽略 EOS 制裁"
+        },
+        "HideCommandExecutionLog": {
+          "label": "隐藏指令记录"
+        },
+        "MaxUncoveredMapChunksPerPlayer": {
+          "label": "玩家地图块上限"
+        },
+        "PersistentPlayerProfiles": {
+          "label": "保留玩家角色"
+        },
+        "MaxChunkAge": {
+          "label": "区块重置天数"
+        },
+        "SaveDataLimit": {
+          "label": "存档容量上限"
+        },
+        "GameWorld": {
+          "label": "世界类型"
+        },
+        "WorldGenSeed": {
+          "label": "世界种子"
+        },
+        "WorldGenSize": {
+          "label": "世界尺寸"
+        },
+        "GameName": {
+          "label": "存档名称"
+        },
+        "GameMode": {
+          "label": "游戏模式"
+        },
+        "GameDifficulty": {
+          "label": "游戏难度"
+        },
+        "BlockDamagePlayer": {
+          "label": "玩家破坏倍率"
+        },
+        "BlockDamageAI": {
+          "label": "丧尸破坏倍率"
+        },
+        "BlockDamageAIBM": {
+          "label": "血月丧尸破坏倍率"
+        },
+        "XPMultiplier": {
+          "label": "经验倍率"
+        },
+        "PlayerSafeZoneLevel": {
+          "label": "新手保护等级"
+        },
+        "PlayerSafeZoneHours": {
+          "label": "新手保护时数"
+        },
+        "BuildCreate": {
+          "label": "创造模式"
+        },
+        "DayNightLength": {
+          "label": "昼夜循环分钟"
+        },
+        "DayLightLength": {
+          "label": "白天时数"
+        },
+        "BiomeProgression": {
+          "label": "生态危险进程"
+        },
+        "StormFreq": {
+          "label": "暴风雨频率"
+        },
+        "DeathPenalty": {
+          "label": "死亡惩罚"
+        },
+        "DropOnDeath": {
+          "label": "死亡掉落"
+        },
+        "DropOnQuit": {
+          "label": "离线掉落"
+        },
+        "BedrollDeadZoneSize": {
+          "label": "睡袋安全区范围"
+        },
+        "BedrollExpiryTime": {
+          "label": "睡袋有效天数"
+        },
+        "AllowSpawnNearFriend": {
+          "label": "允许出生在好友旁"
+        },
+        "CameraRestrictionMode": {
+          "label": "视角限制"
+        },
+        "JarRefund": {
+          "label": "空瓶返还率"
+        },
+        "MaxSpawnedZombies": {
+          "label": "最大丧尸数"
+        },
+        "MaxSpawnedAnimals": {
+          "label": "最大动物数"
+        },
+        "ServerMaxAllowedViewDistance": {
+          "label": "最大可视距离"
+        },
+        "MaxQueuedMeshLayers": {
+          "label": "网格队列上限"
+        },
+        "EnemySpawnMode": {
+          "label": "敌人生成"
+        },
+        "EnemyDifficulty": {
+          "label": "敌人难度"
+        },
+        "ZombieFeralSense": {
+          "label": "狂暴感知"
+        },
+        "ZombieMove": {
+          "label": "丧尸白天移动"
+        },
+        "ZombieMoveNight": {
+          "label": "丧尸夜晚移动"
+        },
+        "ZombieFeralMove": {
+          "label": "狂暴丧尸移动"
+        },
+        "ZombieBMMove": {
+          "label": "血月丧尸移动"
+        },
+        "AISmellMode": {
+          "label": "气味追踪"
+        },
+        "BloodMoonFrequency": {
+          "label": "血月频率"
+        },
+        "BloodMoonRange": {
+          "label": "血月随机范围"
+        },
+        "BloodMoonWarning": {
+          "label": "血月预警时间"
+        },
+        "BloodMoonEnemyCount": {
+          "label": "血月丧尸数"
+        },
+        "LootAbundance": {
+          "label": "战利品倍率"
+        },
+        "LootRespawnDays": {
+          "label": "战利品重生天数"
+        },
+        "AirDropFrequency": {
+          "label": "空投频率"
+        },
+        "AirDropMarker": {
+          "label": "空投标记"
+        },
+        "PartySharedKillRange": {
+          "label": "队伍共享击杀距离"
+        },
+        "PlayerKillingMode": {
+          "label": "玩家伤害模式"
+        },
+        "LandClaimCount": {
+          "label": "领地石数量"
+        },
+        "LandClaimSize": {
+          "label": "领地石范围"
+        },
+        "LandClaimDeadZone": {
+          "label": "领地石间隔"
+        },
+        "LandClaimExpiryTime": {
+          "label": "领地到期天数"
+        },
+        "LandClaimDecayMode": {
+          "label": "领地衰减模式"
+        },
+        "LandClaimOnlineDurabilityModifier": {
+          "label": "在线耐久倍率"
+        },
+        "LandClaimOfflineDurabilityModifier": {
+          "label": "离线耐久倍率"
+        },
+        "LandClaimOfflineDelay": {
+          "label": "离线保护延迟"
+        },
+        "DynamicMeshEnabled": {
+          "label": "动态网格"
+        },
+        "DynamicMeshLandClaimOnly": {
+          "label": "仅领地动态网格"
+        },
+        "DynamicMeshLandClaimBuffer": {
+          "label": "动态网格缓冲"
+        },
+        "DynamicMeshMaxItemCache": {
+          "label": "动态网格缓存上限"
+        },
+        "TwitchServerPermission": {
+          "label": "Twitch 权限等级"
+        },
+        "TwitchBloodMoonAllowed": {
+          "label": "血月允许 Twitch"
+        },
+        "QuestProgressionDailyLimit": {
+          "label": "每日任务进度上限"
+        },
+        "SandboxCode": {
+          "label": "沙盒代码"
+        }
+      },
+      "sandbox": {
+        "categories": {
+          "General": "常规",
+          "Entities": "实体",
+          "World": "世界",
+          "Resources": "资源",
+          "Crafting": "制作",
+          "Traders": "商人",
+          "Tasks": "任务",
+          "Misc": "其他"
+        },
+        "options": {
+          "RangedDamage": "远程伤害",
+          "MeleeDamage": "近战伤害",
+          "BlockDamage": "方块伤害",
+          "TerrainDamage": "地形伤害",
+          "HeadshotMultiplier": "爆头倍率",
+          "IncomingDamage": "受到伤害",
+          "WalkSpeed": "行走速度",
+          "RunSpeed": "奔跑速度",
+          "CrouchSpeed": "蹲伏速度",
+          "JumpStrength": "跳跃高度",
+          "StaminaRegen": "耐力恢复",
+          "StaminaUsage": "耐力消耗",
+          "XPMultiplier": "经验倍率",
+          "ShowXP": "显示经验",
+          "PlayerLevelBonusApplied": "等级生命/耐力加成",
+          "SkillGainRate": "技能成长速率",
+          "SkillPointsPerLevel": "每级技能点数",
+          "DeathPenalty": "死亡惩罚",
+          "LoseItemsOnDeathType": "死亡掉落类型",
+          "LoseItemsOnDeathCount": "死亡掉落数量",
+          "DegradeItemsOnDeath": "死亡物品降级",
+          "DegradeAmountOnDeath": "死亡降级幅度",
+          "DropOnDeath": "死亡掉落",
+          "DropOnQuit": "离线掉落",
+          "InfectionRate": "感染率",
+          "NewbieCoat": "允许新手外套",
+          "EncumbranceModifier": "负重修正",
+          "JarRefund": "罐瓶返还",
+          "EnemySpawnMode": "敌人生成",
+          "MaxEnemyTier": "最大敌人类型",
+          "BiomeEnemyDensity": "生物群系敌人密度",
+          "BiomeZombieRespawn": "生物群系僵尸重生",
+          "BiomeAnimalRespawn": "生物群系动物重生",
+          "EntityDamage": "实体伤害",
+          "EntityIncomingDamage": "实体受到伤害",
+          "BlockDamageAI": "实体方块伤害",
+          "BlockDamageAIBM": "血月方块伤害",
+          "HeadshotMode": "爆头模式",
+          "ShowHealthBars": "实体血条",
+          "ShowEnemyDamage": "显示实体伤害",
+          "ZombieMove": "僵尸白天速度",
+          "ZombieMoveNight": "僵尸夜晚速度",
+          "ZombieFeralMove": "僵尸狂暴速度",
+          "ZombieBMMove": "僵尸血月速度",
+          "ZombieFeralSense": "僵尸狂暴感知",
+          "AISmellMode": "僵尸气味模式",
+          "ZombieRageChance": "僵尸狂暴几率",
+          "AllowZombieDigging": "允许僵尸挖掘",
+          "ZombiesEatAnimals": "僵尸会吃动物",
+          "GlobalGSModifier": "全域游戏阶段",
+          "BiomeGSModifier": "生物群系游戏阶段",
+          "BiomeProgression": "生物群系进程",
+          "TemperatureSurvival": "温度生存",
+          "MaxTechType": "最大科技类型",
+          "WorkstationsInTheWild": "野外工作站",
+          "BloodMoonFrequency": "血月频率",
+          "BloodMoonRange": "血月范围",
+          "BloodMoonEnemyCount": "血月数量",
+          "BloodMoonWarning": "血月预警",
+          "AirDropFrequency": "空投频率",
+          "AirDropRandomTime": "空投随机时间",
+          "StormFreq": "风暴频率",
+          "StormWarning": "风暴预警",
+          "HeatMapSensitivity": "热度图敏感度",
+          "DayNightLength": "24小时循环",
+          "DayLightLength": "日照长度",
+          "AirDropMarker": "标记空投",
+          "AllowMap": "允许地图",
+          "AllowCompass": "允许指南针",
+          "AllowScreenMarkers": "允许屏幕标记",
+          "ShowLocationInfo": "显示位置信息",
+          "ShowDayTime": "显示日期/时间",
+          "LootMaxTier": "战利品最高阶",
+          "GlobalLSModifier": "全域战利品阶段",
+          "BiomeLSModifier": "生物群系战利品阶段",
+          "POITierLSModifier": "POI 阶级战利品阶段",
+          "LootRespawnDays": "战利品重生天数",
+          "LootTimer": "战利品时间",
+          "LootBagChance": "战利品袋几率",
+          "GlobalLootCount": "全域战利品丰富度",
+          "FoodLootCount": "食物丰富度",
+          "DrinkLootCount": "饮料丰富度",
+          "MedicalLootCount": "医疗丰富度",
+          "AmmoLootCount": "弹药丰富度",
+          "ResourceLootCount": "资源丰富度",
+          "ArmorLootCount": "护甲丰富度",
+          "MeleeLootCount": "近战丰富度",
+          "RangedLootCount": "远程丰富度",
+          "DukesLootCount": "公爵币丰富度",
+          "CraftingMagazinesLootCount": "杂志丰富度",
+          "TreasureMapChance": "藏宝图几率",
+          "MiningOutput": "采矿产出",
+          "CropOutput": "作物产出",
+          "SeedDropOutput": "种子掉落产出",
+          "HarvestingOutput": "采收产出",
+          "CropGrowthSpeed": "作物成长",
+          "CraftingProgression": "制作进程",
+          "CraftingMaxTier": "制作最高阶",
+          "PointsPerMagazine": "杂志点数",
+          "BackpackCrafting": "背包制作",
+          "WorkstationCrafting": "工作站制作",
+          "SmeltingType": "熔炉类型",
+          "CraftingTime": "制作时间",
+          "CraftingInput": "制作材料消耗",
+          "CraftingOutput": "制作产出",
+          "ScrappingOutput": "拆解产出",
+          "DewCollectorTime": "露水收集器时间",
+          "DewCollectorOutput": "露水收集器产出",
+          "DewCollectorInput": "露水收集器材料消耗",
+          "ApiaryTime": "养蜂箱时间",
+          "ApiaryOutput": "养蜂箱产出",
+          "ApiaryInput": "养蜂箱材料消耗",
+          "ItemDegradation": "物品劣化",
+          "RepairTypes": "物品修理类型",
+          "MaxDegradationAmount": "最大劣化幅度",
+          "TradersEnabled": "启用交易",
+          "VendingEnabled": "启用贩卖机",
+          "TraderHours": "商人营业时间",
+          "TraderProtection": "商人保护",
+          "TraderDialog": "交易对话",
+          "GlobalTSModifier": "全域商人阶段",
+          "TraderMaxTier": "商人最高阶",
+          "TraderItemAbundance": "商人物品丰富度",
+          "VendingItemAbundance": "贩卖机物品丰富度",
+          "TraderResetInterval": "商人重置间隔",
+          "VendingResetInterval": "贩卖机重置间隔",
+          "TraderSellPrices": "商人售价",
+          "TraderBuyPrices": "商人收购价",
+          "TraderBuyLimit": "商人收购上限",
+          "ChallengesEnabled": "启用挑战",
+          "QuestsEnabled": "启用任务",
+          "IntroChallengesEnabled": "启用新手挑战",
+          "IntroQuestEnabled": "启用新手任务",
+          "TraderToTraderQuestsEnabled": "启用商人串联任务",
+          "BuriedQuestsEnabled": "启用埋藏任务",
+          "POIQuestsEnabled": "启用 POI 任务",
+          "QuestsPerTier": "每阶任务数",
+          "QuestProgressionDailyLimit": "每日任务数",
+          "StarterSkillPoints": "初始技能点数",
+          "VehicleFuelUsage": "载具燃料消耗",
+          "VehicleEntityDamage": "载具对实体伤害",
+          "VehicleBlockDamage": "载具对方块伤害",
+          "VehicleSelfDamage": "载具自损",
+          "ElectricalOutput": "电力输出",
+          "SillyCelebrate": "击杀庆祝",
+          "SillyBigHeads": "大头模式",
+          "SillyTinyZombies": "迷你僵尸",
+          "SillyLowGravity": "低重力",
+          "SillySounds": "搞怪音效",
+          "SillyBlackandWhite": "黑白画面"
+        }
+      }
     }
   },
   "confirm": {
@@ -328,7 +840,15 @@
     "loadConfigBtn": "加载设置",
     "skipBtn": "跳过",
     "changesSummaryTitle": "即将写入的设置变更",
-    "saveAndStartAction": "保存并启动"
+    "saveAndStartAction": "保存并启动",
+    "deleteProfile": "是否确定删除此配置？",
+    "switchProfileWithUnsavedTitle": "仍有未保存的设置变更",
+    "switchProfileWithUnsaved": "{summary}\n\n切换设置档会放弃尚未保存的变更，是否仍要继续？",
+    "switchProfileWithUnsavedFallback": "切换设置档会放弃尚未保存的变更，是否仍要继续？",
+    "userDataFolderStartWarningTitle": "UserDataFolder 提醒",
+    "userDataFolderStartWarning": "{detail}\n\n未打勾或空值时仍可启动，但会使用游戏默认资料夹。是否仍要保存并启动？",
+    "v3StartWarningTitle": "v3.0+ 兼容性警告",
+    "v3StartWarning": "当前检测为 v3.0+ Sandbox-only 模式。\n仅 SandboxCode 保存已兼容，服务器启动仍属未完全兼容。\n是否仍要保存并启动？"
   },
   "status": {
     "backend": "管理后台",
@@ -352,6 +872,26 @@
     "missingGameServer": "缺少 game_server",
     "loadedAdminConfig": "已加载上次保存设置到编辑器 (尚未保存)",
     "loadAdminConfigFailed": "加载上次保存设置失败: {error}",
+    "sandboxSchemaUnavailable": "SandboxCode schema 无法载入",
+    "sandboxDecodeFailed": "SandboxCode 解码失败",
+    "sandboxDecoded": "已从 SandboxCode 还原表单",
+    "sandboxDecodedInitial": "已根据当前 SandboxCode 还原表单",
+    "sandboxEncoded": "已将 SandboxCode 表单写回字段",
+    "sandboxLoadedDefaults": "SandboxCode 为空，已载入官方默认值",
+    "sandboxDefaultsApplied": "已套用 SandboxCode 官方默认值，尚未回写",
+    "sandboxPendingEncode": "SandboxCode 表单已修改，请编码回字段或直接保存",
+    "sandboxCodeChanged": "SandboxCode 字段已修改，若要还原表单请按“从 SandboxCode 还原”",
+    "sandboxEncodeFailed": "SandboxCode 编码失败",
+    "profileNamePrompt": "请输入配置名称",
+    "profileNamePlaceholder": "例如: PVE / 测试服 / 活动服",
+    "profileRenamePrompt": "请输入新的配置名称",
+    "profileCreated": "已创建配置: {name}",
+    "selectProfileFailed": "切换配置失败: {error}",
+    "createProfileFailed": "创建配置失败: {error}",
+    "renameProfileFailed": "配置改名失败: {error}",
+    "deleteProfileFailed": "删除配置失败: {error}",
+    "deleteLastProfileBlocked": "至少保留一笔配置，无法删除最后一笔。",
+    "saveProfileFailed": "保存配置失败: {error}",
     "appliedAdminConfig": "已应用后台设置 ({count} 项) (尚未保存)",
     "noApplicableProps": "加载后台设置: 无可应用的属性 (server.json 中的 game_server 可能尚未保存或属性名称不匹配)",
     "skippedLoadConfig": "已跳过加载上次保存设置",
@@ -388,13 +928,22 @@
     "serverPortForwardFailed": "ServerPort/TCP 转发测试未通：{ip}:{port}(请稍后再试或确认 NAT/防火墙)",
     "serverPortForwardError": "ServerPort/TCP 转发检查错误: {error}",
     "serverPortCheckException": "ServerPort 检查异常: {error}",
-    "serverPortTcpOnlyNotice": "目前仅检查 ServerPort/TCP；游戏 UDP 与 ServerPort+1~+3/UDP 请另行确认防火墙与转发",
+    "externalAccessAllOpen": "外网直连测试通过：目前可从外网加入。",
+    "externalAccessPendingUdp": "外网测试部分完成：已确认 {passed} 可从外网连接；{pending} 需在服务器启动后再验证。外网玩家直连需开放 {required}",
+    "externalAccessTcpFailed": "外网直连测试未通过：目前无法从外网加入。",
+    "externalAccessUnavailable": "外网直连测试暂时无法判定，请稍后再试。",
+    "serverPortTcpOnlyNotice": "目前会检查 ServerPort/TCP 与 ServerPort/UDP 的外网连接状态",
     "telnetPortInUse": "TelnetPort {port} 已被占用",
     "telnetPortAvailable": "TelnetPort {port} 可用",
     "telnetPortCheckFailed": "TelnetPort 检查失败",
+    "userDataFolderDisabledWarn": "{name} 尚未启用(未打勾)，将使用游戏默认资料夹。",
+    "userDataFolderDisabledWithValueWarn": "{name} 尚未启用(未打勾)。当前栏位值为 {value}，但不会生效；启动时将使用游戏默认资料夹。",
+    "userDataFolderEmptyWarn": "{name} 尚未设置，将使用游戏默认资料夹。",
+    "userDataFolderSet": "{name} 已启用且已设置。",
     "crossplayCompatible": "跨平台连接兼容: (MaxPlayer≤8, AllowCrossplay=true, EAC=true, IgnoreEOSSanctions=false)",
     "crossplayIncompatible": "跨平台连接不兼容: {conditions} (不会出现在跨平台搜索)",
-    "disabledCommented": "{name} 已停用(注释)"
+    "disabledCommented": "{name} 已停用(注释)",
+    "v3SandboxOnlyWarn": "当前仅支持 SandboxCode 保存，启动仍属未完全兼容。"
   },
   "enum": {
     "Region": {

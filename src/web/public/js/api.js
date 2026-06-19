@@ -52,6 +52,32 @@
     }
   }
 
+  async function requestJSON(url, options = {}, timeoutMs = 10000) {
+    const ctrl = new AbortController();
+    const id = setTimeout(() => ctrl.abort(), timeoutMs);
+    try {
+      const res = await fetch(url, {
+        headers: { Accept: "application/json", ...(options.headers || {}) },
+        ...options,
+        signal: ctrl.signal,
+      });
+      if (res.status === 401) {
+        if (App.auth) App.auth.showLoginScreen();
+        throw new Error("未授權");
+      }
+      if (res.status === 403) {
+        throw new Error("許可被拒");
+      }
+      const data = await res.json().catch(() => null);
+      if (!res.ok && !data) {
+        throw new Error(`HTTP ${res.status} ${res.statusText}`);
+      }
+      return data;
+    } finally {
+      clearTimeout(id);
+    }
+  }
+
   const saves = {
     list() {
       return fetchJSON("/api/saves/list", { method: "GET" });
@@ -103,5 +129,56 @@
     },
   };
 
-  App.api = Object.assign(App.api || {}, { fetchText, fetchJSON, saves });
+  const profiles = {
+    list(version) {
+      return fetchJSON(
+        `/api/game-server-profiles?version=${encodeURIComponent(version || "")}`
+      );
+    },
+    create(body) {
+      return fetchJSON("/api/game-server-profiles", jsonOptions("POST", body));
+    },
+    select(body) {
+      return fetchJSON(
+        "/api/game-server-profiles/select",
+        jsonOptions("POST", body)
+      );
+    },
+    save(body) {
+      return fetchJSON("/api/game-server-profiles/save", jsonOptions("POST", body));
+    },
+    rename(body) {
+      return fetchJSON(
+        "/api/game-server-profiles/rename",
+        jsonOptions("POST", body)
+      );
+    },
+    delete(body) {
+      return fetchJSON(
+        "/api/game-server-profiles/delete",
+        jsonOptions("POST", body)
+      );
+    },
+  };
+
+  const sandbox = {
+    schema() {
+      return requestJSON("/api/sandbox/schema", { method: "GET" });
+    },
+    decode(body) {
+      return requestJSON("/api/sandbox/decode", jsonOptions("POST", body));
+    },
+    encode(body) {
+      return requestJSON("/api/sandbox/encode", jsonOptions("POST", body));
+    },
+  };
+
+  App.api = Object.assign(App.api || {}, {
+    fetchText,
+    fetchJSON,
+    requestJSON,
+    saves,
+    profiles,
+    sandbox,
+  });
 })(window);
