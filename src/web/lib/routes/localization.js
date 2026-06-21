@@ -298,7 +298,7 @@ module.exports = function registerLocalizationRoutes(app, ctx) {
 
   app.get("/api/localization/official-keys", (req, res) => {
     try {
-      const officialCsvPath = localization.resolveOfficialCsvPath(GAME_DIR);
+      const officialCsvPath = localization.resolveOfficialLocalizationPath(GAME_DIR);
       const search = req.query?.search;
       const page = parseInt(req.query?.page, 10);
       const pageSize = parseInt(req.query?.pageSize, 10);
@@ -323,13 +323,13 @@ module.exports = function registerLocalizationRoutes(app, ctx) {
       if (!profile) {
         return http.respondJson(res, { ok: false, message: "找不到語系設定集" }, 404);
       }
-      const officialRowByKey = localization.getOfficialCsvRowByKeyMap(
-        localization.resolveOfficialCsvPath(GAME_DIR)
-      );
-      const rows = localization.buildCsvRows(profile.entries, officialRowByKey);
+      const officialCsvPath = localization.resolveOfficialLocalizationPath(GAME_DIR);
+      const officialRowByKey = localization.getOfficialCsvRowByKeyMap(officialCsvPath);
+      const headers = localization.getOfficialHeaders(officialCsvPath);
+      const rows = localization.buildCsvRows(profile.entries, officialRowByKey, headers);
       return http.respondJson(
         res,
-        { ok: true, data: { headers: localization.CSV_HEADERS, rows, rowCount: rows.length } },
+        { ok: true, data: { headers, rows, rowCount: rows.length } },
         200
       );
     } catch (err) {
