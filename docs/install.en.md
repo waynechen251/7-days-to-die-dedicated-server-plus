@@ -149,6 +149,8 @@
 - To allow external players to direct join your server, open the following in Windows Firewall/router:
   - `ServerPort/TCP`
   - `ServerPort/UDP`
+  - UDP on `ServerPort+1`, `ServerPort+2`, `ServerPort+3` (used by 7 Days To Die's additional network channels)
+- The Dynamic Firewall Management card handles the game port rules above automatically; manual setup is only needed if you are not using that feature.
 - If remote management features are enabled, also open:
   - `TelnetPort/TCP`
   - `WebDashboardPort/TCP` or `ControlPanelPort/TCP`
@@ -221,8 +223,8 @@ SteamCMD itself may output logs slowly; if the SteamCMD status in the management
 
 ### Players Cannot Connect to the Server
 
-1. Confirm Windows Firewall has opened `ServerPort/TCP` and `ServerPort/UDP`
-   - By default this means `26900/TCP+UDP`
+1. Confirm Windows Firewall has opened `ServerPort/TCP` and UDP from `ServerPort` through `ServerPort+3`
+   - By default this means `26900/TCP+UDP` and `26901`-`26903/UDP`
 2. If using a router, ensure port forwarding is configured
 3. Confirm the server has fully started
 4. Players should use the correct IP and Port when connecting

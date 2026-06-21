@@ -149,6 +149,8 @@
 - 若要讓外部玩家直連你的伺服器，請於 Windows 防火牆/路由器開啟:
   - `ServerPort/TCP`
   - `ServerPort/UDP`
+  - `ServerPort+1`、`ServerPort+2`、`ServerPort+3` 的 UDP（7 Days To Die 額外網路通道使用）
+- 動態防火牆管理卡片會自動處理上述遊戲埠規則，手動設定僅適用於未使用該功能的情境。
 - 若有啟用遠端管理功能，再另外開啟:
   - `TelnetPort/TCP`
   - `WebDashboardPort/TCP` 或 `ControlPanelPort/TCP`
@@ -221,8 +223,8 @@ SteamCMD 本身輸出日誌會慢一些，如果上方狀態管理的 SteamCMD �
 
 ### 玩家無法連線到伺服器
 
-1. 確認 Windows 防火牆已開啟 `ServerPort/TCP` 與 `ServerPort/UDP`
-   - 預設為 `26900/TCP+UDP`
+1. 確認 Windows 防火牆已開啟 `ServerPort/TCP` 與 `ServerPort` 至 `ServerPort+3` 的 UDP
+   - 預設為 `26900/TCP+UDP`、`26901`~`26903/UDP`
 2. 若使用路由器，確認已設定通訊埠轉發
 3. 確認伺服器已完全啟動
 4. 玩家連線時使用正確的 IP 與 Port
