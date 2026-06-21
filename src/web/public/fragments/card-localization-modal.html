@@ -23,6 +23,8 @@
             <select id="locProfileSelect"></select>
             <button id="locProfileCreateBtn" type="button" class="loc-profile-action">➕</button>
             <button id="locProfileCopyFromBtn" type="button" class="loc-profile-action" data-i18n-title="modal.localization.profileCopyFrom">📋</button>
+            <button id="locProfileImportBtn" type="button" class="loc-profile-action" data-i18n-title="modal.localization.profileImport">📥</button>
+            <input id="locImportFileInput" type="file" accept=".csv,.txt" class="hidden" />
             <button id="locProfileRenameBtn" type="button" class="loc-profile-action">✏️</button>
             <button id="locProfileDeleteBtn" type="button" class="loc-profile-action">🗑️</button>
           </div>
@@ -37,7 +39,14 @@
             <button type="button" id="locColToggleBtn" class="btn btn--ghost" data-i18n="modal.localization.columnToggleBtn">👁 欄位顯示</button>
             <div id="locColTogglePanel" class="loc-col-toggle__panel hidden"></div>
           </div>
-          <span class="loc-edited-legend"><span class="loc-edited-swatch"></span><span data-i18n="modal.localization.editedLegend">已編輯</span></span>
+          <label class="loc-status-filter">
+            <span class="loc-edited-swatch"></span>
+            <select id="locStatusFilter">
+              <option value="all" data-i18n="modal.localization.statusFilterAll">全部</option>
+              <option value="edited" data-i18n="modal.localization.statusFilterEdited">已編輯</option>
+              <option value="unedited" data-i18n="modal.localization.statusFilterUnedited">未編輯</option>
+            </select>
+          </label>
         </div>
         <div id="locEntryTableWrap" class="loc-entry-table-wrap">
           <table id="locEntryTable" class="loc-entry-table">

@@ -16,6 +16,8 @@
   let searchTerm = "";
   let officialItems = [];
   let officialPageInfo = { page: 0, pageSize: 50, total: 0, totalPages: 0 };
+  let statusFilter = "all"; // "all" | "edited" | "unedited"
+  let editedPageInfo = { page: 0, pageSize: 50, total: 0, totalPages: 0 };
   let searchDebounceTimer = null;
   let savedSnapshot = "[]";
 
@@ -201,6 +203,130 @@
     return entry;
   }
 
+  // 匯入時讓使用者勾選要套用的語言欄（沿用 confirm.js/prompt.js 同款 .app-mask overlay 寫法，
+  // 只有匯入功能用得到，不做成 App 全域工具）。回傳已勾選的語言陣列，取消則回傳 null。
+  function showImportLanguagePicker(availableLangs) {
+    return new Promise((resolve) => {
+      const mask = document.createElement("div");
+      mask.className = "app-mask";
+      mask.setAttribute("aria-hidden", "false");
+      const itemsHtml = availableLangs
+        .map(
+          (lang) =>
+            `<label class="loc-col-toggle__item"><input type="checkbox" data-import-lang="${escapeHTML(lang)}" checked /> ${escapeHTML(langLabel(lang))}</label>`
+        )
+        .join("");
+      mask.innerHTML = `
+        <div class="app-mask__panel" role="dialog" aria-modal="true">
+          <div style="display:flex;flex-direction:column;gap:12px;min-width:280px;max-width:360px">
+            <h3 style="margin:0;font-size:1.05rem;font-weight:600">${escapeHTML(t("modal.localization.importLangPickerTitle", "選擇要匯入的語言"))}</h3>
+            <div style="font-size:0.85rem;color:var(--c-text-sec)">${escapeHTML(t("modal.localization.importLangPickerDesc", "未勾選的語言欄將維持原值，不會被匯入檔案覆寫。"))}</div>
+            <div style="display:flex;flex-direction:column;gap:6px;max-height:14rem;overflow-y:auto">${itemsHtml}</div>
+            <div class="app-mask__actions">
+              <button type="button" class="btn btn--ghost" data-act="cancel">${escapeHTML(t("common.cancel", "取消"))}</button>
+              <button type="button" class="btn btn--primary" data-act="confirm">${escapeHTML(t("modal.localization.profileImport", "匯入"))}</button>
+            </div>
+          </div>
+        </div>`;
+      document.body.appendChild(mask);
+
+      const close = (langs) => {
+        document.removeEventListener("keydown", onKey);
+        mask.remove();
+        resolve(langs);
+      };
+      const onKey = (e) => {
+        if (e.key === "Escape") close(null);
+      };
+      mask.addEventListener("click", (e) => {
+        if (e.target === mask) return close(null);
+        const btn = e.target.closest("button[data-act]");
+        if (!btn) return;
+        if (btn.dataset.act === "cancel") return close(null);
+        const selected = Array.from(mask.querySelectorAll("input[data-import-lang]:checked")).map(
+          (el) => el.dataset.importLang
+        );
+        close(selected);
+      });
+      document.addEventListener("keydown", onKey);
+    });
+  }
+
+  async function importFromFile(file) {
+    const text = await file.text();
+    const result = await App.api.localization.import({ text });
+    if (!result?.ok) throw new Error(result?.message || "匯入失敗");
+    const { headers = [], items = [] } = result.data || {};
+
+    const availableLangs = getLanguageColumns().filter((lang) => headers.includes(lang));
+    if (!availableLangs.length) {
+      setFeedback(t("modal.localization.importNoLangColumns", "此檔案沒有可辨識的語言欄"), "warn");
+      return;
+    }
+
+    const selectedLangs = await showImportLanguagePicker(availableLangs);
+    if (!selectedLangs || !selectedLangs.length) return;
+
+    const confirmMsg = t(
+      "confirm.importLocalizationFile",
+      "匯入會覆寫所選語言中、同 Key 的現有編輯內容，確定要匯入嗎？"
+    );
+    const confirmed = await (App.confirm
+      ? App.confirm(confirmMsg, {
+          title: t("modal.localization.profileImport", "匯入"),
+          continueText: t("common.confirm", "繼續"),
+          cancelText: t("common.cancel", "取消"),
+        })
+      : Promise.resolve(window.confirm(confirmMsg)));
+    if (!confirmed) return;
+
+    let diffCount = 0;
+    items.forEach((item) => {
+      const entry = findOrCreateWorkingEntry(item.key, item.officialItem);
+      selectedLangs.forEach((lang) => {
+        entry.translations[lang] = item.translations?.[lang] ?? entry.translations[lang];
+      });
+      if (item.file) entry.file = item.file;
+      if (item.context) entry.context = item.context;
+      if (item.officialItem && !entry.__officialBaseline) {
+        entry.__officialBaseline = snapshotBaseline(item.officialItem);
+      }
+      if (entry.__officialBaseline && matchesBaseline(entry, entry.__officialBaseline)) {
+        workingEntries = workingEntries.filter((e) => e !== entry);
+      } else {
+        diffCount++;
+      }
+    });
+
+    renderEntries();
+    setFeedback(
+      t("modal.localization.importSuccess", "已匯入 {count} 筆，其中 {diff} 筆與官方不同", {
+        count: items.length,
+        diff: diffCount,
+      }),
+      "ok"
+    );
+  }
+
+  function bindImportButton() {
+    const importBtn = $id("locProfileImportBtn");
+    const fileInput = $id("locImportFileInput");
+    if (!importBtn || !fileInput || importBtn.__locBound) return;
+    importBtn.__locBound = true;
+
+    importBtn.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", async () => {
+      const file = fileInput.files?.[0];
+      fileInput.value = "";
+      if (!file) return;
+      try {
+        await importFromFile(file);
+      } catch (err) {
+        setFeedback(err.message, "err");
+      }
+    });
+  }
+
   async function ensureFragment() {
     const existing = $id("localizationModal");
     if (existing && existing.classList.contains("modal")) return existing;
@@ -336,7 +462,11 @@
       </tr>`;
   }
 
-  function renderEntryRowHtml(entry, { official } = {}) {
+  // 是否為「有覆寫」的列：只要這個 entry 來自 workingEntries（有 __rowId）就算，
+  // 不分是自訂 Key 還是有對應官方 Key 的覆寫——統一用顏色高亮＋刪除/還原按鈕標示，
+  // 不會因為有沒有覆寫而改變這一列在表格中的排列位置。
+  function renderEntryRowHtml(entry) {
+    const hasOverride = entry.__rowId != null;
     const langCells = getLanguageColumns()
       .filter((lang) => isColumnVisible(lang))
       .map((lang) => {
@@ -348,14 +478,14 @@
     const fileCell = isColumnVisible("file")
       ? `<td class="loc-col-file"><span class="loc-key-readonly" title="${escapeHTML(entry.file || "")}">${escapeHTML(entry.file || "")}</span></td>`
       : "";
-    const rowAttr = official ? `data-official-key="${escapeHTML(entry.key)}"` : `data-row-id="${entry.__rowId}"`;
-    const rowClass = official ? "" : " loc-row--edited";
+    const rowAttr = hasOverride ? `data-row-id="${entry.__rowId}"` : `data-official-key="${escapeHTML(entry.key)}"`;
+    const rowClass = hasOverride ? " loc-row--edited" : "";
     return `
       <tr ${rowAttr} class="loc-entry-row${rowClass}">
         <td class="loc-col-frozen loc-col-frozen--1"><span class="loc-key-readonly" title="${escapeHTML(entry.key)}">${escapeHTML(entry.key)}</span></td>
         ${fileCell}
         ${langCells}
-        <td>${official ? "" : '<button type="button" data-act="delete-entry">🗑️</button>'}</td>
+        <td>${hasOverride ? '<button type="button" data-act="delete-entry">🗑️</button>' : ""}</td>
       </tr>`;
   }
 
@@ -370,6 +500,64 @@
     });
   }
 
+  function updateEntryCount(visibleCount) {
+    const countEl = $id("locEntryCount");
+    if (!countEl) return;
+    countEl.textContent = t(
+      "modal.localization.entryCountValue",
+      "已編輯 {edited} 筆（顯示 {visible} 筆）",
+      { edited: workingEntries.length, visible: visibleCount }
+    );
+  }
+
+  // 「全部／未編輯」模式：沿用官方分頁＋搜尋的瀏覽順序，只在渲染時決定要不要
+  // 顯示覆寫列，不重新排序、不把覆寫搬到頂部，靠 .loc-row--edited 顏色高亮提示差異。
+  function renderCatalogTable(tbody) {
+    // 有對應官方 Key 的覆寫（entry.__officialBaseline 存在）不獨立列出，只在官方分頁
+    // 捲到該 Key 時於原本位置顯示（見下方 officialHtml）。只有「官方完全沒有這個 Key」
+    // 的自訂條目才需要獨立列出，因為它們本來就沒有可以對齊的官方位置。
+    const customEntries = workingEntries.filter((e) => !e.__officialBaseline);
+    const customVisible = statusFilter === "unedited" ? [] : customEntries.filter(matchesFilter);
+
+    const newRowHtml = renderNewKeyRowHtml();
+    const customHtml = customVisible.map((entry) => renderEntryRowHtml(entry)).join("");
+
+    let pageOverrideCount = 0;
+    const officialHtml = officialItems
+      .filter((item) => statusFilter !== "unedited" || !findWorkingEntryByKey(item.key))
+      .map((item) => {
+        const override = findWorkingEntryByKey(item.key);
+        if (override) pageOverrideCount++;
+        const display = override || {
+          key: item.key,
+          file: item.file,
+          translations: item.translations,
+        };
+        return renderEntryRowHtml(display);
+      })
+      .join("");
+
+    tbody.innerHTML = newRowHtml + customHtml + officialHtml;
+    updateEntryCount(customVisible.length + pageOverrideCount);
+  }
+
+  // 「已編輯」模式：覆寫散落在整個官方目錄各處，不可能對齊官方分頁，
+  // 改成直接在已載入的 workingEntries 上做本地分頁，瀏覽所有與官方不同的條目。
+  function renderEditedOnlyTable(tbody) {
+    const editedVisible = workingEntries.filter(matchesFilter);
+    editedPageInfo.total = editedVisible.length;
+    editedPageInfo.totalPages = Math.max(1, Math.ceil(editedVisible.length / editedPageInfo.pageSize));
+    editedPageInfo.page = Math.min(Math.max(0, editedPageInfo.page), editedPageInfo.totalPages - 1);
+
+    const start = editedPageInfo.page * editedPageInfo.pageSize;
+    const pageItems = editedVisible.slice(start, start + editedPageInfo.pageSize);
+
+    const newRowHtml = renderNewKeyRowHtml();
+    const rowsHtml = pageItems.map((entry) => renderEntryRowHtml(entry)).join("");
+    tbody.innerHTML = newRowHtml + rowsHtml;
+    updateEntryCount(pageItems.length);
+  }
+
   function renderEntries() {
     const tbody = $id("locEntryTableBody");
     if (!tbody) return;
@@ -377,34 +565,10 @@
     renderEntryTableHead();
     pruneRevertedOverrides();
 
-    const editedVisible = workingEntries.filter(matchesFilter);
-    const editedKeys = new Set(workingEntries.map((e) => e.key));
-
-    const newRowHtml = renderNewKeyRowHtml();
-    const editedHtml = editedVisible.map((entry) => renderEntryRowHtml(entry)).join("");
-
-    const officialHtml = officialItems
-      .map((item) => {
-        const override = editedKeys.has(item.key) ? findWorkingEntryByKey(item.key) : null;
-        const display = override || {
-          key: item.key,
-          file: item.file,
-          translations: item.translations,
-        };
-        const row = renderEntryRowHtml(display, { official: true });
-        return override ? row.replace('class="loc-entry-row"', 'class="loc-entry-row loc-row--edited"') : row;
-      })
-      .join("");
-
-    tbody.innerHTML = newRowHtml + editedHtml + officialHtml;
-
-    const countEl = $id("locEntryCount");
-    if (countEl) {
-      countEl.textContent = t(
-        "modal.localization.entryCountValue",
-        "已編輯 {edited} 筆（顯示 {visible} 筆）",
-        { edited: workingEntries.length, visible: editedVisible.length }
-      );
+    if (statusFilter === "edited") {
+      renderEditedOnlyTable(tbody);
+    } else {
+      renderCatalogTable(tbody);
     }
 
     renderProfileBar();
@@ -547,7 +711,8 @@
   function renderOfficialPager() {
     const el = $id("locOfficialPager");
     if (!el) return;
-    const { page, totalPages, total, pageSize } = officialPageInfo;
+    const { page, totalPages, total, pageSize } =
+      statusFilter === "edited" ? editedPageInfo : officialPageInfo;
     if (!total) {
       el.innerHTML = "";
       return;
@@ -573,6 +738,7 @@
     const activeProfile = getActiveProfile();
     workingEntries = cloneEntriesWithRowIds(activeProfile?.entries);
     savedSnapshot = JSON.stringify(entriesForSave());
+    editedPageInfo.page = 0;
     renderProfileBar();
     loadOfficialPage(0);
   }
@@ -594,13 +760,36 @@
         clearTimeout(searchDebounceTimer);
         searchDebounceTimer = setTimeout(() => {
           searchTerm = search.value || "";
-          loadOfficialPage(0);
+          editedPageInfo.page = 0;
+          if (statusFilter === "edited") {
+            renderEntries();
+          } else {
+            loadOfficialPage(0);
+          }
         }, 200);
       });
       search.__locBound = true;
     }
 
     bindColumnToggle();
+    bindStatusFilter();
+  }
+
+  // 「狀態篩選」下拉：篩選出目前清單裡是否有修改過官方原文，不影響語言欄顯示順序。
+  function bindStatusFilter() {
+    const select = $id("locStatusFilter");
+    if (!select || select.__locBound) return;
+    select.__locBound = true;
+    select.value = statusFilter;
+    select.addEventListener("change", () => {
+      statusFilter = select.value;
+      editedPageInfo.page = 0;
+      if (statusFilter === "edited") {
+        renderEntries();
+      } else {
+        loadOfficialPage(0);
+      }
+    });
   }
 
   function renderColumnTogglePanel() {
@@ -648,7 +837,12 @@
       const btn = e.target.closest("[data-page-dir]");
       if (!btn || btn.disabled) return;
       const dir = btn.dataset.pageDir === "next" ? 1 : -1;
-      loadOfficialPage(officialPageInfo.page + dir);
+      if (statusFilter === "edited") {
+        editedPageInfo.page += dir;
+        renderEntries();
+      } else {
+        loadOfficialPage(officialPageInfo.page + dir);
+      }
     });
     pager.__locBound = true;
   }
@@ -891,6 +1085,7 @@
     });
 
     bindProfileBarEvents();
+    bindImportButton();
     bindEntryToolbar();
     bindEntryTableEvents();
     bindOfficialPager();

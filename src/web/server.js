@@ -122,7 +122,11 @@ let stopGameTail = null;
 localizationProfiles.loadStore(path.join(baseDir, "localization-profiles.json"));
 
 const app = express();
-app.use(express.json());
+// 預設 100kb 上限對「翻譯清單」類請求太小：批量匯入/儲存/生成 Mod 時，
+// entries 含 13 種語言 x 大量 Key，body 很容易超過 100kb（甚至到 MB 等級）。
+// 這是單人使用、需登入的本機後台工具，放大全域上限比起只放大單一路由更不容易漏掉
+// 其他也會送大量翻譯資料的路由（save / generate 都吃同一份 entries）。
+app.use(express.json({ limit: "20mb" }));
 app.use(express.static(PUBLIC_DIR));
 
 processManager.initStatus({

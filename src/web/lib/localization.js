@@ -235,6 +235,32 @@ function scanOfficialCsvKeys({ officialCsvPath, search, page, pageSize }) {
   return { total: filtered.length, items, page: currentPage, pageSize: size, totalPages };
 }
 
+// 解析使用者上傳的翻譯檔（別人分享的 Localization.csv/.txt，欄位可能跟官方不完全一樣）。
+// 沿用 localizationCsv.parse()（標頭驅動、CSV/TXT 通用），逐列查官方原文 fallback。
+// headers 回傳給前端用來跟 LANGUAGE_COLUMNS 取交集，列出「這份檔案實際包含哪些語言欄」。
+function parseImportFile({ officialCsvPath, text }) {
+  const officialRowByKey = getOfficialCsvRowByKeyMap(officialCsvPath);
+  const { headers, rows } = localizationCsv.parse(text);
+  const items = rows
+    .filter((row) => String(row?.Key || "").trim())
+    .map((row) => {
+      const key = String(row.Key).trim();
+      const officialRow = officialRowByKey.get(key) || null;
+      const translations = {};
+      LANGUAGE_COLUMNS.forEach((lang) => {
+        translations[lang] = row[lang] || "";
+      });
+      return {
+        key,
+        file: row.File || "",
+        context: row["Context / Alternate Text"] || "",
+        translations,
+        officialItem: officialRow ? rowToOfficialItem(officialRow) : null,
+      };
+    });
+  return { headers, items };
+}
+
 function readGeneratedCsvPreview({ GAME_DIR }) {
   const csvPath = resolveCsvPath(GAME_DIR, "csv");
   if (fs.existsSync(csvPath)) return localizationCsv.readFile(csvPath);
@@ -260,5 +286,6 @@ module.exports = {
   getOfficialCsvRowByKeyMap,
   getOfficialHeaders,
   scanOfficialCsvKeys,
+  parseImportFile,
   readGeneratedCsvPreview,
 };

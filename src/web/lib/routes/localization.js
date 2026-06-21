@@ -314,6 +314,20 @@ module.exports = function registerLocalizationRoutes(app, ctx) {
     }
   });
 
+  app.post("/api/localization/import", (req, res) => {
+    try {
+      const officialCsvPath = localization.resolveOfficialLocalizationPath(GAME_DIR);
+      const text = req.body?.text;
+      if (typeof text !== "string" || !text.trim()) {
+        return http.respondJson(res, { ok: false, message: "請提供有效的翻譯檔內容" }, 400);
+      }
+      const data = localization.parseImportFile({ officialCsvPath, text });
+      return http.respondJson(res, { ok: true, data }, 200);
+    } catch (err) {
+      return http.respondJson(res, { ok: false, message: err.message || "解析匯入檔案失敗" }, 500);
+    }
+  });
+
   app.get("/api/localization/preview", (req, res) => {
     try {
       const version = canonicalVersion(req.query?.version);

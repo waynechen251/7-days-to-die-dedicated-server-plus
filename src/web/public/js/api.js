@@ -211,6 +211,9 @@
       if (pageSize) params.set("pageSize", pageSize);
       return requestJSON(`/api/localization/official-keys?${params.toString()}`);
     },
+    import(body) {
+      return requestJSON("/api/localization/import", jsonOptions("POST", body));
+    },
   };
 
   App.api = Object.assign(App.api || {}, {
