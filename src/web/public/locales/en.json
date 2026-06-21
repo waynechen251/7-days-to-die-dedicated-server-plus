@@ -289,6 +289,22 @@
       "applyActiveSave": "🔀 Set as Active Save",
       "applyActiveSaveTitle": "Write the selected save to serverconfig.xml's GameWorld/GameName so the next server start loads it",
       "alreadyActive": "✅ Currently Active"
+    },
+    "localization": {
+      "title": "Game Translation Editor",
+      "statusUnknown": "No profile created yet",
+      "statusOk": "Current profile: {name}",
+      "summaryRefreshFailed": "Failed to refresh status",
+      "summaryLabel": "Status Summary",
+      "actionsLabel": "Main Actions",
+      "needsRestart": "⚠️ Translation mod generated. Restart the server to apply it.",
+      "ackRestart": "Got it",
+      "statEntryCount": "Optimized Entries",
+      "statProfileCount": "Profiles",
+      "statLastGenerated": "Last Generated",
+      "statLastGeneratedNone": "Not generated yet",
+      "manageBtn": "📝 Manage Translations",
+      "refreshBtn": "🔄 Refresh"
     }
   },
   "modal": {
@@ -819,6 +835,42 @@
           "SillyBlackandWhite": "Black and White"
         }
       }
+    },
+    "localization": {
+      "ariaLabel": "Game Translation Editor",
+      "title": "Game Translation Editor",
+      "profileSectionTitle": "Profile Management",
+      "profileSectionDesc": "Each game version can have multiple translation list snapshots.",
+      "profileCreate": "Create New Profile",
+      "profileCopyFrom": "Copy From Other Version",
+      "profileCopyFromVersionPrompt": "Enter the source game version to copy from",
+      "profileCopyFromEmpty": "The source version has no profile to copy",
+      "profileRename": "Rename Current Profile",
+      "profileRenamePrompt": "Enter the new profile name",
+      "profileDelete": "Delete Current Profile",
+      "profileDeleteDisabled": "At least one profile must remain; cannot delete the last one",
+      "profileNamePrompt": "Enter profile name",
+      "profileCreated": "Profile created",
+      "profileInfoSelected": "Currently Selected",
+      "profileInfoVersion": "Version",
+      "profileInfoCount": "Entries",
+      "noActiveProfile": "No profile selected",
+      "searchPlaceholder": "Search Key / English / Translation",
+      "columnToggleBtn": "👁 Columns",
+      "colKey": "Key",
+      "colFile": "File",
+      "colActions": "",
+      "entryCountValue": "{total} total, {visible} shown",
+      "save": "💾 Save List",
+      "generate": "⚙️ Generate Mod",
+      "saveSuccess": "Translation list saved",
+      "generateSuccess": "Generated {count} entries, restart the server to apply",
+      "importPagerStatus": "{start}-{end} of {total}",
+      "pagerPrev": "Previous",
+      "pagerNext": "Next",
+      "newKeyPlaceholder": "Type a new custom key…",
+      "editedLegend": "Edited",
+      "duplicateKeyError": "This key already exists in the list. Edit it in its existing row instead."
     }
   },
   "confirm": {
@@ -848,7 +900,10 @@
     "userDataFolderStartWarningTitle": "UserDataFolder Reminder",
     "userDataFolderStartWarning": "{detail}\n\nStartup is still allowed when the checkbox is off or the value is empty, but the game default data folder will be used. Do you still want to save and start?",
     "v3StartWarningTitle": "v3.0+ Compatibility Warning",
-    "v3StartWarning": "v3.0+ Sandbox-only mode was detected.\nOnly SandboxCode saving is currently compatible, and server startup is still not fully compatible.\nDo you still want to save and start?"
+    "v3StartWarning": "v3.0+ Sandbox-only mode was detected.\nOnly SandboxCode saving is currently compatible, and server startup is still not fully compatible.\nDo you still want to save and start?",
+    "generateLocalizationMod": "The server must be restarted to apply this after generating. Continue?",
+    "deleteLocalizationProfile": "Are you sure you want to delete this localization profile?",
+    "discardLocalizationChanges": "You have unsaved translation changes. Close and discard them?"
   },
   "status": {
     "backend": "Backend",

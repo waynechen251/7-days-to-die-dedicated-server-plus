@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="css/forms.css" />
     <link rel="stylesheet" href="css/cards.css" />
     <link rel="stylesheet" href="css/card-firewall.css" />
+    <link rel="stylesheet" href="css/card-localization.css" />
     <link rel="stylesheet" href="css/console.css" />
     <link rel="stylesheet" href="css/modal.css" />
     <link rel="stylesheet" href="css/mask.css" />
@@ -127,6 +128,9 @@
           <!-- 動態防火牆 卡片 -->
           <div id="card-firewall" data-fragment="card-firewall" data-card-id="firewall"></div>
 
+          <!-- 遊戲翻譯編輯器 卡片 -->
+          <div id="card-localization" data-fragment="card-localization" data-card-id="localization"></div>
+
           <!-- 7DaysToDieServer 卡片 -->
           <div id="card-game" data-fragment="card-game" data-card-id="game"></div>
 
@@ -178,6 +182,7 @@
       data-fragment="card-game-serverconfig-modal"
     ></div>
     <div id="firewallModalHost" data-fragment="card-firewall-modal"></div>
+    <div id="localizationModalHost" data-fragment="card-localization-modal"></div>
     <div id="savesModalHost" data-fragment="card-saves-modal"></div>
 
     <noscript>
@@ -211,6 +216,8 @@
     <script defer src="js/card-dsp-modal.js"></script>
     <script defer src="js/firewall.js"></script>
     <script defer src="js/card-firewall-modal.js"></script>
+    <script defer src="js/localization.js"></script>
+    <script defer src="js/card-localization-modal.js"></script>
     <script defer src="js/actions.js"></script>
     <script defer src="js/auth.js"></script>
     <script defer src="js/bootstrap.js"></script>

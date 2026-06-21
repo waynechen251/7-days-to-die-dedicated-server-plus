@@ -1,0 +1,41 @@
+<section class="card card-localization">
+  <header class="card-header">
+    <h2 class="card-title" data-i18n="card.localization.title">遊戲翻譯編輯器</h2>
+  </header>
+
+  <section class="localization-overview">
+    <div class="localization-overview__main">
+      <span class="field__label" data-i18n="card.localization.summaryLabel">目前狀態摘要</span>
+      <div id="loc-status-summary" class="localization-overview__summary" data-i18n="card.localization.statusUnknown">狀態未知</div>
+
+      <div id="loc-restart-alert" class="hidden localization-alert localization-alert--warn">
+        <span data-i18n="card.localization.needsRestart">⚠️ 已生成翻譯 Mod，需重啟伺服器才會套用。</span>
+        <button id="loc-ack-restart-btn" data-i18n="card.localization.ackRestart">知道了</button>
+      </div>
+
+      <div class="localization-stat-grid">
+        <div class="localization-stat">
+          <span id="loc-stat-entrycount" class="localization-stat__value">-</span>
+          <span class="localization-stat__label" data-i18n="card.localization.statEntryCount">優化筆數</span>
+        </div>
+        <div class="localization-stat">
+          <span id="loc-stat-profilecount" class="localization-stat__value">-</span>
+          <span class="localization-stat__label" data-i18n="card.localization.statProfileCount">設定檔數</span>
+        </div>
+        <div class="localization-stat">
+          <span id="loc-stat-lastgenerated" class="localization-stat__value">-</span>
+          <span class="localization-stat__label" data-i18n="card.localization.statLastGenerated">上次生成</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="localization-overview__actions">
+      <span class="field__label" data-i18n="card.localization.actionsLabel">主要操作</span>
+      <div class="row">
+        <button id="loc-open-manage-btn" class="btn--primary" data-i18n="card.localization.manageBtn">📝 管理翻譯清單</button>
+        <button id="loc-refresh-btn" data-i18n="card.localization.refreshBtn">🔄 重新整理</button>
+      </div>
+      <div id="loc-action-feedback" class="hidden localization-feedback"></div>
+    </div>
+  </section>
+</section>

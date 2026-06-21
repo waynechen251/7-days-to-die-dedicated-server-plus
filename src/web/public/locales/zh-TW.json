@@ -289,6 +289,22 @@
       "applyActiveSave": "🔀 切換為使用中存檔",
       "applyActiveSaveTitle": "將所選存檔寫入 serverconfig.xml 的 GameWorld/GameName，下次啟動伺服器將載入此存檔",
       "alreadyActive": "✅ 目前使用中"
+    },
+    "localization": {
+      "title": "遊戲翻譯編輯器",
+      "statusUnknown": "尚未建立設定集",
+      "statusOk": "目前設定集: {name}",
+      "summaryRefreshFailed": "狀態讀取失敗",
+      "summaryLabel": "目前狀態摘要",
+      "actionsLabel": "主要操作",
+      "needsRestart": "⚠️ 已生成翻譯 Mod，需重啟伺服器才會套用。",
+      "ackRestart": "知道了",
+      "statEntryCount": "優化筆數",
+      "statProfileCount": "設定檔數",
+      "statLastGenerated": "上次生成",
+      "statLastGeneratedNone": "尚未生成",
+      "manageBtn": "📝 管理翻譯清單",
+      "refreshBtn": "🔄 重新整理"
     }
   },
   "modal": {
@@ -819,6 +835,42 @@
           "SillyBlackandWhite": "黑白畫面"
         }
       }
+    },
+    "localization": {
+      "ariaLabel": "遊戲翻譯編輯器",
+      "title": "遊戲翻譯編輯器",
+      "profileSectionTitle": "設定檔管理",
+      "profileSectionDesc": "每個遊戲版本可建立多份翻譯清單快照。",
+      "profileCreate": "建立新設定集",
+      "profileCopyFrom": "從其他版本複製",
+      "profileCopyFromVersionPrompt": "請輸入要複製來源的遊戲版本",
+      "profileCopyFromEmpty": "來源版本沒有可複製的設定集",
+      "profileRename": "重新命名目前設定集",
+      "profileRenamePrompt": "請輸入新的設定集名稱",
+      "profileDelete": "刪除目前設定集",
+      "profileDeleteDisabled": "至少保留一筆設定集，無法刪除最後一筆",
+      "profileNamePrompt": "請輸入設定集名稱",
+      "profileCreated": "已建立設定集",
+      "profileInfoSelected": "目前選取",
+      "profileInfoVersion": "版本",
+      "profileInfoCount": "筆數",
+      "noActiveProfile": "尚未選取設定集",
+      "searchPlaceholder": "搜尋 Key / 英文 / 翻譯",
+      "columnToggleBtn": "👁 欄位顯示",
+      "colKey": "Key",
+      "colFile": "File",
+      "colActions": "",
+      "entryCountValue": "共 {total} 筆，顯示 {visible} 筆",
+      "save": "💾 儲存清單",
+      "generate": "⚙️ 生成並寫入 Mod",
+      "saveSuccess": "已儲存翻譯清單",
+      "generateSuccess": "已生成 {count} 筆翻譯，請重啟伺服器套用",
+      "importPagerStatus": "{start}-{end} / {total} 筆",
+      "pagerPrev": "上一頁",
+      "pagerNext": "下一頁",
+      "newKeyPlaceholder": "輸入新的自訂 Key…",
+      "editedLegend": "已編輯",
+      "duplicateKeyError": "此 Key 已存在於清單中，請改用下方對應列編輯"
     }
   },
   "confirm": {
@@ -848,7 +900,10 @@
     "userDataFolderStartWarningTitle": "UserDataFolder 提醒",
     "userDataFolderStartWarning": "{detail}\n\n未打勾或空值時仍可啟動，但會使用遊戲預設資料夾。是否仍要保存並啟動？",
     "v3StartWarningTitle": "v3.0+ 相容性警告",
-    "v3StartWarning": "目前偵測為 v3.0+ Sandbox-only 模式。\n僅 SandboxCode 保存已相容，伺服器啟動仍屬未完全相容。\n是否仍要保存並啟動？"
+    "v3StartWarning": "目前偵測為 v3.0+ Sandbox-only 模式。\n僅 SandboxCode 保存已相容，伺服器啟動仍屬未完全相容。\n是否仍要保存並啟動？",
+    "generateLocalizationMod": "生成後需重啟伺服器才會套用，確定要生成嗎？",
+    "deleteLocalizationProfile": "是否確定刪除此語系設定集？",
+    "discardLocalizationChanges": "目前有未儲存的翻譯修改，確定要關閉並捨棄變更嗎？"
   },
   "status": {
     "backend": "管理後台",

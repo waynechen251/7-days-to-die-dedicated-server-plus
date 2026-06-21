@@ -173,6 +173,46 @@
     },
   };
 
+  const localization = {
+    list(version) {
+      return requestJSON(
+        `/api/localization?version=${encodeURIComponent(version || "")}`
+      );
+    },
+    create(body) {
+      return requestJSON("/api/localization", jsonOptions("POST", body));
+    },
+    select(body) {
+      return requestJSON("/api/localization/select", jsonOptions("POST", body));
+    },
+    save(body) {
+      return requestJSON("/api/localization/save", jsonOptions("POST", body));
+    },
+    rename(body) {
+      return requestJSON("/api/localization/rename", jsonOptions("POST", body));
+    },
+    delete(body) {
+      return requestJSON("/api/localization/delete", jsonOptions("POST", body));
+    },
+    generate(body) {
+      return requestJSON("/api/localization/generate", jsonOptions("POST", body));
+    },
+    acknowledgeRestart() {
+      return requestJSON(
+        "/api/localization/acknowledge-restart",
+        jsonOptions("POST", {})
+      );
+    },
+    officialKeys({ version, search, page, pageSize } = {}) {
+      const params = new URLSearchParams();
+      if (version) params.set("version", version);
+      if (search) params.set("search", search);
+      if (Number.isInteger(page)) params.set("page", page);
+      if (pageSize) params.set("pageSize", pageSize);
+      return requestJSON(`/api/localization/official-keys?${params.toString()}`);
+    },
+  };
+
   App.api = Object.assign(App.api || {}, {
     fetchText,
     fetchJSON,
@@ -180,5 +220,6 @@
     saves,
     profiles,
     sandbox,
+    localization,
   });
 })(window);

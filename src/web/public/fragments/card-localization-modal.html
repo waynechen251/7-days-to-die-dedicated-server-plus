@@ -1,0 +1,63 @@
+<div id="localizationModal" class="modal hidden" aria-hidden="true">
+  <div class="modal__backdrop"></div>
+  <div
+    class="modal__panel"
+    role="dialog"
+    aria-modal="true"
+    aria-label="遊戲翻譯編輯器"
+    data-i18n-aria-label="modal.localization.ariaLabel"
+  >
+    <div class="modal__header">
+      <h3 data-i18n="modal.localization.title">遊戲翻譯編輯器</h3>
+      <button id="loc-modal-close-btn" class="modal__close" data-i18n="common.close">✖</button>
+    </div>
+
+    <div class="modal__body loc-modal__body">
+      <section class="loc-section loc-profile-section">
+        <div class="loc-profile-section__copy">
+          <div data-i18n="modal.localization.profileSectionTitle">設定檔管理</div>
+          <div class="field__label" data-i18n="modal.localization.profileSectionDesc">每個遊戲版本可建立多份翻譯清單快照。</div>
+        </div>
+        <div id="locProfileBar" class="loc-profile-bar">
+          <div class="loc-profile-picker">
+            <select id="locProfileSelect"></select>
+            <button id="locProfileCreateBtn" type="button" class="loc-profile-action">➕</button>
+            <button id="locProfileCopyFromBtn" type="button" class="loc-profile-action" data-i18n-title="modal.localization.profileCopyFrom">📋</button>
+            <button id="locProfileRenameBtn" type="button" class="loc-profile-action">✏️</button>
+            <button id="locProfileDeleteBtn" type="button" class="loc-profile-action">🗑️</button>
+          </div>
+          <div id="locProfileInfo" class="loc-profile-info"></div>
+        </div>
+      </section>
+
+      <section class="loc-section loc-entries-section">
+        <div class="loc-entries-toolbar">
+          <input id="locEntrySearch" type="text" data-i18n-placeholder="modal.localization.searchPlaceholder" placeholder="搜尋 Key / 英文 / 翻譯" />
+          <div class="loc-col-toggle">
+            <button type="button" id="locColToggleBtn" class="btn btn--ghost" data-i18n="modal.localization.columnToggleBtn">👁 欄位顯示</button>
+            <div id="locColTogglePanel" class="loc-col-toggle__panel hidden"></div>
+          </div>
+          <span class="loc-edited-legend"><span class="loc-edited-swatch"></span><span data-i18n="modal.localization.editedLegend">已編輯</span></span>
+        </div>
+        <div id="locEntryTableWrap" class="loc-entry-table-wrap">
+          <table id="locEntryTable" class="loc-entry-table">
+            <thead>
+              <tr id="locEntryTableHeadRow"></tr>
+            </thead>
+            <tbody id="locEntryTableBody"></tbody>
+          </table>
+        </div>
+        <div id="locEntryCount" class="loc-entry-count"></div>
+        <div id="locOfficialPager" class="loc-import-pager"></div>
+      </section>
+    </div>
+
+    <div class="modal__footer">
+      <div id="locFeedback" class="hidden loc-feedback"></div>
+      <div class="loc-modal__footer-actions">
+        <button id="locSaveBtn" class="btn--primary" data-i18n="modal.localization.save">💾 儲存清單</button>
+        <button id="locGenerateBtn" class="btn--primary" data-i18n="modal.localization.generate">⚙️ 生成並寫入 Mod</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -17,6 +17,8 @@ const auth = require("./lib/auth");
 const firewall = require("./lib/firewall");
 const gameServerProfiles = require("./lib/gameServerProfiles");
 const sandboxCode = require("./lib/sandboxCode");
+const localizationProfiles = require("./lib/localizationProfiles");
+const localization = require("./lib/localization");
 const { loadConfigWithMigration } = require("./lib/configMigration");
 
 const APP_VERSION = (() => {
@@ -117,6 +119,8 @@ function saveConfig() {
 const GAME_DIR = resolveDirCaseInsensitive(baseDir, "7DaysToDieServer");
 let stopGameTail = null;
 
+localizationProfiles.loadStore(path.join(baseDir, "localization-profiles.json"));
+
 const app = express();
 app.use(express.json());
 app.use(express.static(PUBLIC_DIR));
@@ -209,6 +213,8 @@ const routeContext = {
   firewall,
   gameServerProfiles,
   sandboxCode,
+  localizationProfiles,
+  localization,
 };
 
 // Auth 路由（公開，不需驗證）
@@ -284,6 +290,7 @@ require("./lib/routes/versions")(app, routeContext);
 require("./lib/routes/updates")(app, routeContext);
 require("./lib/routes/firewall")(app, routeContext);
 require("./lib/routes/sandbox")(app, routeContext);
+require("./lib/routes/localization")(app, routeContext);
 
 // SSE endpoint
 app.get("/api/stream", eventBus.sseHandler);
