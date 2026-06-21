@@ -878,8 +878,13 @@
 
     const closeBtn = $id("loc-modal-close-btn");
     closeBtn?.addEventListener("click", attemptClose);
+    let mousedownOnBackdrop = false;
+    modal.addEventListener("mousedown", (e) => {
+      mousedownOnBackdrop = e.target === modal;
+    });
     modal.addEventListener("click", (e) => {
-      if (e.target === modal) attemptClose();
+      if (e.target === modal && mousedownOnBackdrop) attemptClose();
+      mousedownOnBackdrop = false;
     });
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && !modal.classList.contains("hidden")) attemptClose();
